@@ -66,14 +66,14 @@ public class CallComposite {
         localizationProvider = LocalizationProvider(logger: logger)
     }
 
-    convenience init(withOptions options: CallCompositeOptions? = nil,
-                     callingSDKWrapperProtocol: CallingSDKWrapperProtocol? = nil) {
+    public convenience init(withOptions options: CallCompositeOptions? = nil,
+                            callingSDKWrapperProtocol: CallingSDKWrapperProtocol? = nil) {
         self.init(withOptions: options)
         self.customCallingSdkWrapper = callingSDKWrapperProtocol
     }
 
-    convenience init(withOptions options: CallCompositeOptions? = nil,
-                     customSDKFactory: CustomSDKFactory) {
+    public convenience init(withOptions options: CallCompositeOptions? = nil,
+                            customSDKFactory: CustomSDKFactory) {
         self.init(withOptions: options)
         self.customSDKFactory = customSDKFactory
     }
