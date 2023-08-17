@@ -5,7 +5,7 @@
 
 public class CustomSDKWrapper: CallingSDKWrapper {
     override
-    init(logger: Logger,
+    public init(logger: Logger,
          callingEventsHandler: CallingSDKEventsHandling,
          callConfiguration: CallConfiguration) {
         super.init(logger: logger, callingEventsHandler: callingEventsHandler, callConfiguration: callConfiguration)
