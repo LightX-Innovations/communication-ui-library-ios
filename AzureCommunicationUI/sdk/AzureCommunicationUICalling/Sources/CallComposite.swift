@@ -9,6 +9,12 @@ import UIKit
 import SwiftUI
 import FluentUI
 
+public protocol CustomSDKFactory {
+    func makeCallingSDKWrapper(logger: Logger,
+                               callingEventsHandler: CallingSDKEventsHandling,
+                               callConfiguration: CallConfiguration) -> CallingSDKWrapperProtocol
+}
+
 /// The main class representing the entry point for the Call Composite.
 public class CallComposite {
 
@@ -48,6 +54,7 @@ public class CallComposite {
     private var remoteParticipantsManager: RemoteParticipantsManagerProtocol?
     private var avatarViewManager: AvatarViewManagerProtocol?
     private var customCallingSdkWrapper: CallingSDKWrapperProtocol?
+    private var customSDKFactory: CustomSDKFactory?
     private var debugInfoManager: DebugInfoManagerProtocol?
     private var callHistoryService: CallHistoryService?
     private lazy var callHistoryRepository = CallHistoryRepository(logger: logger,
@@ -87,6 +94,12 @@ public class CallComposite {
         self.customCallingSdkWrapper = callingSDKWrapperProtocol
     }
 
+    convenience init(withOptions options: CallCompositeOptions? = nil,
+                     customSDKFactory: CustomSDKFactory) {
+        self.init(withOptions: options)
+        self.customSDKFactory = customSDKFactory
+    }
+
     deinit {
         logger.debug("Call Composite deallocated")
     }
@@ -98,7 +111,8 @@ public class CallComposite {
             for: callConfiguration,
             localOptions: localOptions,
             callCompositeEventsHandler: events,
-            withCallingSDKWrapper: self.customCallingSdkWrapper
+            withCallingSDKWrapper: self.customCallingSdkWrapper,
+            withCustomSDKFactory: self.customSDKFactory
         )
 
         setupColorTheming()
@@ -162,13 +176,19 @@ public class CallComposite {
         for callConfiguration: CallConfiguration,
         localOptions: LocalOptions?,
         callCompositeEventsHandler: CallComposite.Events,
-        withCallingSDKWrapper wrapper: CallingSDKWrapperProtocol? = nil
+        withCallingSDKWrapper wrapper: CallingSDKWrapperProtocol? = nil,
+        withCustomSDKFactory factory: CustomSDKFactory? = nil
     ) -> CompositeViewFactoryProtocol {
-        let callingSdkWrapper = wrapper ?? CallingSDKWrapper(
-            logger: logger,
-            callingEventsHandler: CallingSDKEventsHandler(logger: logger),
-            callConfiguration: callConfiguration
-        )
+        let callingSdkWrapper = wrapper ??
+                                factory?.makeCallingSDKWrapper(
+                                    logger: logger,
+                                    callingEventsHandler: CallingSDKEventsHandler(logger: logger),
+                                    callConfiguration: callConfiguration) ??
+                                CallingSDKWrapper(
+                                    logger: logger,
+                                    callingEventsHandler: CallingSDKEventsHandler(logger: logger),
+                                    callConfiguration: callConfiguration
+                                )
 
         let store = Store.constructStore(
             logger: logger,
