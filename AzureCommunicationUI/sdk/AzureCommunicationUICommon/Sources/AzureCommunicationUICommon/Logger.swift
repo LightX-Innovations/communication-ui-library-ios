@@ -6,7 +6,7 @@
 import Foundation
 import os
 
-protocol Logger {
+public protocol Logger {
     func debug(_: @autoclosure @escaping () -> String?)
     func info(_: @autoclosure @escaping () -> String?)
     func warning(_: @autoclosure @escaping () -> String?)
