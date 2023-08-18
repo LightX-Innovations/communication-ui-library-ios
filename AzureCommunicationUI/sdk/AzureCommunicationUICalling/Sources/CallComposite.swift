@@ -292,8 +292,8 @@ public class CallComposite {
                 // go to throw the error in the delegate handler
                 return
             }
-            topViewController.show(viewController, sender: nil)
-//            topViewController.present(viewController, animated: true, completion: nil)
+            viewController.preferredContentSize = CGSize(width: 200, height: 400)
+            topViewController.present(viewController, animated: true, completion: nil)
         }
     }
 
