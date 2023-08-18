@@ -275,7 +275,7 @@ public class CallComposite {
         let containerUIHostingController = ContainerUIHostingController(rootView: rootView,
                                                                         callComposite: self,
                                                                         isRightToLeft: isRightToLeft)
-        containerUIHostingController.modalPresentationStyle = .overCurrentContext
+        containerUIHostingController.modalPresentationStyle = .currentContext
         router.setDismissComposite { [weak containerUIHostingController, weak self] in
             containerUIHostingController?.dismissSelf()
             self?.exitManager?.onDismissed()
@@ -292,8 +292,8 @@ public class CallComposite {
                 // go to throw the error in the delegate handler
                 return
             }
-            topViewController.addChild(viewController)
-            // topViewController.present(viewController, animated: true, completion: nil)
+            topViewController.show(viewController, sender: nil)
+//            topViewController.present(viewController, animated: true, completion: nil)
         }
     }
 
