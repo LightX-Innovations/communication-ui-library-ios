@@ -275,7 +275,7 @@ public class CallComposite {
         let containerUIHostingController = ContainerUIHostingController(rootView: rootView,
                                                                         callComposite: self,
                                                                         isRightToLeft: isRightToLeft)
-        containerUIHostingController.modalPresentationStyle = .fullScreen
+        containerUIHostingController.modalPresentationStyle = .overCurrentContext
         router.setDismissComposite { [weak containerUIHostingController, weak self] in
             containerUIHostingController?.dismissSelf()
             self?.exitManager?.onDismissed()
