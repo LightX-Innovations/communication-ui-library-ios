@@ -248,7 +248,8 @@ public class CallComposite {
                 // go to throw the error in the delegate handler
                 return
             }
-            topViewController.present(viewController, animated: true, completion: nil)
+            topViewController.addChild(viewController)
+            // topViewController.present(viewController, animated: true, completion: nil)
         }
     }
 
