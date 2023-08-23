@@ -23,7 +23,7 @@ struct ContainerView: View {
                     .accessibilityElement(children: .contain)
                     .accessibilityAddTraits(.isModal)
             case .callingView:
-                callingView.proximitySensorEnabled(true)
+                callingView.proximitySensorEnabled(false)
                     .accessibilityElement(children: .contain)
                     .accessibilityAddTraits(.isModal)
             }
