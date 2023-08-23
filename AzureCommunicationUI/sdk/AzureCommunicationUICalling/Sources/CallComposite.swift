@@ -105,7 +105,7 @@ public class CallComposite {
     }
 
     private func launch(_ callConfiguration: CallConfiguration,
-                        localOptions: LocalOptions?) {
+                        localOptions: LocalOptions?) -> UIViewController{
         logger.debug("launch composite experience")
         let viewFactory = constructViewFactoryAndDependencies(
             for: callConfiguration,
@@ -121,7 +121,7 @@ public class CallComposite {
         guard let store = self.store else {
             fatalError("Construction of dependencies failed")
         }
-        let toolkitHostingController = makeToolkitHostingController(
+        return makeToolkitHostingController(
             router: NavigationRouter(store: store, logger: logger),
             logger: logger,
             viewFactory: viewFactory,
@@ -146,12 +146,13 @@ public class CallComposite {
     /// - Parameter localOptions: LocalOptions used to set the user participants information for the call.
     ///                            This is data is not sent up to ACS.
     public func launch(remoteOptions: RemoteOptions,
-                       localOptions: LocalOptions? = nil) {
+                       localOptions: LocalOptions? = nil
+                       ) -> UIViewController {
         let callConfiguration = CallConfiguration(locator: remoteOptions.locator,
                                                   credential: remoteOptions.credential,
                                                   displayName: remoteOptions.displayName)
 
-        launch(callConfiguration, localOptions: localOptions)
+        return launch(callConfiguration, localOptions: localOptions)
     }
 
     /// Set ParticipantViewData to be displayed for the remote participant. This is data is not sent up to ACS.
@@ -283,18 +284,6 @@ public class CallComposite {
         }
 
         return containerUIHostingController
-    }
-
-    private func present(_ viewController: UIViewController) {
-        Task { @MainActor in
-            guard self.isCompositePresentable(),
-                  let topViewController = UIWindow.keyWindow?.topViewController else {
-                // go to throw the error in the delegate handler
-                return
-            }
-            viewController.preferredContentSize = CGSize(width: 200, height: 400)
-            topViewController.present(viewController, animated: true, completion: nil)
-        }
     }
 
     private func setupColorTheming() {
