@@ -84,7 +84,7 @@ public class CallingSDKWrapper: NSObject, CallingSDKWrapperProtocol {
             let meetingLink = callConfiguration.meetingLink {
             joinLocator = TeamsMeetingLinkLocator(meetingLink: meetingLink)
         } else if callConfiguration.compositeCallType == .roomCall,
-            let roomId = callConfiguration.roomCall {
+            let roomId = callConfiguration.roomId {
             joinLocator = RoomCallLocator(roomId: roomId)
         } else {
             logger.error("Invalid groupID / meeting link")
