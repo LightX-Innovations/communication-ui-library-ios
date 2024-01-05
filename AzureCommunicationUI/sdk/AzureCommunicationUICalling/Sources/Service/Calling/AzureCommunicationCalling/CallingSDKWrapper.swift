@@ -76,9 +76,6 @@ public class CallingSDKWrapper: NSObject, CallingSDKWrapperProtocol {
         joinCallOptions.outgoingAudioOptions?.muted = !isAudioPreferred
         joinCallOptions.incomingVideoOptions = incomingVideoOptions
 
-        logger.warning("creating room call locator")
-        let joinLocator = RoomCallLocator(roomId: callConfiguration.meetingLink!)
-        
         var joinLocator: JoinMeetingLocator
         if callConfiguration.compositeCallType == .groupCall,
             let groupId = callConfiguration.groupId {
