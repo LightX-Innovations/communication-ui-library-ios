@@ -9,6 +9,7 @@ import AzureCommunicationCommon
 public struct CallConfiguration {
     let groupId: UUID?
     let meetingLink: String?
+    let roomId: String?
     let compositeCallType: CompositeCallType
     let credential: CommunicationTokenCredential
     let displayName: String?
@@ -26,6 +27,11 @@ public struct CallConfiguration {
             self.groupId = nil
             self.meetingLink = meetingLink
             self.compositeCallType = .teamsMeeting
+        case let .roomCall(roomId: roomId):
+            self.groupId = nil
+            self.meetingLink = nil
+            self.roomId = roomId
+            self.compositeCallType = .roomCall
         }
         self.credential = credential
         self.displayName = displayName
@@ -36,4 +42,5 @@ public struct CallConfiguration {
 enum CompositeCallType {
     case groupCall
     case teamsMeeting
+    case roomCall
 }
