@@ -22,10 +22,12 @@ public struct CallConfiguration {
         case let .groupCall(groupId: groupId):
             self.groupId = groupId
             self.meetingLink = nil
+            self.roomId = nil
             self.compositeCallType = .groupCall
         case let .teamsMeeting(teamsLink: meetingLink):
             self.groupId = nil
             self.meetingLink = meetingLink
+            self.roomId = nil
             self.compositeCallType = .teamsMeeting
         case let .roomCall(roomId: roomId):
             self.groupId = nil
