@@ -45,9 +45,9 @@ public enum CallDiagnosticQuality: Int {
     case bad
 }
 
-typealias NetworkQualityDiagnosticModel =
+public typealias NetworkQualityDiagnosticModel =
     CallDiagnosticModel<NetworkQualityCallDiagnostic, CallDiagnosticQuality>
 
-typealias NetworkDiagnosticModel = CallDiagnosticModel<NetworkCallDiagnostic, Bool>
+public typealias NetworkDiagnosticModel = CallDiagnosticModel<NetworkCallDiagnostic, Bool>
 
-typealias MediaDiagnosticModel = CallDiagnosticModel<MediaCallDiagnostic, Bool>
+public typealias MediaDiagnosticModel = CallDiagnosticModel<MediaCallDiagnostic, Bool>
