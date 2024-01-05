@@ -128,8 +128,6 @@ public class CallComposite {
             isRightToLeft: localizationProvider.isRightToLeft
         )
 
-        present(toolkitHostingController)
-
         if store.state.permissionState.audioPermission == .notAsked {
             store.dispatch(action: .permissionAction(.audioPermissionRequested))
         }
@@ -277,7 +275,7 @@ public class CallComposite {
         let containerUIHostingController = ContainerUIHostingController(rootView: rootView,
                                                                         callComposite: self,
                                                                         isRightToLeft: isRightToLeft)
-        containerUIHostingController.modalPresentationStyle = .fullScreen
+        containerUIHostingController.modalPresentationStyle = .currentContext
         router.setDismissComposite { [weak containerUIHostingController, weak self] in
             containerUIHostingController?.dismissSelf()
             self?.exitManager?.onDismissed()
@@ -285,17 +283,6 @@ public class CallComposite {
         }
 
         return containerUIHostingController
-    }
-
-    private func present(_ viewController: UIViewController) {
-        Task { @MainActor in
-            guard self.isCompositePresentable(),
-                  let topViewController = UIWindow.keyWindow?.topViewController else {
-                // go to throw the error in the delegate handler
-                return
-            }
-            topViewController.present(viewController, animated: true, completion: nil)
-        }
     }
 
     private func setupColorTheming() {
