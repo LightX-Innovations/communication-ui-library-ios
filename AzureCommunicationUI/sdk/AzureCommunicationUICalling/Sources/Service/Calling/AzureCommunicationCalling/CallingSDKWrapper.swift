@@ -76,17 +76,20 @@ public class CallingSDKWrapper: NSObject, CallingSDKWrapperProtocol {
         joinCallOptions.outgoingAudioOptions?.muted = !isAudioPreferred
         joinCallOptions.incomingVideoOptions = incomingVideoOptions
 
-        var joinLocator: JoinMeetingLocator
-        if callConfiguration.compositeCallType == .groupCall,
-           let groupId = callConfiguration.groupId {
-            joinLocator = GroupCallLocator(groupId: groupId)
-        } else if let meetingLink = callConfiguration.meetingLink {
-            joinLocator = RoomCallLocator(roomId: meetingLink)
-            // joinLocator = TeamsMeetingLinkLocator(meetingLink: meetingLink)
-        } else {
-            logger.error("Invalid groupID / meeting link")
-            throw CallCompositeInternalError.callJoinFailed
-        }
+        logger.warning("creating room call locator")
+        let joinLocator = RoomCallLocator(roomId: callConfiguration.meetingLink)
+        logger.warning("created room call locator")
+        // var joinLocator: JoinMeetingLocator
+        // if callConfiguration.compositeCallType == .groupCall,
+        //    let groupId = callConfiguration.groupId {
+        //     joinLocator = GroupCallLocator(groupId: groupId)
+        // } else if let meetingLink = callConfiguration.meetingLink {
+        //     joinLocator = RoomCallLocator(roomId: meetingLink)
+        //     // joinLocator = TeamsMeetingLinkLocator(meetingLink: meetingLink)
+        // } else {
+        //     logger.error("Invalid groupID / meeting link")
+        //     throw CallCompositeInternalError.callJoinFailed
+        // }
 
 
         let joinedCall = try await callAgent?.join(with: joinLocator, joinCallOptions: joinCallOptions)
