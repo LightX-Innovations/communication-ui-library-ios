@@ -277,7 +277,7 @@ public class CallComposite {
         let containerUIHostingController = ContainerUIHostingController(rootView: rootView,
                                                                         callComposite: self,
                                                                         isRightToLeft: isRightToLeft)
-        containerUIHostingController.modalPresentationStyle = .currentContext
+        containerUIHostingController.modalPresentationStyle = .fullScreen
         router.setDismissComposite { [weak containerUIHostingController, weak self] in
             containerUIHostingController?.dismissSelf()
             self?.exitManager?.onDismissed()
@@ -297,7 +297,7 @@ public class CallComposite {
             topViewController.present(viewController, animated: true, completion: nil)
         }
     }
-    
+
     private func setupColorTheming() {
         let colorProvider = ColorThemeProvider(themeOptions: themeOptions)
         StyleProvider.color = colorProvider
