@@ -77,7 +77,7 @@ public class CallingSDKWrapper: NSObject, CallingSDKWrapperProtocol {
         joinCallOptions.incomingVideoOptions = incomingVideoOptions
 
         logger.warning("creating room call locator")
-        let joinLocator = RoomCallLocator(roomId: callConfiguration.meetingLink)
+        let joinLocator = RoomCallLocator(roomId: callConfiguration.meetingLink!)
         logger.warning("created room call locator")
         // var joinLocator: JoinMeetingLocator
         // if callConfiguration.compositeCallType == .groupCall,
