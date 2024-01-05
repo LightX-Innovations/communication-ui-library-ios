@@ -3,18 +3,18 @@
 //  Licensed under the MIT License.
 //
 
-enum NetworkCallDiagnostic: String, CaseIterable, Equatable {
+public enum NetworkCallDiagnostic: String, CaseIterable, Equatable {
     case networkUnavailable
     case networkRelaysUnreachable
 }
 
-enum NetworkQualityCallDiagnostic: String, CaseIterable, Equatable {
+public enum NetworkQualityCallDiagnostic: String, CaseIterable, Equatable {
     case networkReconnectionQuality
     case networkReceiveQuality
     case networkSendQuality
 }
 
-enum MediaCallDiagnostic: String, CaseIterable, Equatable {
+public enum MediaCallDiagnostic: String, CaseIterable, Equatable {
     case speakerNotFunctioning
     case speakerBusy
     case speakerMuted
@@ -31,14 +31,14 @@ enum MediaCallDiagnostic: String, CaseIterable, Equatable {
     case cameraPermissionDenied
 }
 
-struct CallDiagnosticModel<DiagnosticKind, Value>: Equatable
+public struct CallDiagnosticModel<DiagnosticKind, Value>: Equatable
   where DiagnosticKind: Equatable, Value: Equatable {
 
     var diagnostic: DiagnosticKind
     var value: Value
 }
 
-enum CallDiagnosticQuality: Int {
+public enum CallDiagnosticQuality: Int {
     case unknown
     case good
     case poor
