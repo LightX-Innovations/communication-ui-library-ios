@@ -121,13 +121,25 @@ public class CallComposite {
         guard let store = self.store else {
             fatalError("Construction of dependencies failed")
         }
-        return makeToolkitHostingController(
+        let toolkitHostingController = makeToolkitHostingController(
             router: NavigationRouter(store: store, logger: logger),
             logger: logger,
             viewFactory: viewFactory,
             isRightToLeft: localizationProvider.isRightToLeft
         )
 
+        present(toolkitHostingController)
+
+        if store.state.permissionState.audioPermission == .notAsked {
+            store.dispatch(action: .permissionAction(.audioPermissionRequested))
+        }
+        if store.state.defaultUserState.audioState == .on {
+            store.dispatch(action: .localUserAction(.microphonePreviewOn))
+        }
+
+        store.dispatch(action: .callingAction(.setupCall))
+
+        return toolkitHostingController
     }
 
     /// Start Call Composite experience with joining a Teams meeting.
@@ -275,6 +287,17 @@ public class CallComposite {
         return containerUIHostingController
     }
 
+    private func present(_ viewController: UIViewController) {
+        Task { @MainActor in
+            guard self.isCompositePresentable(),
+                  let topViewController = UIWindow.keyWindow?.topViewController else {
+                // go to throw the error in the delegate handler
+                return
+            }
+            topViewController.present(viewController, animated: true, completion: nil)
+        }
+    }
+    
     private func setupColorTheming() {
         let colorProvider = ColorThemeProvider(themeOptions: themeOptions)
         StyleProvider.color = colorProvider
