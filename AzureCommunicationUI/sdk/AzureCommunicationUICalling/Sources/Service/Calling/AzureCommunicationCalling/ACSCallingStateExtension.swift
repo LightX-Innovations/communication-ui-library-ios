@@ -5,7 +5,7 @@
 
 import AzureCommunicationCalling
 
-public extension AzureCommunicationCalling.CallState {
+extension AzureCommunicationCalling.CallState {
     func toCallingStatus() -> CallingStatus {
         switch self {
         case .none:
@@ -34,7 +34,7 @@ public extension AzureCommunicationCalling.CallState {
     }
 }
 
-public extension CallingStatus {
+extension CallingStatus {
     func toCallCompositeCallState() -> CallState {
         switch self {
         case .none:

@@ -70,7 +70,7 @@ enum CallCompositeInternalError: Error, Equatable {
     }
 }
 
-public extension CallCompositeInternalError {
+extension CallCompositeInternalError {
     static func == (lhs: CallCompositeInternalError, rhs: CallCompositeInternalError) -> Bool {
         switch(lhs, rhs) {
         case (.deviceManagerFailed, .deviceManagerFailed),
