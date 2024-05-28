@@ -140,6 +140,10 @@ public class CallComposite {
         return toolkitHostingController
     }
 
+    public func getStore() -> Store<AppState, Action>? {
+        return store
+    }
+
     /// Start Call Composite experience with joining a Teams meeting.
     /// - Parameter remoteOptions: RemoteOptions used to send to ACS to locate the call.
     /// - Parameter localOptions: LocalOptions used to set the user participants information for the call.
@@ -181,7 +185,7 @@ public class CallComposite {
     ) -> CompositeViewFactoryProtocol {
         let callingSdkWrapper = wrapper ??
                                 factory?.makeCallingSDKWrapper(
-                                    logger: logger,
+                logger: logger,
                                     callingEventsHandler: CallingSDKEventsHandler(logger: logger),
                                     callConfiguration: callConfiguration) ??
                                 CallingSDKWrapper(
