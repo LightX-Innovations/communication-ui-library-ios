@@ -1,0 +1,59 @@
+name: Create Release and Tag
+
+on:
+  push:
+    branches:
+      - lightx
+
+jobs:
+  create_release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Git
+        run: |
+          git config --global user.name 'github-actions'
+          git config --global user.email 'github-actions@github.com'
+
+      - name: Get the latest tag
+        id: get_latest_tag
+        run: |
+          latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
+          echo "latest_tag=$latest_tag" >> $GITHUB_ENV
+
+      - name: Increment the tag version
+        id: increment_tag
+        run: |
+          if [ -z "${{ env.latest_tag }}" ]; then
+            new_tag="1.0.0"
+          else
+            IFS='.' read -r -a tag_parts <<< "${{ env.latest_tag }}"
+            major=${tag_parts[0]}
+            minor=${tag_parts[1]}
+            patch=${tag_parts[2]}
+            patch=$((patch + 1))
+            new_tag="$major.$minor.$patch"
+          fi
+          echo "new_tag=$new_tag" >> $GITHUB_ENV
+
+      - name: Create new tag and push
+        run: |
+          git tag -a "$new_tag" -m "Release $new_tag"
+          git push origin "$new_tag"
+        env:
+          new_tag: ${{ env.new_tag }}
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.new_tag }}
+          release_name: "Release ${{ env.new_tag }}"
+          body: "Release created on ${{ env.new_tag }}"
+          draft: false
+          prerelease: false
