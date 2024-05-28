@@ -1,4 +1,4 @@
-name: Create Release and Tag
+name: Create Release and Tag on Push
 
 permissions:
   contents: write
