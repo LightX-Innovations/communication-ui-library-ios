@@ -12,7 +12,7 @@ public struct LocalUserState {
         case paused
         case pending
 
-        static func == (lhs: LocalUserState.CameraOperationalStatus,
+        public static func == (lhs: LocalUserState.CameraOperationalStatus,
                         rhs: LocalUserState.CameraOperationalStatus) -> Bool {
             switch (lhs, rhs) {
             case (.on, .on),
@@ -31,7 +31,7 @@ public struct LocalUserState {
         case back
         case switching
 
-        static func == (lhs: LocalUserState.CameraDeviceSelectionStatus,
+        public static func == (lhs: LocalUserState.CameraDeviceSelectionStatus,
                         rhs: LocalUserState.CameraDeviceSelectionStatus) -> Bool {
             switch (lhs, rhs) {
             case (.front, .front),
@@ -48,7 +48,7 @@ public struct LocalUserState {
         case local
         case remote
 
-        static func == (lhs: LocalUserState.CameraTransmissionStatus,
+        public static func == (lhs: LocalUserState.CameraTransmissionStatus,
                         rhs: LocalUserState.CameraTransmissionStatus) -> Bool {
             switch (lhs, rhs) {
             case (.local, .local),
@@ -65,7 +65,7 @@ public struct LocalUserState {
         case off
         case pending
 
-        static func == (lhs: LocalUserState.AudioOperationalStatus,
+        public static func == (lhs: LocalUserState.AudioOperationalStatus,
                         rhs: LocalUserState.AudioOperationalStatus) -> Bool {
             switch (lhs, rhs) {
             case (.on, .on),
@@ -88,7 +88,7 @@ public struct LocalUserState {
         case headphonesSelected
         case headphonesRequested
 
-        static func == (lhs: LocalUserState.AudioDeviceSelectionStatus,
+        public static func == (lhs: LocalUserState.AudioDeviceSelectionStatus,
                         rhs: LocalUserState.AudioDeviceSelectionStatus) -> Bool {
             switch (lhs, rhs) {
             case (.speakerSelected, .speakerSelected),
@@ -105,7 +105,7 @@ public struct LocalUserState {
             }
         }
 
-        static func isSelected(for audioDeviceStatus: LocalUserState.AudioDeviceSelectionStatus) -> Bool {
+        public static func isSelected(for audioDeviceStatus: LocalUserState.AudioDeviceSelectionStatus) -> Bool {
             switch audioDeviceStatus {
             case .speakerSelected, .receiverSelected, .bluetoothSelected, .headphonesSelected:
                 return true
