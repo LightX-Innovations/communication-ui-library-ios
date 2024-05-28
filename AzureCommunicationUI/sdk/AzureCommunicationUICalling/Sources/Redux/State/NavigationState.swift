@@ -21,7 +21,7 @@ public struct NavigationState: Equatable {
         self.supportFormVisible = supportFormVisible
     }
 
-    static func == (lhs: NavigationState, rhs: NavigationState) -> Bool {
+    public static func == (lhs: NavigationState, rhs: NavigationState) -> Bool {
         return lhs.status == rhs.status
     }
 }

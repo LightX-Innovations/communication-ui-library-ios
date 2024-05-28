@@ -218,9 +218,14 @@ public class CallComposite {
         self.viewController?.dismissSelf()
 
         let viewController = makeToolkitHostingController(
-            router: NavigationRouter(store: store, logger: logger), viewFactory: viewFactory)
+            router: NavigationRouter(store: store, logger: logger),
+            logger: logger,
+            viewFactory: viewFactory,
+            isRightToLeft: localizationProvider.isRightToLeft
+        )
+
         self.viewController = viewController
-        present(viewController)
+        // present(viewController)
 
         self.pipManager?.reset()
     }
