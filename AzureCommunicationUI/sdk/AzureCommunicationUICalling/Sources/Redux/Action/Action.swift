@@ -8,7 +8,7 @@ import Foundation
 ///
 /// Action for the entire library. All actions are defined here as a hierarchy of enum types
 /// 
-enum Action: Equatable {
+public enum Action: Equatable {
     case audioSessionAction(AudioSessionAction)
     case callingAction(CallingAction)
     case errorAction(ErrorAction)

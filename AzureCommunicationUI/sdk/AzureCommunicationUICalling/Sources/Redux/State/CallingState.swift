@@ -47,7 +47,7 @@ public struct CallingState: Equatable {
         self.callStartDate = callStartDate
     }
 
-    static func == (lhs: CallingState, rhs: CallingState) -> Bool {
+    public static func == (lhs: CallingState, rhs: CallingState) -> Bool {
         return (lhs.status == rhs.status
             && lhs.isRecordingActive == rhs.isRecordingActive
             && lhs.isTranscriptionActive == rhs.isTranscriptionActive)

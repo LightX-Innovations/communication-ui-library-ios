@@ -17,7 +17,7 @@ public enum PermissionAction: Equatable {
     case cameraPermissionDenied
     case cameraPermissionNotAsked
 
-    static func generateAction(permission: AppPermission, state: AppPermission.Status) -> PermissionAction {
+    public static func generateAction(permission: AppPermission, state: AppPermission.Status) -> PermissionAction {
         switch permission {
         case .audioPermission:
             switch state {

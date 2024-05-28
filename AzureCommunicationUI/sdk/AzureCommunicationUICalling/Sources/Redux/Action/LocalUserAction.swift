@@ -41,7 +41,7 @@ public enum LocalUserAction: Equatable {
 
     case participantRoleChanged(participantRole: ParticipantRole)
 
-    static func == (lhs: LocalUserAction, rhs: LocalUserAction) -> Bool {
+    public static func == (lhs: LocalUserAction, rhs: LocalUserAction) -> Bool {
 
         switch (lhs, rhs) {
         case let (.cameraOnFailed(lErr), .cameraOnFailed(rErr)),

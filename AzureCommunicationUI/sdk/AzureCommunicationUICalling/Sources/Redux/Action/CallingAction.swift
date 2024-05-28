@@ -23,8 +23,8 @@ public enum CallingAction: Equatable {
     case requestFailed
 }
 
-enum ErrorAction: Equatable {
-    static func == (lhs: ErrorAction, rhs: ErrorAction) -> Bool {
+public enum ErrorAction: Equatable {
+    public static func == (lhs: ErrorAction, rhs: ErrorAction) -> Bool {
         switch (lhs, rhs) {
         case let (.fatalErrorUpdated(internalError: lErr, error: _),
                   .fatalErrorUpdated(internalError: rErr, error: _)):
