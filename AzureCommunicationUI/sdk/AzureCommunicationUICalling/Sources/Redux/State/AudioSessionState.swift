@@ -5,12 +5,12 @@
 
 import Foundation
 
-enum AudioSessionStatus {
+public enum AudioSessionStatus {
     case active
     case interrupted
 }
 
-struct AudioSessionState {
+public struct AudioSessionState {
 
     let status: AudioSessionStatus
 

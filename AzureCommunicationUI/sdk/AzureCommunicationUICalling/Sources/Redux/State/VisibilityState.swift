@@ -5,7 +5,7 @@
 
 import Foundation
 
-enum VisibilityStatus {
+public enum VisibilityStatus {
     case visible
     case hideRequested
     case hidden
@@ -28,7 +28,7 @@ enum VisibilityStatus {
     }
 }
 
-struct VisibilityState {
+public struct VisibilityState {
 
     let currentStatus: VisibilityStatus
 

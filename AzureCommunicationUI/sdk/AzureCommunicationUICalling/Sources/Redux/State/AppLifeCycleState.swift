@@ -5,7 +5,7 @@
 
 import Foundation
 
-enum AppStatus {
+public enum AppStatus {
     case foreground
     case background
     case willTerminate
@@ -22,7 +22,7 @@ enum AppStatus {
     }
 }
 
-struct LifeCycleState {
+public struct LifeCycleState {
 
     let currentStatus: AppStatus
 

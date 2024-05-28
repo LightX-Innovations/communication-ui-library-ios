@@ -3,7 +3,7 @@
 //  Licensed under the MIT License.
 //
 
-enum DiagnosticsAction: Equatable {
+public enum DiagnosticsAction: Equatable {
     case networkQuality(diagnostic: NetworkQualityDiagnosticModel)
     case network(diagnostic: NetworkDiagnosticModel)
     case media(diagnostic: MediaDiagnosticModel)

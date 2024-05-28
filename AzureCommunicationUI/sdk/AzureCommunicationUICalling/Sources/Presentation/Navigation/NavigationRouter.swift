@@ -6,7 +6,7 @@
 import Combine
 import SwiftUI
 
-enum ViewType {
+public enum ViewType {
     case setupView
     case callingView
 }

@@ -41,7 +41,7 @@ public struct CallConfiguration {
     }
 }
 
-enum CompositeCallType {
+public enum CompositeCallType {
     case groupCall
     case teamsMeeting
     case roomCall

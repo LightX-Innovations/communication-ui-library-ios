@@ -5,11 +5,11 @@
 
 import Foundation
 
-enum AppPermission {
+public enum AppPermission {
     case audioPermission
     case cameraPermission
 
-    enum Status: String, Equatable {
+    public enum Status: String, Equatable {
         case unknown
         case notAsked
         case requesting
@@ -18,7 +18,7 @@ enum AppPermission {
     }
 }
 
-struct PermissionState {
+public struct PermissionState {
 
     let audioPermission: AppPermission.Status
     let cameraPermission: AppPermission.Status

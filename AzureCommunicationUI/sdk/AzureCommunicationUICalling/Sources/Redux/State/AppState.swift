@@ -5,7 +5,7 @@
 
 import Foundation
 
-struct AppState {
+public struct AppState {
     let callingState: CallingState
     let permissionState: PermissionState
     let localUserState: LocalUserState

@@ -7,7 +7,7 @@ import Foundation
 
 import AzureCommunicationCalling
 
-struct RemoteParticipantsState {
+public struct RemoteParticipantsState {
     let participantInfoList: [ParticipantInfoModel]
     let lastUpdateTimeStamp: Date
     let dominantSpeakers: [String]
@@ -27,12 +27,12 @@ struct RemoteParticipantsState {
     }
 }
 
-struct LobbyError {
+public struct LobbyError {
     let lobbyErrorCode: LobbyErrorCode
     let errorTimeStamp: Date
 }
 
-enum LobbyErrorCode {
+public enum LobbyErrorCode {
     case lobbyDisabledByConfigurations
     case lobbyConversationTypeNotSupported
     case lobbyMeetingRoleNotAllowed

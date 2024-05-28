@@ -9,7 +9,7 @@ import AVFoundation
 let bluetoothAudioPorts: Set<AVAudioSession.Port> = [.bluetoothA2DP, .bluetoothLE, .bluetoothHFP]
 let headphonesAudioPorts: Set<AVAudioSession.Port> = [.headphones, .headsetMic]
 
-enum AudioDeviceType {
+public enum AudioDeviceType {
     case bluetooth
     case headphones
     case receiver

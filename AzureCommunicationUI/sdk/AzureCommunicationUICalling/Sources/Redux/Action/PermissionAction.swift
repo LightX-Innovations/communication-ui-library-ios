@@ -6,7 +6,7 @@
 import Foundation
 import Combine
 
-enum PermissionAction: Equatable {
+public enum PermissionAction: Equatable {
     case audioPermissionRequested
     case audioPermissionGranted
     case audioPermissionDenied

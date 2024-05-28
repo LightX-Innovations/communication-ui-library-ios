@@ -5,7 +5,7 @@
 
 import Foundation
 
-enum RemoteParticipantsAction: Equatable {
+public enum RemoteParticipantsAction: Equatable {
     case dominantSpeakersUpdated(speakers: [String])
     case participantListUpdated(participants: [ParticipantInfoModel])
     case admitAll

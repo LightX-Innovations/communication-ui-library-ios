@@ -5,7 +5,7 @@
 
 import Foundation
 
-enum CallingStatus: Int {
+public enum CallingStatus: Int {
     case none
     case earlyMedia
     case connecting
@@ -18,14 +18,14 @@ enum CallingStatus: Int {
     case remoteHold
 }
 
-enum OperationStatus: Int {
+public enum OperationStatus: Int {
     case none
     case skipSetupRequested
     case callEndRequested
     case callEnded
 }
 
-struct CallingState: Equatable {
+public struct CallingState: Equatable {
     let status: CallingStatus
     let operationStatus: OperationStatus
     let callId: String?

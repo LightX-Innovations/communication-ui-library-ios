@@ -5,13 +5,13 @@
 
 import Foundation
 
-enum NavigationStatus {
+public enum NavigationStatus {
     case setup
     case inCall
     case exit
 }
 
-struct NavigationState: Equatable {
+public struct NavigationState: Equatable {
 
     let status: NavigationStatus
     let supportFormVisible: Bool

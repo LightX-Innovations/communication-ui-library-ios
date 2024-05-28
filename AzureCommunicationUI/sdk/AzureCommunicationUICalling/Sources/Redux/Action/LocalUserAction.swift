@@ -6,7 +6,7 @@
 import Foundation
 import Combine
 
-enum LocalUserAction: Equatable {
+public enum LocalUserAction: Equatable {
 
     case cameraPreviewOnTriggered
     case cameraOnTriggered

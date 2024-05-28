@@ -5,8 +5,8 @@
 
 import Foundation
 
-struct LocalUserState {
-    enum CameraOperationalStatus: Equatable {
+public struct LocalUserState {
+    public enum CameraOperationalStatus: Equatable {
         case on
         case off
         case paused
@@ -26,7 +26,7 @@ struct LocalUserState {
         }
     }
 
-    enum CameraDeviceSelectionStatus: Equatable {
+    public enum CameraDeviceSelectionStatus: Equatable {
         case front
         case back
         case switching
@@ -44,7 +44,7 @@ struct LocalUserState {
         }
     }
 
-    enum CameraTransmissionStatus: Equatable {
+    public enum CameraTransmissionStatus: Equatable {
         case local
         case remote
 
@@ -60,7 +60,7 @@ struct LocalUserState {
         }
     }
 
-    enum AudioOperationalStatus: Equatable {
+    public enum AudioOperationalStatus: Equatable {
         case on
         case off
         case pending
@@ -78,7 +78,7 @@ struct LocalUserState {
         }
     }
 
-    enum AudioDeviceSelectionStatus: Equatable {
+    public enum AudioDeviceSelectionStatus: Equatable {
         case speakerSelected
         case speakerRequested
         case receiverSelected
@@ -115,14 +115,14 @@ struct LocalUserState {
         }
     }
 
-    struct CameraState {
+    public struct CameraState {
         let operation: CameraOperationalStatus
         let device: CameraDeviceSelectionStatus
         let transmission: CameraTransmissionStatus
         var error: Error?
     }
 
-    struct AudioState {
+    public struct AudioState {
         let operation: AudioOperationalStatus
         let device: AudioDeviceSelectionStatus
         var error: Error?

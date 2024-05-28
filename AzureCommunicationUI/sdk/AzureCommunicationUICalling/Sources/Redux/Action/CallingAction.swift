@@ -5,7 +5,7 @@
 
 import Foundation
 
-enum CallingAction: Equatable {
+public enum CallingAction: Equatable {
     case callStartRequested
     case callEndRequested
     case callEnded
