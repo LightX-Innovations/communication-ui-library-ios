@@ -146,10 +146,13 @@ public class CallComposite {
                 self?.receive(state)
             }.store(in: &cancellables)
 
-        let viewController = makeToolkitHostingController(router: NavigationRouter(store: store, logger: logger),
-            viewFactory: viewFactory)
-        self.viewController = viewController
-        present(viewController)
+        let toolkitHostingController = makeToolkitHostingController(
+            router: NavigationRouter(store: store, logger: logger),
+            logger: logger,
+            viewFactory: viewFactory,
+            isRightToLeft: localizationProvider.isRightToLeft
+        )
+        self.viewController = toolkitHostingController
         UIApplication.shared.isIdleTimerDisabled = true
 
         if store.state.permissionState.audioPermission == .notAsked {

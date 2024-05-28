@@ -10,7 +10,7 @@ import Foundation
 
 // swiftlint:disable file_length
 public class CallingSDKWrapper: NSObject, CallingSDKWrapperProtocol {
-    let callingEventsHandler: CallingSDKEventsHandling
+    public let callingEventsHandler: CallingSDKEventsHandling
 
     private let logger: Logger
     private let callConfiguration: CallConfiguration

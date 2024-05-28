@@ -25,7 +25,7 @@ public struct ErrorState: Equatable {
         self.errorCategory = errorCategory
     }
 
-    static func == (lhs: ErrorState, rhs: ErrorState) -> Bool {
+    public static func == (lhs: ErrorState, rhs: ErrorState) -> Bool {
         return (lhs.internalError == rhs.internalError)
     }
 }

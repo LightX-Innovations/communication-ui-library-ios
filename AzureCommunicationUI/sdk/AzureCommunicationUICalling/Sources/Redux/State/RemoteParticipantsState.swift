@@ -39,7 +39,7 @@ public enum LobbyErrorCode {
     case removeParticipantOperationFailure
     case unknownError
 
-    static func convertToLobbyErrorCode(_ error: NSError) -> LobbyErrorCode {
+    public static func convertToLobbyErrorCode(_ error: NSError) -> LobbyErrorCode {
         switch CallingCommunicationErrors(rawValue: error.code) {
         case .lobbyDisabledByConfigurations:
             return .lobbyDisabledByConfigurations
