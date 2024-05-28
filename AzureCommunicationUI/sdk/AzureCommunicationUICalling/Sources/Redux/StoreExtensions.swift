@@ -8,7 +8,7 @@ import Foundation
 
 typealias ActionDispatch = CommonActionDispatch<Action>
 
-public extension Store where State == AppState, Action == AzureCommunicationUICalling.Action {
+extension Store where State == AppState, Action == AzureCommunicationUICalling.Action {
     static func constructStore(
         logger: Logger,
         callingService: CallingServiceProtocol,

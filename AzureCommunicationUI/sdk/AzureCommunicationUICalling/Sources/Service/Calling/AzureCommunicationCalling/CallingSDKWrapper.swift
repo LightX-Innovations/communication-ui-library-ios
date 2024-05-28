@@ -258,14 +258,15 @@ public class CallingSDKWrapper: NSObject, CallingSDKWrapperProtocol {
             throw error
         }
     }
-    func getLogFiles() -> [URL] {
+
+    public func getLogFiles() -> [URL] {
         guard let callClient = callClient else {
             return []
         }
         return callClient.debugInfo.supportFiles
     }
 
-    func admitAllLobbyParticipants() async throws {
+    public func admitAllLobbyParticipants() async throws {
         guard let call = call else {
             return
         }
@@ -279,7 +280,7 @@ public class CallingSDKWrapper: NSObject, CallingSDKWrapperProtocol {
         }
     }
 
-    func admitLobbyParticipant(_ participantId: String) async throws {
+    public func admitLobbyParticipant(_ participantId: String) async throws {
         guard let call = call else {
             return
         }
@@ -295,7 +296,7 @@ public class CallingSDKWrapper: NSObject, CallingSDKWrapperProtocol {
         }
     }
 
-    func declineLobbyParticipant(_ participantId: String) async throws {
+    public func declineLobbyParticipant(_ participantId: String) async throws {
         guard let call = call else {
             return
         }
