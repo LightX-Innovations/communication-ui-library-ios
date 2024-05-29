@@ -10,6 +10,7 @@ Pod::Spec.new do |spec|
   spec.swift_version        = '5.8'
 
   spec.platform             = :ios, '15.6'
+  spec.ios.deployment_target = '15.6'
 
   spec.source_files         = 'AzureCommunicationUI/sdk/AzureCommunicationUICalling/Sources/**/*.swift', 'AzureCommunicationUI/sdk/AzureCommunicationUICommon/Sources/AzureCommunicationUICommon/*.swift', 'AzureCommunicationUI/sdk/common/**/Sources/**/*.swift'
   spec.resources            = 'AzureCommunicationUI/sdk/AzureCommunicationUICalling/Sources/**/*.{xcassets,strings}'
