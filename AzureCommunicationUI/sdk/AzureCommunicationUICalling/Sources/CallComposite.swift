@@ -148,9 +148,7 @@ public class CallComposite {
 
         let toolkitHostingController = makeToolkitHostingController(
             router: NavigationRouter(store: store, logger: logger),
-            logger: logger,
-            viewFactory: viewFactory,
-            isRightToLeft: localizationProvider.isRightToLeft
+            viewFactory: viewFactory
         )
         self.viewController = toolkitHostingController
         UIApplication.shared.isIdleTimerDisabled = true
@@ -219,9 +217,7 @@ public class CallComposite {
 
         let viewController = makeToolkitHostingController(
             router: NavigationRouter(store: store, logger: logger),
-            logger: logger,
-            viewFactory: viewFactory,
-            isRightToLeft: localizationProvider.isRightToLeft
+            viewFactory: viewFactory
         )
 
         self.viewController = viewController
