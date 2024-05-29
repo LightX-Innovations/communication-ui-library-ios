@@ -3,13 +3,13 @@
 parameters:
   - name: buildScheme
     type: string
-    default: 'AzureCommunicationUICalling'
+    default: "AzureCommunicationUICalling"
     values:
       - AzureCommunicationUICalling
       - AzureCommunicationUIChat
   - name: workingDirectory
     type: string
-    default: 'AzureCommunicationUI'
+    default: "AzureCommunicationUI"
 
 steps:
   - task: CocoaPods@0
@@ -24,7 +24,7 @@ steps:
         -Xswiftc "-sdk" \
         -Xswiftc "`xcrun --sdk iphonesimulator --show-sdk-path`" \
         -Xswiftc "-target" \
-        -Xswiftc "x86_64-apple-ios14.0-simulator"
+        -Xswiftc "x86_64-apple-ios15.6-simulator"
       xcodebuild test -scheme AzureCommunicationUICommon -sdk "`xcrun --sdk iphonesimulator --show-sdk-path`" -destination "name=iPhone 14"
     workingDirectory: AzureCommunicationUI/sdk/AzureCommunicationUICommon
     displayName: "Build and test AzureCommunicationUICommon"
@@ -38,7 +38,7 @@ steps:
           SLATHER_SOURCE_FILE=ui-chat-slather.yml
           ;;
       esac
-     
+
       SLATHER_FILE=$(system.defaultWorkingDirectory)/${{ parameters.workingDirectory }}/.slather.yml
       cat ../eng/slather/$SLATHER_SOURCE_FILE > $SLATHER_FILE
 
@@ -80,6 +80,6 @@ steps:
 
       slather
       mv slather-report/cobertura.xml $(System.ArtifactsDirectory)/$COBERTURA_TARGET_FILENAME
-    
+
     displayName: "Run slather for ${{ parameters.buildScheme }}"
     workingDirectory: ${{ parameters.workingDirectory }}
