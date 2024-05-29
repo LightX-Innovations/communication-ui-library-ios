@@ -83,7 +83,8 @@ public class CallingSDKWrapper: NSObject, CallingSDKWrapperProtocol {
             joinLocator = GroupCallLocator(groupId: groupId)
         } else if callConfiguration.compositeCallType == .teamsMeeting,
             let meetingLink = callConfiguration.meetingLink {
-            joinLocator = TeamsMeetingLinkLocator(meetingLink: meetingLink.trimmingCharacters(in: .whitespacesAndNewlines))
+            joinLocator = TeamsMeetingLinkLocator(
+                meetingLink: meetingLink.trimmingCharacters(in: .whitespacesAndNewlines))
         } else if callConfiguration.compositeCallType == .roomCall,
             let roomId = callConfiguration.roomId {
             joinLocator = RoomCallLocator(roomId: roomId)
@@ -91,7 +92,6 @@ public class CallingSDKWrapper: NSObject, CallingSDKWrapperProtocol {
             logger.error("Invalid groupID / meeting link")
             throw CallCompositeInternalError.callJoinFailed
         }
-
 
         let joinedCall = try await callAgent?.join(with: joinLocator, joinCallOptions: joinCallOptions)
 

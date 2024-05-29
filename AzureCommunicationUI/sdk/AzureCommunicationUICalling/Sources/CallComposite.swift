@@ -122,7 +122,7 @@ public class CallComposite {
     }
 
     private func launch(_ callConfiguration: CallConfiguration,
-                        localOptions: LocalOptions?) -> UIViewController{
+                        localOptions: LocalOptions?) -> UIViewController {
         logger.debug("launch composite experience")
         let viewFactory = constructViewFactoryAndDependencies(
             for: callConfiguration,

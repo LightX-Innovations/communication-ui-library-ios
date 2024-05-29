@@ -13,7 +13,8 @@ public struct LocalUserState {
         case pending
 
         public static func == (lhs: LocalUserState.CameraOperationalStatus,
-                        rhs: LocalUserState.CameraOperationalStatus) -> Bool {
+                        rhs:LocalUserState.CameraOperationalStatus
+        ) -> Bool {
             switch (lhs, rhs) {
             case (.on, .on),
                  (.off, .off),
