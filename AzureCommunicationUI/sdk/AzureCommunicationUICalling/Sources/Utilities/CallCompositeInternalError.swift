@@ -70,6 +70,7 @@ public enum CallCompositeInternalError: Error, Equatable {
     }
 }
 
+// swiftlint:disable:next extension_access_modifier
 extension CallCompositeInternalError {
     public static func == (lhs: CallCompositeInternalError, rhs: CallCompositeInternalError) -> Bool {
         switch(lhs, rhs) {

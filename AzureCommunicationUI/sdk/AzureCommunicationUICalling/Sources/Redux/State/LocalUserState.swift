@@ -13,7 +13,7 @@ public struct LocalUserState {
         case pending
 
         public static func == (lhs: LocalUserState.CameraOperationalStatus,
-                        rhs:LocalUserState.CameraOperationalStatus
+                               rhs: LocalUserState.CameraOperationalStatus
         ) -> Bool {
             switch (lhs, rhs) {
             case (.on, .on),
@@ -33,7 +33,7 @@ public struct LocalUserState {
         case switching
 
         public static func == (lhs: LocalUserState.CameraDeviceSelectionStatus,
-                        rhs: LocalUserState.CameraDeviceSelectionStatus) -> Bool {
+                               rhs: LocalUserState.CameraDeviceSelectionStatus) -> Bool {
             switch (lhs, rhs) {
             case (.front, .front),
                  (.back, .back),
@@ -50,7 +50,7 @@ public struct LocalUserState {
         case remote
 
         public static func == (lhs: LocalUserState.CameraTransmissionStatus,
-                        rhs: LocalUserState.CameraTransmissionStatus) -> Bool {
+                               rhs: LocalUserState.CameraTransmissionStatus) -> Bool {
             switch (lhs, rhs) {
             case (.local, .local),
                  (.remote, .remote):
@@ -67,7 +67,7 @@ public struct LocalUserState {
         case pending
 
         public static func == (lhs: LocalUserState.AudioOperationalStatus,
-                        rhs: LocalUserState.AudioOperationalStatus) -> Bool {
+                               rhs: LocalUserState.AudioOperationalStatus) -> Bool {
             switch (lhs, rhs) {
             case (.on, .on),
                  (.off, .off),
@@ -90,7 +90,7 @@ public struct LocalUserState {
         case headphonesRequested
 
         public static func == (lhs: LocalUserState.AudioDeviceSelectionStatus,
-                        rhs: LocalUserState.AudioDeviceSelectionStatus) -> Bool {
+                               rhs: LocalUserState.AudioDeviceSelectionStatus) -> Bool {
             switch (lhs, rhs) {
             case (.speakerSelected, .speakerSelected),
                  (.speakerRequested, .speakerRequested),
