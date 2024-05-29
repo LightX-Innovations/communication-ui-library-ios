@@ -4,8 +4,8 @@ from composite import Composite
 
 new_version = ''
 swift_version = ''
-platform_version = ''
-selectedComposite = Composite('')
+platform_version = '15.6'
+selectedComposite = Composite('calling')
 
 # constants
 acs_UI_library_Path = '../'
