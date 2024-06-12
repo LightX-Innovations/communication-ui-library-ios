@@ -5,7 +5,7 @@
 
 import Foundation
 
-public enum VisibilityStatus {
+public enum VisibilityStatus: String, CodingKey {
     case visible
     case hideRequested
     case hidden

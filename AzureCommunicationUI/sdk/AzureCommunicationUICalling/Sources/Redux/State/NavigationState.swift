@@ -5,7 +5,7 @@
 
 import Foundation
 
-public enum NavigationStatus {
+public enum NavigationStatus: String, CodingKey {
     case setup
     case inCall
     case exit

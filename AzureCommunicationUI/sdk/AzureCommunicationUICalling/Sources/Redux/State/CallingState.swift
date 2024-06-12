@@ -5,7 +5,7 @@
 
 import Foundation
 
-public enum CallingStatus: Int {
+public enum CallingStatus: Int, CodingKey {
     case none
     case earlyMedia
     case connecting
@@ -18,7 +18,7 @@ public enum CallingStatus: Int {
     case remoteHold
 }
 
-public enum OperationStatus: Int {
+public enum OperationStatus: Int, CodingKey {
     case none
     case skipSetupRequested
     case callEndRequested

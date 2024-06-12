@@ -5,7 +5,7 @@
 
 import Foundation
 
-public enum AudioSessionStatus {
+public enum AudioSessionStatus: String, CodingKey {
     case active
     case interrupted
 }

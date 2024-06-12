@@ -5,11 +5,11 @@
 
 import Foundation
 
-public enum AppPermission {
+public enum AppPermission: String, CodingKey {
     case audioPermission
     case cameraPermission
 
-    public enum Status: String, Equatable {
+    public enum Status: String, Equatable, CodingKey {
         case unknown
         case notAsked
         case requesting

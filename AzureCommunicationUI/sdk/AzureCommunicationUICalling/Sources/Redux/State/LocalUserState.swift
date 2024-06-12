@@ -6,7 +6,7 @@
 import Foundation
 
 public struct LocalUserState: Encodable {
-    public enum CameraOperationalStatus: Equatable {
+    public enum CameraOperationalStatus: Equatable, String, CodingKey {
         case on
         case off
         case paused
@@ -27,7 +27,7 @@ public struct LocalUserState: Encodable {
         }
     }
 
-    public enum CameraDeviceSelectionStatus: Equatable {
+    public enum CameraDeviceSelectionStatus: Equatable, String, CodingKey {
         case front
         case back
         case switching
@@ -45,7 +45,7 @@ public struct LocalUserState: Encodable {
         }
     }
 
-    public enum CameraTransmissionStatus: Equatable {
+    public enum CameraTransmissionStatus: Equatable, String, CodingKey {
         case local
         case remote
 
@@ -61,7 +61,7 @@ public struct LocalUserState: Encodable {
         }
     }
 
-    public enum AudioOperationalStatus: Equatable {
+    public enum AudioOperationalStatus: Equatable, String, CodingKey {
         case on
         case off
         case pending
@@ -79,7 +79,7 @@ public struct LocalUserState: Encodable {
         }
     }
 
-    public enum AudioDeviceSelectionStatus: Equatable {
+    public enum AudioDeviceSelectionStatus: Equatable, String, CodingKey {
         case speakerSelected
         case speakerRequested
         case receiverSelected

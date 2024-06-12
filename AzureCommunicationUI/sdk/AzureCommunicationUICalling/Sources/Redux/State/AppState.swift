@@ -51,7 +51,6 @@ public struct AppState: Encodable {
         try container.encode(self.audioSessionState, forKey: .audioSessionState)
         try container.encode(self.navigationState, forKey: .navigationState)
         try container.encode(self.remoteParticipantsState, forKey: .remoteParticipantsState)
-        try container.encode(self.errorState, forKey: .errorState)
         try container.encode(self.defaultUserState, forKey: .defaultUserState)
         try container.encode(self.visibilityState, forKey: .visibilityState)
         try container.encode(self.diagnosticsState, forKey: .diagnosticsState)

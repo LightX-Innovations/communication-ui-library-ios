@@ -5,7 +5,7 @@
 
 import Foundation
 
-public enum AppStatus {
+public enum AppStatus: String, CodingKey {
     case foreground
     case background
     case willTerminate

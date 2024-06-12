@@ -6,12 +6,12 @@
 import Foundation
 
 public struct DefaultUserState: Encodable {
-    public enum CameraState: Equatable {
+    public enum CameraState: Equatable, String, CodingKey {
         case on
         case off
     }
 
-    public enum AudioState: Equatable {
+    public enum AudioState: Equatable, String, CodingKey {
         case on
         case off
     }

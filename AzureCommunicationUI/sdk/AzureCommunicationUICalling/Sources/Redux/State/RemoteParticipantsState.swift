@@ -47,7 +47,7 @@ public struct LobbyError: Encodable {
     }
 }
 
-public enum LobbyErrorCode {
+public enum LobbyErrorCode: String, CodingKey {
     case lobbyDisabledByConfigurations
     case lobbyConversationTypeNotSupported
     case lobbyMeetingRoleNotAllowed
