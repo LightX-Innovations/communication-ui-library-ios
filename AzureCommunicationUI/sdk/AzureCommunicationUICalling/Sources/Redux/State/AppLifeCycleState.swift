@@ -5,12 +5,12 @@
 
 import Foundation
 
-public enum AppStatus: String, CodingKey {
+public enum AppStatus {
     case foreground
     case background
     case willTerminate
 
-    var description: String {
+   public var description: String {
         switch self {
         case .foreground:
             return "foreground"
@@ -22,7 +22,7 @@ public enum AppStatus: String, CodingKey {
     }
 }
 
-public struct LifeCycleState: Encodable {
+public struct LifeCycleState {
 
     let currentStatus: AppStatus
 
@@ -30,8 +30,7 @@ public struct LifeCycleState: Encodable {
         self.currentStatus = currentStatus
     }
 
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(self.currentStatus, forKey: .currentStatus)
+    public func toJson() -> [String: Any] {
+        return ["currentStatus": self.currentStatus.description]
     }
 }

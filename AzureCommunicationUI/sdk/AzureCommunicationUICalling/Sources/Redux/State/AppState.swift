@@ -5,7 +5,7 @@
 
 import Foundation
 
-public struct AppState: Encodable {
+public struct AppState {
     let callingState: CallingState
     let permissionState: PermissionState
     let localUserState: LocalUserState
@@ -42,17 +42,19 @@ public struct AppState: Encodable {
         self.diagnosticsState = diagnosticsState
     }
 
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(self.callingState, forKey: .callingState)
-        try container.encode(self.permissionState, forKey: .permissionState)
-        try container.encode(self.localUserState, forKey: .localUserState)
-        try container.encode(self.lifeCycleState, forKey: .lifeCycleState)
-        try container.encode(self.audioSessionState, forKey: .audioSessionState)
-        try container.encode(self.navigationState, forKey: .navigationState)
-        try container.encode(self.remoteParticipantsState, forKey: .remoteParticipantsState)
-        try container.encode(self.defaultUserState, forKey: .defaultUserState)
-        try container.encode(self.visibilityState, forKey: .visibilityState)
-        try container.encode(self.diagnosticsState, forKey: .diagnosticsState)
+    public func toJSon() -> [String: Any]{
+        return [
+            // "callingState": self.callingState.toJSon(),
+            // "permissionState": self.permissionState.toJSon(),
+            // "localUserState": self.localUserState.toJSon(),
+            "lifeCycleState": self.lifeCycleState.toJson(),
+            // "audioSessionState": self.audioSessionState.toJSon(),
+            // "navigationState": self.navigationState.toJSon(),
+            // "remoteParticipantsState": self.remoteParticipantsState.toJSon(),
+            // "errorState": self.errorState.toJSon(),
+            // "defaultUserState": self.defaultUserState.toJSon(),
+            // "visibilityState": self.visibilityState.toJSon(),
+            // "diagnosticsState": self.diagnosticsState.toJSon()
+        ]
     }
 }

@@ -5,13 +5,13 @@
 
 import Foundation
 
-public enum NavigationStatus: String, CodingKey {
+public enum NavigationStatus {
     case setup
     case inCall
     case exit
 }
 
-public struct NavigationState: Equatable, Encodable {
+public struct NavigationState: Equatable {
 
     let status: NavigationStatus
     let supportFormVisible: Bool
@@ -23,11 +23,5 @@ public struct NavigationState: Equatable, Encodable {
 
     public static func == (lhs: NavigationState, rhs: NavigationState) -> Bool {
         return lhs.status == rhs.status
-    }
-
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(self.status, forKey: .status)
-        try container.encode(self.supportFormVisible, forKey: .supportFormVisible)
     }
 }

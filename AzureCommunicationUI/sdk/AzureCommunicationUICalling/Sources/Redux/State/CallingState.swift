@@ -5,7 +5,7 @@
 
 import Foundation
 
-public enum CallingStatus: Int, CodingKey {
+public enum CallingStatus: Int {
     case none
     case earlyMedia
     case connecting
@@ -18,14 +18,14 @@ public enum CallingStatus: Int, CodingKey {
     case remoteHold
 }
 
-public enum OperationStatus: Int, CodingKey {
+public enum OperationStatus: Int {
     case none
     case skipSetupRequested
     case callEndRequested
     case callEnded
 }
 
-public struct CallingState: Equatable, Encodable {
+public struct CallingState: Equatable {
     let status: CallingStatus
     let operationStatus: OperationStatus
     let callId: String?
@@ -51,15 +51,5 @@ public struct CallingState: Equatable, Encodable {
         return (lhs.status == rhs.status
             && lhs.isRecordingActive == rhs.isRecordingActive
             && lhs.isTranscriptionActive == rhs.isTranscriptionActive)
-    }
-
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(self.status, forKey: .status)
-        try container.encode(self.operationStatus, forKey: .operationStatus)
-        try container.encode(self.callId, forKey: .callId)
-        try container.encode(self.isRecordingActive, forKey: .isRecordingActive)
-        try container.encode(self.isTranscriptionActive, forKey: .isTranscriptionActive)
-        try container.encode(self.callStartDate, forKey: .callStartDate)
     }
 }

@@ -5,8 +5,8 @@
 
 import Foundation
 
-public struct LocalUserState: Encodable {
-    public enum CameraOperationalStatus: Equatable, String, CodingKey {
+public struct LocalUserState {
+    public enum CameraOperationalStatus: Equatable {
         case on
         case off
         case paused
@@ -45,7 +45,7 @@ public struct LocalUserState: Encodable {
         }
     }
 
-    public enum CameraTransmissionStatus: Equatable, String, CodingKey {
+    public enum CameraTransmissionStatus: Equatable {
         case local
         case remote
 
@@ -61,7 +61,7 @@ public struct LocalUserState: Encodable {
         }
     }
 
-    public enum AudioOperationalStatus: Equatable, String, CodingKey {
+    public enum AudioOperationalStatus: Equatable {
         case on
         case off
         case pending
@@ -79,7 +79,7 @@ public struct LocalUserState: Encodable {
         }
     }
 
-    public enum AudioDeviceSelectionStatus: Equatable, String, CodingKey {
+    public enum AudioDeviceSelectionStatus: Equatable {
         case speakerSelected
         case speakerRequested
         case receiverSelected
@@ -116,32 +116,17 @@ public struct LocalUserState: Encodable {
         }
     }
 
-    public struct CameraState: Encodable {
+    public struct CameraState {
         let operation: CameraOperationalStatus
         let device: CameraDeviceSelectionStatus
         let transmission: CameraTransmissionStatus
         var error: Error?
-
-        public func encode(to encoder: Encoder) throws {
-            var container = encoder.container(keyedBy: CodingKeys.self)
-            try container.encode(self.operation, forKey: .operation)
-            try container.encode(self.device, forKey: .device)
-            try container.encode(self.transmission, forKey: .transmission)
-            try container.encode(self.error, forKey: .error)
-        }
     }
 
-    public struct AudioState: Encodable {
+    public struct AudioState {
         let operation: AudioOperationalStatus
         let device: AudioDeviceSelectionStatus
         var error: Error?
-
-        public func encode(to encoder: Encoder) throws {
-            var container = encoder.container(keyedBy: CodingKeys.self)
-            try container.encode(operation, forKey: .operation)
-            try container.encode(device, forKey: .device)
-            try container.encode(error, forKey: .error)
-        }
     }
 
     let cameraState: CameraState
@@ -163,14 +148,5 @@ public struct LocalUserState: Encodable {
         self.displayName = displayName
         self.localVideoStreamIdentifier = localVideoStreamIdentifier
         self.participantRole = participantRole
-    }
-
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(self.cameraState, forKey: .cameraState)
-        try container.encode(self.audioState, forKey: .audioState)
-        try container.encode(self.displayName, forKey: .displayName)
-        try container.encode(self.localVideoStreamIdentifier, forKey: .localVideoStreamIdentifier)
-        try container.encode(self.participantRole, forKey: .participantRole)
     }
 }

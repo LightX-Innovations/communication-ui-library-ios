@@ -5,7 +5,7 @@
 
 import Foundation
 
-public enum VisibilityStatus: String, CodingKey {
+public enum VisibilityStatus {
     case visible
     case hideRequested
     case hidden
@@ -28,16 +28,11 @@ public enum VisibilityStatus: String, CodingKey {
     }
 }
 
-public struct VisibilityState: Encodable {
+public struct VisibilityState {
 
     let currentStatus: VisibilityStatus
 
     init(currentStatus: VisibilityStatus = .visible) {
         self.currentStatus = currentStatus
-    }
-
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(self.currentStatus, forKey: .currentStatus)
     }
 }

@@ -7,7 +7,7 @@ import Foundation
 
 import AzureCommunicationCalling
 
-public struct RemoteParticipantsState: Encodable {
+public struct RemoteParticipantsState {
     let participantInfoList: [ParticipantInfoModel]
     let lastUpdateTimeStamp: Date
     let dominantSpeakers: [String]
@@ -25,29 +25,14 @@ public struct RemoteParticipantsState: Encodable {
         self.dominantSpeakersModifiedTimestamp = dominantSpeakersModifiedTimestamp
         self.lobbyError = lobbyError
     }
-
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(self.participantInfoList, forKey: .participantInfoList)
-        try container.encode(self.lastUpdateTimeStamp, forKey: .lastUpdateTimeStamp)
-        try container.encode(self.dominantSpeakers, forKey: .dominantSpeakers)
-        try container.encode(self.dominantSpeakersModifiedTimestamp, forKey: .dominantSpeakersModifiedTimestamp)
-        try container.encode(self.lobbyError, forKey: .lobbyError)
-    }
 }
 
-public struct LobbyError: Encodable {
+public struct LobbyError {
     let lobbyErrorCode: LobbyErrorCode
     let errorTimeStamp: Date
-
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(lobbyErrorCode, forKey: .lobbyErrorCode)
-        try container.encode(errorTimeStamp, forKey: .errorTimeStamp)
-    }
 }
 
-public enum LobbyErrorCode: String, CodingKey {
+public enum LobbyErrorCode {
     case lobbyDisabledByConfigurations
     case lobbyConversationTypeNotSupported
     case lobbyMeetingRoleNotAllowed

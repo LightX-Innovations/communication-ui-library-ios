@@ -5,11 +5,11 @@
 
 import Foundation
 
-public enum AppPermission: String, CodingKey {
+public enum AppPermission {
     case audioPermission
     case cameraPermission
 
-    public enum Status: String, Equatable, CodingKey {
+    public enum Status: String, Equatable {
         case unknown
         case notAsked
         case requesting
@@ -18,7 +18,7 @@ public enum AppPermission: String, CodingKey {
     }
 }
 
-public struct PermissionState: Encodable {
+public struct PermissionState {
 
     let audioPermission: AppPermission.Status
     let cameraPermission: AppPermission.Status
@@ -27,11 +27,4 @@ public struct PermissionState: Encodable {
         self.audioPermission = audioPermission
         self.cameraPermission = cameraPermission
     }
-
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(self.audioPermission, forKey: .audioPermission)
-        try container.encode(self.cameraPermission, forKey: .cameraPermission)
-    }
-
 }

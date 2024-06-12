@@ -5,13 +5,13 @@
 
 import Foundation
 
-public struct DefaultUserState: Encodable {
-    public enum CameraState: Equatable, String, CodingKey {
+public struct DefaultUserState {
+    public enum CameraState: Equatable {
         case on
         case off
     }
 
-    public enum AudioState: Equatable, String, CodingKey {
+    public enum AudioState: Equatable {
         case on
         case off
     }
@@ -23,11 +23,5 @@ public struct DefaultUserState: Encodable {
          audioState: AudioState = .off) {
         self.cameraState = cameraState
         self.audioState = audioState
-    }
-
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(self.cameraState, forKey: .cameraState)
-        try container.encode(self.audioState, forKey: .audioState)
     }
 }

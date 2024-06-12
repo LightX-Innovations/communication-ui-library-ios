@@ -5,21 +5,16 @@
 
 import Foundation
 
-public enum AudioSessionStatus: String, CodingKey {
+public enum AudioSessionStatus {
     case active
     case interrupted
 }
 
-public struct AudioSessionState: Encodable {
+public struct AudioSessionState {
 
     let status: AudioSessionStatus
 
     init(status: AudioSessionStatus = .active) {
         self.status = status
-    }
-
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(self.status, forKey: .status)
     }
 }

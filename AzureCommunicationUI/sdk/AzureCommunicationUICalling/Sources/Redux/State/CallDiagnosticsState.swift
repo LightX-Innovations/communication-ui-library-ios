@@ -3,7 +3,7 @@
 //  Licensed under the MIT License.
 //
 
-public struct CallDiagnosticsState: Equatable, Encodable {
+public struct CallDiagnosticsState: Equatable {
 
     var networkDiagnostic: NetworkDiagnosticModel?
     var networkQualityDiagnostic: NetworkQualityDiagnosticModel?
@@ -15,12 +15,5 @@ public struct CallDiagnosticsState: Equatable, Encodable {
         self.networkDiagnostic = networkDiagnostic
         self.networkQualityDiagnostic = networkQualityDiagnostic
         self.mediaDiagnostic = mediaDiagnostic
-    }
-
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(self.networkDiagnostic, forKey: .networkDiagnostic)
-        try container.encode(self.networkQualityDiagnostic, forKey: .networkQualityDiagnostic)
-        try container.encode(self.mediaDiagnostic, forKey: .mediaDiagnostic)
     }
 }
