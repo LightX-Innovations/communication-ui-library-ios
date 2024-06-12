@@ -27,7 +27,7 @@ public struct LocalUserState {
         }
     }
 
-    public enum CameraDeviceSelectionStatus: Equatable, String, CodingKey {
+    public enum CameraDeviceSelectionStatus: Equatable {
         case front
         case back
         case switching
