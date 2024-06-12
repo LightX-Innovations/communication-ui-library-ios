@@ -31,8 +31,8 @@ public struct ErrorState: Equatable, Encodable {
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(internalError, forKey: .internalError)
-        try container.encode(error, forKey: .error)
-        try container.encode(errorCategory, forKey: .errorCategory)
+        try container.encode(self.internalError, forKey: .internalError)
+        try container.encode(self.error, forKey: .error)
+        try container.encode(self.errorCategory, forKey: .errorCategory)
     }
 }

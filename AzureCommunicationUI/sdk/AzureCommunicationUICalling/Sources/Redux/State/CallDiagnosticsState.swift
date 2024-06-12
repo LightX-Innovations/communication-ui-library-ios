@@ -19,8 +19,8 @@ public struct CallDiagnosticsState: Equatable, Encodable {
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(networkDiagnostic, forKey: .networkDiagnostic)
-        try container.encode(networkQualityDiagnostic, forKey: .networkQualityDiagnostic)
-        try container.encode(mediaDiagnostic, forKey: .mediaDiagnostic)
+        try container.encode(self.networkDiagnostic, forKey: .networkDiagnostic)
+        try container.encode(self.networkQualityDiagnostic, forKey: .networkQualityDiagnostic)
+        try container.encode(self.mediaDiagnostic, forKey: .mediaDiagnostic)
     }
 }

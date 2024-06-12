@@ -27,7 +27,7 @@ public struct NavigationState: Equatable, Encodable {
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(status, forKey: .status)
-        try container.encode(supportFormVisible, forKey: .supportFormVisible)
+        try container.encode(self.status, forKey: .status)
+        try container.encode(self.supportFormVisible, forKey: .supportFormVisible)
     }
 }

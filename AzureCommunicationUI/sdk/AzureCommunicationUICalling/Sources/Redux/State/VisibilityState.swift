@@ -38,6 +38,6 @@ public struct VisibilityState: Encodable {
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(currentStatus, forKey: .currentStatus)
+        try container.encode(self.currentStatus, forKey: .currentStatus)
     }
 }

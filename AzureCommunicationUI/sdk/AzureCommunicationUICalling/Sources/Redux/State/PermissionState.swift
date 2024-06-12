@@ -30,8 +30,8 @@ public struct PermissionState: Encodable {
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(audioPermission, forKey: .audioPermission)
-        try container.encode(cameraPermission, forKey: .cameraPermission)
+        try container.encode(self.audioPermission, forKey: .audioPermission)
+        try container.encode(self.cameraPermission, forKey: .cameraPermission)
     }
 
 }

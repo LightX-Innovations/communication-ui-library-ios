@@ -124,10 +124,10 @@ public struct LocalUserState: Encodable {
 
         public func encode(to encoder: Encoder) throws {
             var container = encoder.container(keyedBy: CodingKeys.self)
-            try container.encode(operation, forKey: .operation)
-            try container.encode(device, forKey: .device)
-            try container.encode(transmission, forKey: .transmission)
-            try container.encode(error, forKey: .error)
+            try container.encode(self.operation, forKey: .operation)
+            try container.encode(self.device, forKey: .device)
+            try container.encode(self.transmission, forKey: .transmission)
+            try container.encode(self.error, forKey: .error)
         }
     }
 
@@ -167,10 +167,10 @@ public struct LocalUserState: Encodable {
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(cameraState, forKey: .cameraState)
-        try container.encode(audioState, forKey: .audioState)
-        try container.encode(displayName, forKey: .displayName)
-        try container.encode(localVideoStreamIdentifier, forKey: .localVideoStreamIdentifier)
-        try container.encode(participantRole, forKey: .participantRole)
+        try container.encode(self.cameraState, forKey: .cameraState)
+        try container.encode(self.audioState, forKey: .audioState)
+        try container.encode(self.displayName, forKey: .displayName)
+        try container.encode(self.localVideoStreamIdentifier, forKey: .localVideoStreamIdentifier)
+        try container.encode(self.participantRole, forKey: .participantRole)
     }
 }

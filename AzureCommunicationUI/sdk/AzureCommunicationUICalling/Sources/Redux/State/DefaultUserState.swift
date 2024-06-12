@@ -27,7 +27,7 @@ public struct DefaultUserState: Encodable {
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(cameraState, forKey: .cameraState)
-        try container.encode(audioState, forKey: .audioState)
+        try container.encode(self.cameraState, forKey: .cameraState)
+        try container.encode(self.audioState, forKey: .audioState)
     }
 }

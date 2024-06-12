@@ -28,11 +28,11 @@ public struct RemoteParticipantsState: Encodable {
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(participantInfoList, forKey: .participantInfoList)
-        try container.encode(lastUpdateTimeStamp, forKey: .lastUpdateTimeStamp)
-        try container.encode(dominantSpeakers, forKey: .dominantSpeakers)
-        try container.encode(dominantSpeakersModifiedTimestamp, forKey: .dominantSpeakersModifiedTimestamp)
-        try container.encode(lobbyError, forKey: .lobbyError)
+        try container.encode(self.participantInfoList, forKey: .participantInfoList)
+        try container.encode(self.lastUpdateTimeStamp, forKey: .lastUpdateTimeStamp)
+        try container.encode(self.dominantSpeakers, forKey: .dominantSpeakers)
+        try container.encode(self.dominantSpeakersModifiedTimestamp, forKey: .dominantSpeakersModifiedTimestamp)
+        try container.encode(self.lobbyError, forKey: .lobbyError)
     }
 }
 

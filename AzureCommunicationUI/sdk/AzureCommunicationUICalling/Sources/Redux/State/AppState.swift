@@ -44,16 +44,16 @@ public struct AppState: Encodable {
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(callingState, forKey: .callingState)
-        try container.encode(permissionState, forKey: .permissionState)
-        try container.encode(localUserState, forKey: .localUserState)
-        try container.encode(lifeCycleState, forKey: .lifeCycleState)
-        try container.encode(audioSessionState, forKey: .audioSessionState)
-        try container.encode(navigationState, forKey: .navigationState)
-        try container.encode(remoteParticipantsState, forKey: .remoteParticipantsState)
-        try container.encode(errorState, forKey: .errorState)
-        try container.encode(defaultUserState, forKey: .defaultUserState)
-        try container.encode(visibilityState, forKey: .visibilityState)
-        try container.encode(diagnosticsState, forKey: .diagnosticsState)
+        try container.encode(self.callingState, forKey: .callingState)
+        try container.encode(self.permissionState, forKey: .permissionState)
+        try container.encode(self.localUserState, forKey: .localUserState)
+        try container.encode(self.lifeCycleState, forKey: .lifeCycleState)
+        try container.encode(self.audioSessionState, forKey: .audioSessionState)
+        try container.encode(self.navigationState, forKey: .navigationState)
+        try container.encode(self.remoteParticipantsState, forKey: .remoteParticipantsState)
+        try container.encode(self.errorState, forKey: .errorState)
+        try container.encode(self.defaultUserState, forKey: .defaultUserState)
+        try container.encode(self.visibilityState, forKey: .visibilityState)
+        try container.encode(self.diagnosticsState, forKey: .diagnosticsState)
     }
 }
