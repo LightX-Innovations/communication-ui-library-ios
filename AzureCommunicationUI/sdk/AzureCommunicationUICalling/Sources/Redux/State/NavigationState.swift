@@ -11,7 +11,7 @@ public enum NavigationStatus {
     case exit
 }
 
-public struct NavigationState: Equatable {
+public struct NavigationState: Equatable, Codable {
 
     let status: NavigationStatus
     let supportFormVisible: Bool

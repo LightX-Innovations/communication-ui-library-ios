@@ -5,7 +5,7 @@
 
 import Foundation
 
-public struct DefaultUserState {
+public struct DefaultUserState: Codable {
     public enum CameraState: Equatable {
         case on
         case off

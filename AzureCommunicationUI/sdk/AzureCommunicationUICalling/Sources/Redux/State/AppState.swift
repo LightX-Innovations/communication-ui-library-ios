@@ -5,7 +5,7 @@
 
 import Foundation
 
-public struct AppState {
+public struct AppState: Codable {
     let callingState: CallingState
     let permissionState: PermissionState
     let localUserState: LocalUserState

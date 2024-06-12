@@ -7,7 +7,7 @@ import Foundation
 
 import AzureCommunicationCalling
 
-public struct RemoteParticipantsState {
+public struct RemoteParticipantsState: Codable {
     let participantInfoList: [ParticipantInfoModel]
     let lastUpdateTimeStamp: Date
     let dominantSpeakers: [String]

@@ -5,7 +5,7 @@
 
 import Foundation
 
-public struct LocalUserState {
+public struct LocalUserState: Codable {
     public enum CameraOperationalStatus: Equatable {
         case on
         case off

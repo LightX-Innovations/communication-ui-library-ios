@@ -18,7 +18,7 @@ public enum AppPermission {
     }
 }
 
-public struct PermissionState {
+public struct PermissionState: Codable {
 
     let audioPermission: AppPermission.Status
     let cameraPermission: AppPermission.Status

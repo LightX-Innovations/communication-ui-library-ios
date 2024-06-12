@@ -25,7 +25,7 @@ public enum OperationStatus: Int {
     case callEnded
 }
 
-public struct CallingState: Equatable {
+public struct CallingState: Equatable, Codable {
     let status: CallingStatus
     let operationStatus: OperationStatus
     let callId: String?

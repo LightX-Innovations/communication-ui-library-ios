@@ -10,7 +10,7 @@ public enum AudioSessionStatus {
     case interrupted
 }
 
-public struct AudioSessionState {
+public struct AudioSessionState: Codable {
 
     let status: AudioSessionStatus
 

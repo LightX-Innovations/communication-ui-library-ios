@@ -28,7 +28,7 @@ public enum VisibilityStatus {
     }
 }
 
-public struct VisibilityState {
+public struct VisibilityState: Codable {
 
     let currentStatus: VisibilityStatus
 

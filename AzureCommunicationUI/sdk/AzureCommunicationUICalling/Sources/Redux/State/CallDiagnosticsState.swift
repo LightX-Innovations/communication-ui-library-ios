@@ -3,7 +3,7 @@
 //  Licensed under the MIT License.
 //
 
-public struct CallDiagnosticsState: Equatable {
+public struct CallDiagnosticsState: Equatable, Codable {
 
     var networkDiagnostic: NetworkDiagnosticModel?
     var networkQualityDiagnostic: NetworkQualityDiagnosticModel?
