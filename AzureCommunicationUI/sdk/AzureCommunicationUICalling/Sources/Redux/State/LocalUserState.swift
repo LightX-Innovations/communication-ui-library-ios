@@ -5,7 +5,7 @@
 
 import Foundation
 
-public struct LocalUserState: Codable {
+public struct LocalUserState: Encodable {
     public enum CameraOperationalStatus: Equatable {
         case on
         case off
@@ -116,17 +116,32 @@ public struct LocalUserState: Codable {
         }
     }
 
-    public struct CameraState {
+    public struct CameraState: Encodable {
         let operation: CameraOperationalStatus
         let device: CameraDeviceSelectionStatus
         let transmission: CameraTransmissionStatus
         var error: Error?
+
+        public func encode(to encoder: Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            try container.encode(operation, forKey: .operation)
+            try container.encode(device, forKey: .device)
+            try container.encode(transmission, forKey: .transmission)
+            try container.encode(error, forKey: .error)
+        }
     }
 
-    public struct AudioState {
+    public struct AudioState: Encodable {
         let operation: AudioOperationalStatus
         let device: AudioDeviceSelectionStatus
         var error: Error?
+
+        public func encode(to encoder: Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            try container.encode(operation, forKey: .operation)
+            try container.encode(device, forKey: .device)
+            try container.encode(error, forKey: .error)
+        }
     }
 
     let cameraState: CameraState
@@ -148,5 +163,14 @@ public struct LocalUserState: Codable {
         self.displayName = displayName
         self.localVideoStreamIdentifier = localVideoStreamIdentifier
         self.participantRole = participantRole
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(cameraState, forKey: .cameraState)
+        try container.encode(audioState, forKey: .audioState)
+        try container.encode(displayName, forKey: .displayName)
+        try container.encode(localVideoStreamIdentifier, forKey: .localVideoStreamIdentifier)
+        try container.encode(participantRole, forKey: .participantRole)
     }
 }

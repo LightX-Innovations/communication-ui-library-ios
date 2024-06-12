@@ -11,7 +11,7 @@ public enum ErrorCategory {
     case none
 }
 
-public struct ErrorState: Equatable, Codable {
+public struct ErrorState: Equatable, Encodable {
     // errorType would be nil for no error status
     let internalError: CallCompositeInternalError?
     let error: Error?
@@ -27,5 +27,12 @@ public struct ErrorState: Equatable, Codable {
 
     public static func == (lhs: ErrorState, rhs: ErrorState) -> Bool {
         return (lhs.internalError == rhs.internalError)
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(internalError, forKey: .internalError)
+        try container.encode(error, forKey: .error)
+        try container.encode(errorCategory, forKey: .errorCategory)
     }
 }

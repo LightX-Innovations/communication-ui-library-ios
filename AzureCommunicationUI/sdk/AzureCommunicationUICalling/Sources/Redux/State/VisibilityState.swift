@@ -28,11 +28,16 @@ public enum VisibilityStatus {
     }
 }
 
-public struct VisibilityState: Codable {
+public struct VisibilityState: Encodable {
 
     let currentStatus: VisibilityStatus
 
     init(currentStatus: VisibilityStatus = .visible) {
         self.currentStatus = currentStatus
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(currentStatus, forKey: .currentStatus)
     }
 }

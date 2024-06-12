@@ -5,7 +5,7 @@
 
 import Foundation
 
-public struct DefaultUserState: Codable {
+public struct DefaultUserState: Encodable {
     public enum CameraState: Equatable {
         case on
         case off
@@ -23,5 +23,11 @@ public struct DefaultUserState: Codable {
          audioState: AudioState = .off) {
         self.cameraState = cameraState
         self.audioState = audioState
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(cameraState, forKey: .cameraState)
+        try container.encode(audioState, forKey: .audioState)
     }
 }

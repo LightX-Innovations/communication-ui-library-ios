@@ -18,7 +18,7 @@ public enum AppPermission {
     }
 }
 
-public struct PermissionState: Codable {
+public struct PermissionState: Encodable {
 
     let audioPermission: AppPermission.Status
     let cameraPermission: AppPermission.Status
@@ -26,6 +26,12 @@ public struct PermissionState: Codable {
     init(audioPermission: AppPermission.Status = .unknown, cameraPermission: AppPermission.Status = .unknown) {
         self.audioPermission = audioPermission
         self.cameraPermission = cameraPermission
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(audioPermission, forKey: .audioPermission)
+        try container.encode(cameraPermission, forKey: .cameraPermission)
     }
 
 }

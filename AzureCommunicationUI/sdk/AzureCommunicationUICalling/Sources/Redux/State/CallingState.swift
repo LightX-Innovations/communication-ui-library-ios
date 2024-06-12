@@ -25,7 +25,7 @@ public enum OperationStatus: Int {
     case callEnded
 }
 
-public struct CallingState: Equatable, Codable {
+public struct CallingState: Equatable, Encodable {
     let status: CallingStatus
     let operationStatus: OperationStatus
     let callId: String?
@@ -51,5 +51,15 @@ public struct CallingState: Equatable, Codable {
         return (lhs.status == rhs.status
             && lhs.isRecordingActive == rhs.isRecordingActive
             && lhs.isTranscriptionActive == rhs.isTranscriptionActive)
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(status, forKey: .status)
+        try container.encode(operationStatus, forKey: .operationStatus)
+        try container.encode(callId, forKey: .callId)
+        try container.encode(isRecordingActive, forKey: .isRecordingActive)
+        try container.encode(isTranscriptionActive, forKey: .isTranscriptionActive)
+        try container.encode(callStartDate, forKey: .callStartDate)
     }
 }

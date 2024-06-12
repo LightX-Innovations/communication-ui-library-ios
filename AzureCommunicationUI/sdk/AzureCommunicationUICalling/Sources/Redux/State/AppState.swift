@@ -5,7 +5,7 @@
 
 import Foundation
 
-public struct AppState: Codable {
+public struct AppState: Encodable {
     let callingState: CallingState
     let permissionState: PermissionState
     let localUserState: LocalUserState
@@ -40,5 +40,20 @@ public struct AppState: Codable {
         self.defaultUserState = defaultUserState
         self.visibilityState = visibilityState
         self.diagnosticsState = diagnosticsState
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(callingState, forKey: .callingState)
+        try container.encode(permissionState, forKey: .permissionState)
+        try container.encode(localUserState, forKey: .localUserState)
+        try container.encode(lifeCycleState, forKey: .lifeCycleState)
+        try container.encode(audioSessionState, forKey: .audioSessionState)
+        try container.encode(navigationState, forKey: .navigationState)
+        try container.encode(remoteParticipantsState, forKey: .remoteParticipantsState)
+        try container.encode(errorState, forKey: .errorState)
+        try container.encode(defaultUserState, forKey: .defaultUserState)
+        try container.encode(visibilityState, forKey: .visibilityState)
+        try container.encode(diagnosticsState, forKey: .diagnosticsState)
     }
 }

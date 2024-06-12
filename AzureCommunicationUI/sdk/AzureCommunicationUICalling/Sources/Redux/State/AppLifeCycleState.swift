@@ -22,11 +22,16 @@ public enum AppStatus {
     }
 }
 
-public struct LifeCycleState {
+public struct LifeCycleState: Encodable {
 
     let currentStatus: AppStatus
 
     init(currentStatus: AppStatus = .foreground) {
         self.currentStatus = currentStatus
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(currentStatus, forKey: .currentStatus)
     }
 }

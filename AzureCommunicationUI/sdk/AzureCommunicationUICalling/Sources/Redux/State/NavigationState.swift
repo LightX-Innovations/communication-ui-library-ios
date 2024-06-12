@@ -11,7 +11,7 @@ public enum NavigationStatus {
     case exit
 }
 
-public struct NavigationState: Equatable, Codable {
+public struct NavigationState: Equatable, Encodable {
 
     let status: NavigationStatus
     let supportFormVisible: Bool
@@ -23,5 +23,11 @@ public struct NavigationState: Equatable, Codable {
 
     public static func == (lhs: NavigationState, rhs: NavigationState) -> Bool {
         return lhs.status == rhs.status
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(status, forKey: .status)
+        try container.encode(supportFormVisible, forKey: .supportFormVisible)
     }
 }

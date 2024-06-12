@@ -10,11 +10,16 @@ public enum AudioSessionStatus {
     case interrupted
 }
 
-public struct AudioSessionState: Codable {
+public struct AudioSessionState: Encodable {
 
     let status: AudioSessionStatus
 
     init(status: AudioSessionStatus = .active) {
         self.status = status
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(status, forKey: .status)
     }
 }
