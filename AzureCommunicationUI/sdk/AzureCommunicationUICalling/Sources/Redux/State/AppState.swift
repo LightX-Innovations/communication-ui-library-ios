@@ -42,7 +42,7 @@ public struct AppState {
         self.diagnosticsState = diagnosticsState
     }
 
-    public func toJSon() -> [String: Any]{
+    public func toJson() -> [String: Any]{
         return [
             // "callingState": self.callingState.toJSon(),
             // "permissionState": self.permissionState.toJSon(),
