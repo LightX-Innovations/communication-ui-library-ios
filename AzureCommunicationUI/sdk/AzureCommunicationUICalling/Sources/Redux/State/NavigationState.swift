@@ -9,6 +9,17 @@ public enum NavigationStatus {
     case setup
     case inCall
     case exit
+
+    public var description: String {
+        switch self {
+        case .setup:
+            return "setup"
+        case .inCall:
+            return "inCall"
+        case .exit:
+            return "exit"
+        }
+    }
 }
 
 public struct NavigationState: Equatable {
@@ -23,5 +34,12 @@ public struct NavigationState: Equatable {
 
     public static func == (lhs: NavigationState, rhs: NavigationState) -> Bool {
         return lhs.status == rhs.status
+    }
+
+    public func toJson() -> [String: Any] {
+        return [
+            "status": self.status.description,
+            "supportFormVisible": self.supportFormVisible
+        ]
     }
 }

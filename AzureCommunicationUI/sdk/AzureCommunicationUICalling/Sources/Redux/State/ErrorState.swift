@@ -9,6 +9,17 @@ public enum ErrorCategory {
     case fatal
     case callState
     case none
+
+    public var description: String {
+        switch self {
+        case .fatal:
+            return "fatal"
+        case .callState:
+            return "callState"
+        case .none:
+            return "none"
+        }
+    }
 }
 
 public struct ErrorState: Equatable {
@@ -27,5 +38,13 @@ public struct ErrorState: Equatable {
 
     public static func == (lhs: ErrorState, rhs: ErrorState) -> Bool {
         return (lhs.internalError == rhs.internalError)
+    }
+
+    public func toJson() -> [String: Any] {
+        return [
+            "internalError": self.internalError?.description ?? "",
+            "error": self.error?.localizedDescription ?? "",
+            "errorCategory": self.errorCategory.description
+        ]
     }
 }

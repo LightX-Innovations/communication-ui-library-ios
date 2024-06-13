@@ -12,6 +12,19 @@ public struct LocalUserState {
         case paused
         case pending
 
+        public var description : String {
+            switch self {
+            case .on:
+                return "on"
+            case .off:
+                return "off"
+            case .paused:
+                return "paused"
+            case .pending:
+                return "pending"
+            }
+        }
+
         public static func == (lhs: LocalUserState.CameraOperationalStatus,
                                rhs: LocalUserState.CameraOperationalStatus
         ) -> Bool {
@@ -32,6 +45,17 @@ public struct LocalUserState {
         case back
         case switching
 
+        public var description : String {
+            switch self {
+            case .front:
+                return "front"
+            case .back:
+                return "back"
+            case .switching:
+                return "switching"
+            }
+        }
+
         public static func == (lhs: LocalUserState.CameraDeviceSelectionStatus,
                                rhs: LocalUserState.CameraDeviceSelectionStatus) -> Bool {
             switch (lhs, rhs) {
@@ -49,6 +73,15 @@ public struct LocalUserState {
         case local
         case remote
 
+        public var description : String {
+            switch self {
+            case .local:
+                return "local"
+            case .remote:
+                return "remote"
+            }
+        }
+
         public static func == (lhs: LocalUserState.CameraTransmissionStatus,
                                rhs: LocalUserState.CameraTransmissionStatus) -> Bool {
             switch (lhs, rhs) {
@@ -65,6 +98,17 @@ public struct LocalUserState {
         case on
         case off
         case pending
+
+        public var description : String {
+            switch self {
+            case .on:
+                return "on"
+            case .off:
+                return "off"
+            case .pending:
+                return "pending"
+            }
+        }
 
         public static func == (lhs: LocalUserState.AudioOperationalStatus,
                                rhs: LocalUserState.AudioOperationalStatus) -> Bool {
@@ -88,6 +132,27 @@ public struct LocalUserState {
         case bluetoothRequested
         case headphonesSelected
         case headphonesRequested
+
+        public var description : String {
+            switch self {
+            case .speakerSelected:
+                return "speakerSelected"
+            case .speakerRequested:
+                return "speakerRequested"
+            case .receiverSelected:
+                return "receiverSelected"
+            case .receiverRequested:
+                return "receiverRequested"
+            case .bluetoothSelected:
+                return "bluetoothSelected"
+            case .bluetoothRequested:
+                return "bluetoothRequested"
+            case .headphonesSelected:
+                return "headphonesSelected"
+            case .headphonesRequested:
+                return "headphonesRequested"
+            }
+        }
 
         public static func == (lhs: LocalUserState.AudioDeviceSelectionStatus,
                                rhs: LocalUserState.AudioDeviceSelectionStatus) -> Bool {
@@ -121,12 +186,29 @@ public struct LocalUserState {
         let device: CameraDeviceSelectionStatus
         let transmission: CameraTransmissionStatus
         var error: Error?
+
+        public func toJson() -> [String: Any] {
+            return [
+                "operation": self.operation.description,
+                "device": self.device.description,
+                "transmission": self.transmission.description,
+                "error": self.error?.localizedDescription ?? ""
+            ]
+        }
     }
 
     public struct AudioState {
         let operation: AudioOperationalStatus
         let device: AudioDeviceSelectionStatus
         var error: Error?
+
+        public func toJson() -> [String: Any] {
+            return [
+                "operation": self.operation.description,
+                "device": self.device.description,
+                "error": self.error?.localizedDescription ?? ""
+            ]
+        }
     }
 
     let cameraState: CameraState
@@ -148,5 +230,15 @@ public struct LocalUserState {
         self.displayName = displayName
         self.localVideoStreamIdentifier = localVideoStreamIdentifier
         self.participantRole = participantRole
+    }
+
+    public func toJson() -> [String: Any] {
+        return [
+            "cameraState": self.cameraState.toJson(),
+            "audioState": self.audioState.toJson(),
+            "displayName": self.displayName ?? "",
+            "localVideoStreamIdentifier": self.localVideoStreamIdentifier ?? "",
+            "participantRole": self.participantRole?.description ?? ""
+        ]
     }
 }

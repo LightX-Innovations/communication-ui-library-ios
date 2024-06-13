@@ -44,17 +44,15 @@ public struct AppState {
 
     public func toJson() -> [String: Any]{
         return [
-            // "callingState": self.callingState.toJSon(),
-            // "permissionState": self.permissionState.toJSon(),
-            // "localUserState": self.localUserState.toJSon(),
+            "callingState": self.callingState.toJson(),
+            "permissionState": self.permissionState.toJson(),
+            "localUserState": self.localUserState.toJson(),
             "lifeCycleState": self.lifeCycleState.toJson(),
-            // "audioSessionState": self.audioSessionState.toJSon(),
-            // "navigationState": self.navigationState.toJSon(),
-            // "remoteParticipantsState": self.remoteParticipantsState.toJSon(),
-            // "errorState": self.errorState.toJSon(),
-            // "defaultUserState": self.defaultUserState.toJSon(),
-            // "visibilityState": self.visibilityState.toJSon(),
-            // "diagnosticsState": self.diagnosticsState.toJSon()
+            "audioSessionState": self.audioSessionState.toJson(),
+            "navigationState": self.navigationState.toJson(),
+            "remoteParticipantsState": self.remoteParticipantsState.toJson(),
+            "errorState": self.errorState.toJson(),
+            "visibilityState": self.visibilityState.toJson(),
         ]
     }
 }

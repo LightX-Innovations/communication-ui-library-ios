@@ -13,6 +13,23 @@ public enum ParticipantRole: Int {
     case presenter
     case organizer
     case coOrganizer
+
+    public var description : String {
+        switch self {
+        case .uninitialized:
+            return "uninitialized"
+        case .attendee:
+            return "attendee"
+        case .consumer:
+            return "consumer"
+        case .presenter:
+            return "presenter"
+        case .organizer:
+            return "organizer"
+        case .coOrganizer:
+            return "coOrganizer"
+        }
+    }
 }
 
 extension AzureCommunicationCalling.CallParticipantRole {

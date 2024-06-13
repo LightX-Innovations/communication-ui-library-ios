@@ -15,6 +15,21 @@ public enum AppPermission {
         case requesting
         case granted
         case denied
+
+        public var description: String {
+            switch self {
+            case .unknown:
+                return "unknown"
+            case .notAsked:
+                return "notAsked"
+            case .requesting:
+                return "requesting"
+            case .granted:
+                return "granted"
+            case .denied:
+                return "denied"
+            }
+        }
     }
 }
 
@@ -26,5 +41,12 @@ public struct PermissionState {
     init(audioPermission: AppPermission.Status = .unknown, cameraPermission: AppPermission.Status = .unknown) {
         self.audioPermission = audioPermission
         self.cameraPermission = cameraPermission
+    }
+
+    public func toJson() -> [String: Any] {
+        return [
+            "audioPermission": self.audioPermission.description,
+            "cameraPermission": self.cameraPermission.description
+        ]
     }
 }

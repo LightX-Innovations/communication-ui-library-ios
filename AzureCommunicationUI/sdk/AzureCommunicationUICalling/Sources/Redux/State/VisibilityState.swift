@@ -35,4 +35,10 @@ public struct VisibilityState {
     init(currentStatus: VisibilityStatus = .visible) {
         self.currentStatus = currentStatus
     }
+
+    public func toJson() -> [String: Any] {
+        return [
+            "currentStatus": self.currentStatus.description
+        ]
+    }
 }

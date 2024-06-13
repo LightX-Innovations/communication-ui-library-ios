@@ -21,6 +21,39 @@ public enum CallCompositeInternalError: Error, Equatable {
     case networkConnectionNotAvailable
     case micNotAvailable
 
+    public var description : String {
+        switch self {
+        case .deviceManagerFailed:
+            return "deviceManagerFailed"
+        case .callJoinConnectionFailed:
+            return "callJoinConnectionFailed"
+        case .callTokenFailed:
+            return "callTokenFailed"
+        case .callJoinFailed:
+            return "callJoinFailed"
+        case .callEndFailed:
+            return "callEndFailed"
+        case .callHoldFailed:
+            return "callHoldFailed"
+        case .callResumeFailed:
+            return "callResumeFailed"
+        case .callEvicted:
+            return "callEvicted"
+        case .callDenied:
+            return "callDenied"
+        case .callJoinFailedByMicPermission:
+            return "callJoinFailedByMicPermission"
+        case .cameraSwitchFailed:
+            return "cameraSwitchFailed"
+        case .cameraOnFailed:
+            return "cameraOnFailed"
+        case .networkConnectionNotAvailable:
+            return "networkConnectionNotAvailable"
+        case .micNotAvailable:
+            return "micNotAvailable"
+        }
+    }
+
     public func toCallCompositeErrorCode() -> String? {
         switch self {
         case .deviceManagerFailed:
