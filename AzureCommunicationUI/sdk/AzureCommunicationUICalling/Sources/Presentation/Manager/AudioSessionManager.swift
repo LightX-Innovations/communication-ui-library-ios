@@ -151,8 +151,10 @@ class AudioSessionManager: AudioSessionManagerProtocol {
                 return .headphones
             case .builtInSpeaker:
                 return .speaker
-            default:
+            case .builtInReceiver:
                 return .receiver
+            default:
+                return .speaker
             }
         }
         return .speaker
