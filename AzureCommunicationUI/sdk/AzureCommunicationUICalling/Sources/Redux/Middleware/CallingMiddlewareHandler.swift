@@ -196,6 +196,7 @@ class CallingMiddlewareHandler: CallingMiddlewareHandling {
                     try await Task.sleep(nanoseconds: NSEC_PER_SEC)
                     dispatch(.localUserAction(.cameraOnSucceeded(videoStreamIdentifier: streamId)))
                 } catch {
+                    self.logger.error("Failed to start local video stream with error: \(error)")
                     dispatch(.localUserAction(.cameraOnFailed(error: error)))
                 }
             }

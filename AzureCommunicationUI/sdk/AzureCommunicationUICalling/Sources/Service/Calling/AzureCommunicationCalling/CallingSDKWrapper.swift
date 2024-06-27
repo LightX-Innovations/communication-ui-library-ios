@@ -368,6 +368,7 @@ extension CallingSDKWrapper {
         }
         do {
             let localVideoStreamId = getLocalVideoStreamIdentifier() ?? ""
+            logger.debug("Starting local video")
             try await call.startVideo(stream: videoStream)
             logger.debug("Local video started successfully")
             return localVideoStreamId
