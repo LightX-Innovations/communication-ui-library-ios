@@ -38,4 +38,8 @@ public class NetworkManager: NetworkManagerProtocol, ObservableObject {
         // https://developer.apple.com/forums/thread/124486
         monitor?.cancel()
     }
+
+    deinit {
+        stopMonitor()
+    }
 }
