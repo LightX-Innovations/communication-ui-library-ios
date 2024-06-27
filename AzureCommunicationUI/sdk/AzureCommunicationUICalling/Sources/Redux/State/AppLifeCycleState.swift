@@ -5,12 +5,12 @@
 
 import Foundation
 
-enum AppStatus {
+public enum AppStatus {
     case foreground
     case background
     case willTerminate
 
-    var description: String {
+   public var description: String {
         switch self {
         case .foreground:
             return "foreground"
@@ -22,11 +22,15 @@ enum AppStatus {
     }
 }
 
-struct LifeCycleState {
+public struct LifeCycleState {
 
     let currentStatus: AppStatus
 
     init(currentStatus: AppStatus = .foreground) {
         self.currentStatus = currentStatus
+    }
+
+    public func toJson() -> [String: Any] {
+        return ["currentStatus": self.currentStatus.description]
     }
 }

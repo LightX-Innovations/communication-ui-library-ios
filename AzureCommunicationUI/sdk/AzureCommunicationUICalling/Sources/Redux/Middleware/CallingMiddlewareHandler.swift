@@ -78,6 +78,7 @@ class CallingMiddlewareHandler: CallingMiddlewareHandling {
                     dispatch(.callingAction(.callStartRequested))
                 }
             } catch {
+                self.logger.error("Failed to setup call with error: \(error)")
                 handle(error: error, errorType: .callJoinFailed, dispatch: dispatch)
             }
         }
@@ -92,6 +93,7 @@ class CallingMiddlewareHandler: CallingMiddlewareHandling {
                 )
                 subscription(dispatch: dispatch)
             } catch {
+                self.logger.error("Failed to start call with error: \(error)")
                 handle(error: error, errorType: .callJoinFailed, dispatch: dispatch)
             }
         }
@@ -194,6 +196,7 @@ class CallingMiddlewareHandler: CallingMiddlewareHandling {
                     try await Task.sleep(nanoseconds: NSEC_PER_SEC)
                     dispatch(.localUserAction(.cameraOnSucceeded(videoStreamIdentifier: streamId)))
                 } catch {
+                    self.logger.error("Failed to start local video stream with error: \(error)")
                     dispatch(.localUserAction(.cameraOnFailed(error: error)))
                 }
             }

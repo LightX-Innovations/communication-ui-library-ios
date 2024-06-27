@@ -130,6 +130,16 @@ class AudioSessionManager: AudioSessionManagerProtocol {
         }
     }
 
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+        let audioSession = AVAudioSession.sharedInstance()
+        do {
+            try audioSession.setActive(false)
+        } catch let error {
+            logger.error("Failed to deactivate audio session, reason: \(error.localizedDescription)")
+        }
+    }
+
     private func getCurrentAudioDevice() -> AudioDeviceType {
         let audioSession = AVAudioSession.sharedInstance()
 
@@ -141,11 +151,13 @@ class AudioSessionManager: AudioSessionManagerProtocol {
                 return .headphones
             case .builtInSpeaker:
                 return .speaker
-            default:
+            case .builtInReceiver:
                 return .receiver
+            default:
+                return .speaker
             }
         }
-        return .receiver
+        return .speaker
     }
 
     private func switchAudioDevice(to selectedAudioDevice: AudioDeviceType) {

@@ -9,8 +9,8 @@ import Combine
 import Foundation
 
 // swiftlint:disable file_length
-class CallingSDKWrapper: NSObject, CallingSDKWrapperProtocol {
-    let callingEventsHandler: CallingSDKEventsHandling
+public class CallingSDKWrapper: NSObject, CallingSDKWrapperProtocol {
+    public let callingEventsHandler: CallingSDKEventsHandling
 
     private let logger: Logger
     private let callConfiguration: CallConfiguration
@@ -35,11 +35,11 @@ class CallingSDKWrapper: NSObject, CallingSDKWrapperProtocol {
         logger.debug("CallingSDKWrapper deallocated")
     }
 
-    func setupCall() async throws {
+    public func setupCall() async throws {
         try await setupCallClientAndDeviceManager()
     }
 
-    func startCall(isCameraPreferred: Bool, isAudioPreferred: Bool) async throws {
+    public func startCall(isCameraPreferred: Bool, isAudioPreferred: Bool) async throws {
         logger.debug("Reset Subjects in callingEventsHandler")
         if let callingEventsHandler = self.callingEventsHandler
             as? CallingSDKEventsHandler {
@@ -79,11 +79,15 @@ class CallingSDKWrapper: NSObject, CallingSDKWrapperProtocol {
 
         var joinLocator: JoinMeetingLocator
         if callConfiguration.compositeCallType == .groupCall,
-           let groupId = callConfiguration.groupId {
+            let groupId = callConfiguration.groupId {
             joinLocator = GroupCallLocator(groupId: groupId)
-        } else if let meetingLink = callConfiguration.meetingLink {
+        } else if callConfiguration.compositeCallType == .teamsMeeting,
+            let meetingLink = callConfiguration.meetingLink {
             joinLocator = TeamsMeetingLinkLocator(
                 meetingLink: meetingLink.trimmingCharacters(in: .whitespacesAndNewlines))
+        } else if callConfiguration.compositeCallType == .roomCall,
+            let roomId = callConfiguration.roomId {
+            joinLocator = RoomCallLocator(roomId: roomId)
         } else {
             logger.error("Invalid groupID / meeting link")
             throw CallCompositeInternalError.callJoinFailed
@@ -103,7 +107,7 @@ class CallingSDKWrapper: NSObject, CallingSDKWrapperProtocol {
         setupFeatures()
     }
 
-    func endCall() async throws {
+    public func endCall() async throws {
         guard call != nil else {
             throw CallCompositeInternalError.callEndFailed
         }
@@ -116,7 +120,7 @@ class CallingSDKWrapper: NSObject, CallingSDKWrapperProtocol {
         }
     }
 
-    func getRemoteParticipant<ParticipantType, StreamType>(_ identifier: String)
+    public func getRemoteParticipant<ParticipantType, StreamType>(_ identifier: String)
     -> CompositeRemoteParticipant<ParticipantType, StreamType>? {
         guard let remote = findParticipant(identifier: identifier) else {
             return nil
@@ -134,7 +138,7 @@ class CallingSDKWrapper: NSObject, CallingSDKWrapperProtocol {
         call?.remoteParticipants.first(where: { $0.identifier.rawId == identifier })
     }
 
-    func getLocalVideoStream<LocalVideoStreamType>(_ identifier: String)
+    public func getLocalVideoStream<LocalVideoStreamType>(_ identifier: String)
     -> CompositeLocalVideoStream<LocalVideoStreamType>? {
 
         guard getLocalVideoStreamIdentifier() == identifier else {
@@ -153,12 +157,12 @@ class CallingSDKWrapper: NSObject, CallingSDKWrapperProtocol {
         )
     }
 
-    func startCallLocalVideoStream() async throws -> String {
+    public func startCallLocalVideoStream() async throws -> String {
         let stream = await getValidLocalVideoStream()
         return try await startCallVideoStream(stream)
     }
 
-    func stopLocalVideoStream() async throws {
+    public func stopLocalVideoStream() async throws {
         guard let call = self.call,
               let videoStream = self.localVideoStream else {
             logger.debug("Local video stopped successfully without call")
@@ -173,7 +177,7 @@ class CallingSDKWrapper: NSObject, CallingSDKWrapperProtocol {
         }
     }
 
-    func switchCamera() async throws -> CameraDevice {
+    public func switchCamera() async throws -> CameraDevice {
         guard let videoStream = localVideoStream else {
             let error = CallCompositeInternalError.cameraSwitchFailed
             logger.error("\(error)")
@@ -187,12 +191,12 @@ class CallingSDKWrapper: NSObject, CallingSDKWrapperProtocol {
         return flippedFacing.toCameraDevice()
     }
 
-    func startPreviewVideoStream() async throws -> String {
+    public func startPreviewVideoStream() async throws -> String {
         _ = await getValidLocalVideoStream()
         return getLocalVideoStreamIdentifier() ?? ""
     }
 
-    func muteLocalMic() async throws {
+    public func muteLocalMic() async throws {
         guard let call = call else {
             return
         }
@@ -210,7 +214,7 @@ class CallingSDKWrapper: NSObject, CallingSDKWrapperProtocol {
         logger.debug("Mute successful")
     }
 
-    func unmuteLocalMic() async throws {
+    public func unmuteLocalMic() async throws {
         guard let call = call else {
             return
         }
@@ -228,7 +232,7 @@ class CallingSDKWrapper: NSObject, CallingSDKWrapperProtocol {
         logger.debug("Unmute successful")
     }
 
-    func holdCall() async throws {
+    public func holdCall() async throws {
         guard let call = call else {
             return
         }
@@ -241,7 +245,7 @@ class CallingSDKWrapper: NSObject, CallingSDKWrapperProtocol {
         }
     }
 
-    func resumeCall() async throws {
+    public func resumeCall() async throws {
         guard let call = call else {
             return
         }
@@ -254,14 +258,15 @@ class CallingSDKWrapper: NSObject, CallingSDKWrapperProtocol {
             throw error
         }
     }
-    func getLogFiles() -> [URL] {
+
+    public func getLogFiles() -> [URL] {
         guard let callClient = callClient else {
             return []
         }
         return callClient.debugInfo.supportFiles
     }
 
-    func admitAllLobbyParticipants() async throws {
+    public func admitAllLobbyParticipants() async throws {
         guard let call = call else {
             return
         }
@@ -275,7 +280,7 @@ class CallingSDKWrapper: NSObject, CallingSDKWrapperProtocol {
         }
     }
 
-    func admitLobbyParticipant(_ participantId: String) async throws {
+    public func admitLobbyParticipant(_ participantId: String) async throws {
         guard let call = call else {
             return
         }
@@ -291,7 +296,7 @@ class CallingSDKWrapper: NSObject, CallingSDKWrapperProtocol {
         }
     }
 
-    func declineLobbyParticipant(_ participantId: String) async throws {
+    public func declineLobbyParticipant(_ participantId: String) async throws {
         guard let call = call else {
             return
         }
@@ -363,6 +368,7 @@ extension CallingSDKWrapper {
         }
         do {
             let localVideoStreamId = getLocalVideoStreamIdentifier() ?? ""
+            logger.debug("Starting local video")
             try await call.startVideo(stream: videoStream)
             logger.debug("Local video started successfully")
             return localVideoStreamId
@@ -409,7 +415,7 @@ extension CallingSDKWrapper {
 }
 
 extension CallingSDKWrapper: DeviceManagerDelegate {
-    func deviceManager(_ deviceManager: DeviceManager, didUpdateCameras args: VideoDevicesUpdatedEventArgs) {
+    public func deviceManager(_ deviceManager: DeviceManager, didUpdateCameras args: VideoDevicesUpdatedEventArgs) {
         for newDevice in args.addedVideoDevices {
             newVideoDeviceAddedHandler?(newDevice)
         }
@@ -434,10 +440,12 @@ extension CallingSDKWrapper: DeviceManagerDelegate {
 
     private func getValidLocalVideoStream() async -> AzureCommunicationCalling.LocalVideoStream {
         if let existingVideoStream = localVideoStream {
+            self.logger.debug("Local video stream already exists")
             return existingVideoStream
         }
 
         let videoDevice = await getVideoDeviceInfo(.front)
+        self.logger.debug("Video device found \(videoDevice)")
         let videoStream = AzureCommunicationCalling.LocalVideoStream(camera: videoDevice)
         localVideoStream = videoStream
         return videoStream

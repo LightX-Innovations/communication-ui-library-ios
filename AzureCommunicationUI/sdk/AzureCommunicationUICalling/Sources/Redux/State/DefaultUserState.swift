@@ -5,13 +5,13 @@
 
 import Foundation
 
-struct DefaultUserState {
-    enum CameraState: Equatable {
+public struct DefaultUserState {
+    public enum CameraState: Equatable {
         case on
         case off
     }
 
-    enum AudioState: Equatable {
+    public enum AudioState: Equatable {
         case on
         case off
     }

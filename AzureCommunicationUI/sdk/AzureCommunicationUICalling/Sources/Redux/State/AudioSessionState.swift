@@ -5,16 +5,31 @@
 
 import Foundation
 
-enum AudioSessionStatus {
+public enum AudioSessionStatus {
     case active
     case interrupted
+
+    public var description: String {
+        switch self {
+        case .active:
+            return "active"
+        case .interrupted:
+            return "interrupted"
+        }
+    }
 }
 
-struct AudioSessionState {
+public struct AudioSessionState {
 
     let status: AudioSessionStatus
 
     init(status: AudioSessionStatus = .active) {
         self.status = status
+    }
+
+    public func toJson() -> [String: Any] {
+        return [
+            "status": self.status.description
+        ]
     }
 }

@@ -5,7 +5,7 @@
 
 import Foundation
 
-enum CallCompositeInternalError: Error, Equatable {
+public enum CallCompositeInternalError: Error, Equatable {
     case deviceManagerFailed(Error?)
     case callJoinConnectionFailed
     case callTokenFailed
@@ -21,7 +21,40 @@ enum CallCompositeInternalError: Error, Equatable {
     case networkConnectionNotAvailable
     case micNotAvailable
 
-    func toCallCompositeErrorCode() -> String? {
+    public var description : String {
+        switch self {
+        case .deviceManagerFailed:
+            return "deviceManagerFailed"
+        case .callJoinConnectionFailed:
+            return "callJoinConnectionFailed"
+        case .callTokenFailed:
+            return "callTokenFailed"
+        case .callJoinFailed:
+            return "callJoinFailed"
+        case .callEndFailed:
+            return "callEndFailed"
+        case .callHoldFailed:
+            return "callHoldFailed"
+        case .callResumeFailed:
+            return "callResumeFailed"
+        case .callEvicted:
+            return "callEvicted"
+        case .callDenied:
+            return "callDenied"
+        case .callJoinFailedByMicPermission:
+            return "callJoinFailedByMicPermission"
+        case .cameraSwitchFailed:
+            return "cameraSwitchFailed"
+        case .cameraOnFailed:
+            return "cameraOnFailed"
+        case .networkConnectionNotAvailable:
+            return "networkConnectionNotAvailable"
+        case .micNotAvailable:
+            return "micNotAvailable"
+        }
+    }
+
+    public func toCallCompositeErrorCode() -> String? {
         switch self {
         case .deviceManagerFailed:
             return CallCompositeErrorCode.cameraFailure
@@ -48,7 +81,7 @@ enum CallCompositeInternalError: Error, Equatable {
         }
     }
 
-    func isFatalError() -> Bool {
+   public func isFatalError() -> Bool {
         switch self {
         case .deviceManagerFailed,
                 .callTokenFailed,
@@ -70,8 +103,9 @@ enum CallCompositeInternalError: Error, Equatable {
     }
 }
 
+// swiftlint:disable:next extension_access_modifier
 extension CallCompositeInternalError {
-    static func == (lhs: CallCompositeInternalError, rhs: CallCompositeInternalError) -> Bool {
+    public static func == (lhs: CallCompositeInternalError, rhs: CallCompositeInternalError) -> Bool {
         switch(lhs, rhs) {
         case (.deviceManagerFailed, .deviceManagerFailed),
             (.callJoinConnectionFailed, .callJoinConnectionFailed),

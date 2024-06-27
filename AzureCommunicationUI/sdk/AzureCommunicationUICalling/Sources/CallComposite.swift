@@ -11,6 +11,12 @@ import FluentUI
 import AVKit
 import Combine
 
+public protocol CustomSDKFactory {
+    func makeCallingSDKWrapper(logger: Logger,
+                               callingEventsHandler: CallingSDKEventsHandling,
+                               callConfiguration: CallConfiguration) -> CallingSDKWrapperProtocol
+}
+
 // swiftlint:disable type_body_length
 // swiftlint:disable file_length
 /// The main class representing the entry point for the Call Composite.
@@ -57,6 +63,7 @@ public class CallComposite {
     private var remoteParticipantsManager: RemoteParticipantsManagerProtocol?
     private var avatarViewManager: AvatarViewManagerProtocol?
     private var customCallingSdkWrapper: CallingSDKWrapperProtocol?
+    private var customSDKFactory: CustomSDKFactory?
     private var debugInfoManager: DebugInfoManagerProtocol?
     private var pipManager: PipManagerProtocol?
     private var callHistoryService: CallHistoryService?
@@ -98,10 +105,16 @@ public class CallComposite {
         exitManager?.dismiss()
     }
 
-    convenience init(withOptions options: CallCompositeOptions? = nil,
-                     callingSDKWrapperProtocol: CallingSDKWrapperProtocol? = nil) {
+    public convenience init(withOptions options: CallCompositeOptions? = nil,
+                            callingSDKWrapperProtocol: CallingSDKWrapperProtocol? = nil) {
         self.init(withOptions: options)
         self.customCallingSdkWrapper = callingSDKWrapperProtocol
+    }
+
+    public convenience init(withOptions options: CallCompositeOptions? = nil,
+                            customSDKFactory: CustomSDKFactory) {
+        self.init(withOptions: options)
+        self.customSDKFactory = customSDKFactory
     }
 
     deinit {
@@ -109,13 +122,14 @@ public class CallComposite {
     }
 
     private func launch(_ callConfiguration: CallConfiguration,
-                        localOptions: LocalOptions?) {
+                        localOptions: LocalOptions?) -> UIViewController {
         logger.debug("launch composite experience")
         let viewFactory = constructViewFactoryAndDependencies(
             for: callConfiguration,
             localOptions: localOptions,
             callCompositeEventsHandler: events,
-            withCallingSDKWrapper: self.customCallingSdkWrapper
+            withCallingSDKWrapper: self.customCallingSdkWrapper,
+            withCustomSDKFactory: self.customSDKFactory
         )
         self.viewFactory = viewFactory
 
@@ -132,10 +146,11 @@ public class CallComposite {
                 self?.receive(state)
             }.store(in: &cancellables)
 
-        let viewController = makeToolkitHostingController(router: NavigationRouter(store: store, logger: logger),
-            viewFactory: viewFactory)
-        self.viewController = viewController
-        present(viewController)
+        let toolkitHostingController = makeToolkitHostingController(
+            router: NavigationRouter(store: store, logger: logger),
+            viewFactory: viewFactory
+        )
+        self.viewController = toolkitHostingController
         UIApplication.shared.isIdleTimerDisabled = true
 
         if store.state.permissionState.audioPermission == .notAsked {
@@ -146,6 +161,12 @@ public class CallComposite {
         }
 
         store.dispatch(action: .callingAction(.setupCall))
+
+        return toolkitHostingController
+    }
+
+    public func getStore() -> Store<AppState, Action>? {
+        return store
     }
 
     /// Start Call Composite experience with joining a Teams meeting.
@@ -153,11 +174,13 @@ public class CallComposite {
     /// - Parameter localOptions: LocalOptions used to set the user participants information for the call.
     ///                            This is data is not sent up to ACS.
     public func launch(remoteOptions: RemoteOptions,
-                       localOptions: LocalOptions? = nil) {
+                       localOptions: LocalOptions? = nil
+                       ) -> UIViewController {
         let callConfiguration = CallConfiguration(locator: remoteOptions.locator,
                                                   credential: remoteOptions.credential,
                                                   displayName: remoteOptions.displayName)
-        launch(callConfiguration, localOptions: localOptions)
+
+        return launch(callConfiguration, localOptions: localOptions)
     }
 
     /// Set ParticipantViewData to be displayed for the remote participant. This is data is not sent up to ACS.
@@ -193,9 +216,12 @@ public class CallComposite {
         self.viewController?.dismissSelf()
 
         let viewController = makeToolkitHostingController(
-            router: NavigationRouter(store: store, logger: logger), viewFactory: viewFactory)
+            router: NavigationRouter(store: store, logger: logger),
+            viewFactory: viewFactory
+        )
+
         self.viewController = viewController
-        present(viewController)
+        // present(viewController)
 
         self.pipManager?.reset()
     }
@@ -230,12 +256,19 @@ public class CallComposite {
         for callConfiguration: CallConfiguration,
         localOptions: LocalOptions?,
         callCompositeEventsHandler: CallComposite.Events,
-        withCallingSDKWrapper wrapper: CallingSDKWrapperProtocol? = nil
+        withCallingSDKWrapper wrapper: CallingSDKWrapperProtocol? = nil,
+        withCustomSDKFactory factory: CustomSDKFactory? = nil
     ) -> CompositeViewFactoryProtocol {
-        let callingSdkWrapper = wrapper ?? CallingSDKWrapper(
-            logger: logger,
-            callingEventsHandler: CallingSDKEventsHandler(logger: logger),
-            callConfiguration: callConfiguration)
+        let callingSdkWrapper = wrapper ??
+                                factory?.makeCallingSDKWrapper(
+                logger: logger,
+                                    callingEventsHandler: CallingSDKEventsHandler(logger: logger),
+                                    callConfiguration: callConfiguration) ??
+                                CallingSDKWrapper(
+                                    logger: logger,
+                                    callingEventsHandler: CallingSDKEventsHandler(logger: logger),
+                                    callConfiguration: callConfiguration
+                                )
 
         let store = Store.constructStore(
             logger: logger,

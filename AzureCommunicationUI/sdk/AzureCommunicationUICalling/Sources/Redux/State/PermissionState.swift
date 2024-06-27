@@ -5,20 +5,35 @@
 
 import Foundation
 
-enum AppPermission {
+public enum AppPermission {
     case audioPermission
     case cameraPermission
 
-    enum Status: String, Equatable {
+    public enum Status: String, Equatable {
         case unknown
         case notAsked
         case requesting
         case granted
         case denied
+
+        public var description: String {
+            switch self {
+            case .unknown:
+                return "unknown"
+            case .notAsked:
+                return "notAsked"
+            case .requesting:
+                return "requesting"
+            case .granted:
+                return "granted"
+            case .denied:
+                return "denied"
+            }
+        }
     }
 }
 
-struct PermissionState {
+public struct PermissionState {
 
     let audioPermission: AppPermission.Status
     let cameraPermission: AppPermission.Status
@@ -28,4 +43,10 @@ struct PermissionState {
         self.cameraPermission = cameraPermission
     }
 
+    public func toJson() -> [String: Any] {
+        return [
+            "audioPermission": self.audioPermission.description,
+            "cameraPermission": self.cameraPermission.description
+        ]
+    }
 }
