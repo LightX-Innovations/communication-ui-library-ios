@@ -440,10 +440,12 @@ extension CallingSDKWrapper: DeviceManagerDelegate {
 
     private func getValidLocalVideoStream() async -> AzureCommunicationCalling.LocalVideoStream {
         if let existingVideoStream = localVideoStream {
+            self.logger.debug("Local video stream already exists")
             return existingVideoStream
         }
 
         let videoDevice = await getVideoDeviceInfo(.front)
+        self.logger.debug("Video device found \(videoDevice)")
         let videoStream = AzureCommunicationCalling.LocalVideoStream(camera: videoDevice)
         localVideoStream = videoStream
         return videoStream
