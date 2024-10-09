@@ -152,6 +152,11 @@ struct LocalVideoView: View {
       return rendererView
     }
 
+    if transforms.isEmpty {
+      rendererView.transform = .identity
+      return rendererView
+    }
+
     let sortedTransforms = transforms.sorted { $0.order < $1.order }
 
     sortedTransforms.forEach { transform in
