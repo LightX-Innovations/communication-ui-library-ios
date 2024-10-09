@@ -36,7 +36,7 @@ class VideoViewManager: NSObject, RendererDelegate, RendererViewManager {
     }
     private let logger: Logger
     private var displayedRemoteParticipantsRendererView = MappedSequence<String, VideoStreamCache>()
-    private var store: Store<AppState, Action>?
+    private let store: Store<AppState, Action>
     private var cancellables = Set<AnyCancellable>()
     private var localRendererView: UIView?
 
@@ -51,15 +51,6 @@ class VideoViewManager: NSObject, RendererDelegate, RendererViewManager {
         self.callingSDKWrapper = callingSDKWrapper
         self.logger = logger
         self.store = store
-    }
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        store.$state
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] state in
-                self?.receive(state)
-            }.store(in: &cancellables)
     }
 
     deinit {
@@ -117,7 +108,10 @@ class VideoViewManager: NSObject, RendererDelegate, RendererViewManager {
         }
     }
 
-    private func updateLocalVideoRendererView(with state: VideoViewState) {
+    private func updateLocalVideoRendererView() {
+        guard let localRendererView = self.localRendererView else {
+            return
+        }
         UIView.animate(withDuration: 0.5) {
             // Apply rotation
             let rotationAngle = 90.0
@@ -240,6 +234,6 @@ extension VideoViewManager {
 
     private func receive(_ state: AppState) {
        print("state: \(state)")
-
+       self.updateLocalVideoRendererView()
     }
 }
