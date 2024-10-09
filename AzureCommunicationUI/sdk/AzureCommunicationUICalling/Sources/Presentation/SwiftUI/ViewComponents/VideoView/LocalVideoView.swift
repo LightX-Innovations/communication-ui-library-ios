@@ -73,7 +73,9 @@ struct LocalVideoView: View {
           let rendererView = viewManager.getLocalVideoRendererView(streamId)
         {
           ZStack(alignment: viewType.cameraSwitchButtonAlignment) {
-            applyTransforms(to: rendererView, with: transforms)
+            if let transforms = transforms {
+              applyTransforms(to: rendererView, with: transforms)
+            }
             VideoRendererView(rendererView: rendererView)
               .frame(
                 width: geometry.size.width,
