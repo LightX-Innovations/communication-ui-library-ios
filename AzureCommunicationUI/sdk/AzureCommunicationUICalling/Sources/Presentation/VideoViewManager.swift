@@ -34,15 +34,30 @@ class VideoViewManager: NSObject, RendererDelegate, RendererViewManager {
     }
     private let logger: Logger
     private var displayedRemoteParticipantsRendererView = MappedSequence<String, VideoStreamCache>()
+    private var store: Store<AppState, Action>?
+    private var cancellables = Set<AnyCancellable>()
+    private var localRendererView: UIView?
 
     private var localRendererViews = MappedSequence<String, VideoStreamCache>()
 
     private let callingSDKWrapper: CallingSDKWrapperProtocol
 
     init(callingSDKWrapper: CallingSDKWrapperProtocol,
-         logger: Logger) {
+         logger: Logger,
+         store: Store<AppState, Action>
+    ) {
         self.callingSDKWrapper = callingSDKWrapper
         self.logger = logger
+        self.store = store
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        store.$state
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] state in
+                self?.receive(state)
+            }.store(in: &cancellables)
     }
 
     deinit {
@@ -71,6 +86,7 @@ class VideoViewManager: NSObject, RendererDelegate, RendererViewManager {
 
     func getLocalVideoRendererView(_ videoStreamId: String) -> UIView? {
         if let localRenderCache = localRendererViews.value(forKey: videoStreamId) {
+            self.localRendererView = localRenderCache.rendererView
             return localRenderCache.rendererView
         }
 
@@ -84,12 +100,6 @@ class VideoViewManager: NSObject, RendererDelegate, RendererViewManager {
             let newRendererView: RendererView = try newRenderer.createView(
                 withOptions: CreateViewOptions(scalingMode: .crop))
 
-            // Flip the view horizontally
-            newRendererView.transform = newRendererView.transform.scaledBy(x: -1.0, y: 1.0)
-            // Rotate the view by 90 degrees (π/2 radians)
-            let angleInDegrees = 90.0
-            newRendererView.transform = newRendererView.transform.rotated(by: CGFloat(angleInDegrees * .pi / 180))
-
             let cache = VideoStreamCache(
                 renderer: newRenderer,
                 rendererView: newRendererView,
@@ -97,12 +107,25 @@ class VideoViewManager: NSObject, RendererDelegate, RendererViewManager {
             )
             localRendererViews.append(forKey: videoStreamId,
                                       value: cache)
+            self.localRendererView = newRendererView
             return newRendererView
         } catch let error {
             logger.error("Failed to render remote video, reason:\(error.localizedDescription)")
             return nil
         }
+    }
 
+    private func updateLocalVideoRendererView(with state: VideoViewState) {
+        UIView.animate(withDuration: 0.5) {
+            // Apply rotation
+            let rotationAngle = 90.0
+            let rotation = CGFloat(rotationAngle * Double.pi / 180)
+            self.videoRendererView.transform = self.videoRendererView.transform.rotated(by: rotation)
+            
+            // Apply horizontal flip
+            let scaleX = -1.0
+            self.videoRendererView.transform = self.videoRendererView.transform.scaledBy(x: scaleX, y: 1.0)
+        }
     }
 
     // MARK: ParticipantRendererViewManager
@@ -201,5 +224,20 @@ class VideoViewManager: NSObject, RendererDelegate, RendererViewManager {
 
     func videoStreamRenderer(didFailToStart renderer: VideoStreamRenderer) {
         logger.error("Failed to render remote screenshare video. \(renderer)")
+    }
+}
+
+extension VideoViewManager {
+    private func receiveStoreEvents(_ store: Store<AppState, Action>) {
+        store.$state
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] state in
+                self?.receive(state)
+            }.store(in: &cancellables)
+    }
+
+    private func receive(_ state: AppState) {
+       print("state: \(state)")
+
     }
 }
