@@ -7,6 +7,7 @@ import AzureCommunicationCalling
 
 import Foundation
 import UIKit
+import Combine
 
 struct RemoteParticipantVideoViewId {
     let userIdentifier: String
@@ -121,11 +122,11 @@ class VideoViewManager: NSObject, RendererDelegate, RendererViewManager {
             // Apply rotation
             let rotationAngle = 90.0
             let rotation = CGFloat(rotationAngle * Double.pi / 180)
-            self.videoRendererView.transform = self.videoRendererView.transform.rotated(by: rotation)
+            self.localRendererView.transform = self.localRendererView.transform.rotated(by: rotation)
             
             // Apply horizontal flip
             let scaleX = -1.0
-            self.videoRendererView.transform = self.videoRendererView.transform.scaledBy(x: scaleX, y: 1.0)
+            self.localRendererView.transform = self.localRendererView.transform.scaledBy(x: scaleX, y: 1.0)
         }
     }
 
