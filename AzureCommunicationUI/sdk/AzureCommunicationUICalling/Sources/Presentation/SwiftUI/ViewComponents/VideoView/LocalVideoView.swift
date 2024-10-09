@@ -125,6 +125,7 @@ struct LocalVideoView: View {
       }
     }.onReceive(viewModel.$transforms) { newTransforms in
       transforms = newTransforms
+      print("transforms: \(transforms)")
     }.accessibilityIgnoresInvertColors(true)
   }
 
