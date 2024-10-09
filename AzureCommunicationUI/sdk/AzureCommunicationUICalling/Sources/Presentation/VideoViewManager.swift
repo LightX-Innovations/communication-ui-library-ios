@@ -84,6 +84,9 @@ class VideoViewManager: NSObject, RendererDelegate, RendererViewManager {
             let newRendererView: RendererView = try newRenderer.createView(
                 withOptions: CreateViewOptions(scalingMode: .crop))
 
+            // Rotate the view by 90 degrees (π/2 radians)
+             newRendererView.transform = newRendererView.transform.rotated(by: .pi / 2)
+
             let cache = VideoStreamCache(
                 renderer: newRenderer,
                 rendererView: newRendererView,
