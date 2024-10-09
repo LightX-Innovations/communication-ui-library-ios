@@ -84,6 +84,8 @@ class VideoViewManager: NSObject, RendererDelegate, RendererViewManager {
             let newRendererView: RendererView = try newRenderer.createView(
                 withOptions: CreateViewOptions(scalingMode: .crop))
 
+            // Flip the view horizontally
+            newRendererView.transform = newRendererView.transform.scaledBy(x: -1.0, y: 1.0)
             // Rotate the view by 90 degrees (π/2 radians)
              newRendererView.transform = newRendererView.transform.rotated(by: .pi / 2)
 
