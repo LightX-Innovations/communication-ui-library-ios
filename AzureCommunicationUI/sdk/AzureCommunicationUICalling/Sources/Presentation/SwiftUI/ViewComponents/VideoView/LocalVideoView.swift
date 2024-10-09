@@ -146,6 +146,7 @@ struct LocalVideoView: View {
   func applyTransforms(to rendererView: UIView, with transforms: [CameraTransforms<Any>]?) -> UIView
   {
     guard let transforms = transforms else {
+      rendererView.transform = .identity
       return rendererView
     }
 
