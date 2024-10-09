@@ -74,11 +74,11 @@ struct LocalVideoView: View {
         {
           ZStack(alignment: viewType.cameraSwitchButtonAlignment) {
             applyTransforms(
-              to: VideoRendererView(rendererView: rendererView).frame(
-                width: geometry.size.width,
-                height: geometry.size.height
-              ),
-              with: transforms
+              to: VideoRendererView(rendererView: rendererView), with: transforms
+            )
+            .frame(
+              width: geometry.size.width,
+              height: geometry.size.height
             )
             if viewType.hasGradient {
               GradientView()
