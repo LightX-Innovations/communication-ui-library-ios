@@ -6,6 +6,7 @@
 import AzureCommunicationCalling
 
 import Foundation
+import UIKit
 
 struct RemoteParticipantVideoViewId {
     let userIdentifier: String
