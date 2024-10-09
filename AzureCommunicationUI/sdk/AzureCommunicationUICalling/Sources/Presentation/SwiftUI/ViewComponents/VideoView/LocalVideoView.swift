@@ -74,7 +74,7 @@ struct LocalVideoView: View {
         {
 
           if let angle = angle, let localRendererView = rendererView {
-            let rotation = CGFloat(angle * Double.pi / 180)
+            let rotation = angle * Double.pi / 180.0
             localRendererView.transform = localRendererView.transform.rotated(by: rotation)
           }
 

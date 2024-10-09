@@ -317,7 +317,8 @@ public class CallComposite {
     let debugInfoManager = createDebugInfoManager(callingSDKWrapper: callingSdkWrapper)
     self.debugInfoManager = debugInfoManager
     let videoViewManager = VideoViewManager(
-      callingSDKWrapper: callingSdkWrapper, logger: logger, store: store)
+      callingSDKWrapper: callingSdkWrapper, logger: logger
+    )
 
     if enableSystemPipWhenMultitasking {
       self.pipManager = createPipManager(store)

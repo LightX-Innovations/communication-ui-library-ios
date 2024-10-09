@@ -25,6 +25,7 @@ where
     let displayName = localUserState.displayName
     var localVideoStreamIdentifier = localUserState.localVideoStreamIdentifier
     var participantRole = localUserState.participantRole
+    var angle = localUserState.angle
 
     switch action {
     case .cameraPreviewOnTriggered:
