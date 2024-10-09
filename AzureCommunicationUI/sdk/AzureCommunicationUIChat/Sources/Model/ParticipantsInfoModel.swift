@@ -3,10 +3,10 @@
 //  Licensed under the MIT License.
 //
 
-import Foundation
 import AzureCore
+import Foundation
 
 struct ParticipantsInfoModel: BaseInfoModel {
-    let participants: [ParticipantInfoModel]
-    let createdOn: Iso8601Date
+  let participants: [ParticipantInfoModel]
+  let createdOn: Iso8601Date
 }

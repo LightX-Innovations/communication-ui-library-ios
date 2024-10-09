@@ -4,17 +4,18 @@
 //
 
 import Foundation
+
 @testable import AzureCommunicationUICalling
 
 class IconButtonViewModelMocking: IconButtonViewModel {
-    var updateIcon: ((CompositeIcon?) -> Void)?
-    var updateIsDisabledState: ((Bool) -> Void)?
+  var updateIcon: ((CompositeIcon?) -> Void)?
+  var updateIsDisabledState: ((Bool) -> Void)?
 
-    override func update(iconName: CompositeIcon?) {
-        updateIcon?(iconName)
-    }
+  override func update(iconName: CompositeIcon?) {
+    updateIcon?(iconName)
+  }
 
-    override func update(isDisabled: Bool) {
-        updateIsDisabledState?(isDisabled)
-    }
+  override func update(isDisabled: Bool) {
+    updateIsDisabledState?(isDisabled)
+  }
 }

@@ -3,60 +3,62 @@
 //  Licensed under the MIT License.
 //
 
-import Foundation
 import Combine
+import Foundation
 
 class IconButtonViewModel: ObservableObject {
-    enum ButtonType {
-        case controlButton
-        case sendButton
-    }
+  enum ButtonType {
+    case controlButton
+    case sendButton
+  }
 
-    @Published var iconName: CompositeIcon
-    @Published var accessibilityLabel: String?
-    @Published var accessibilityValue: String?
-    @Published var accessibilityHint: String?
-    @Published var isDisabled: Bool
-    let buttonType: ButtonType
-    var action: (() -> Void)
+  @Published var iconName: CompositeIcon
+  @Published var accessibilityLabel: String?
+  @Published var accessibilityValue: String?
+  @Published var accessibilityHint: String?
+  @Published var isDisabled: Bool
+  let buttonType: ButtonType
+  var action: (() -> Void)
 
-    init(iconName: CompositeIcon,
-         buttonType: ButtonType = .controlButton,
-         isDisabled: Bool = false,
-         action: @escaping (() -> Void) = {}) {
-        self.iconName = iconName
-        self.buttonType = buttonType
-        self.isDisabled = isDisabled
-        self.action = action
-    }
+  init(
+    iconName: CompositeIcon,
+    buttonType: ButtonType = .controlButton,
+    isDisabled: Bool = false,
+    action: @escaping (() -> Void) = {}
+  ) {
+    self.iconName = iconName
+    self.buttonType = buttonType
+    self.isDisabled = isDisabled
+    self.action = action
+  }
 
-    func update(iconName: CompositeIcon?) {
-        if iconName != nil && self.iconName != iconName {
-            self.iconName = iconName!
-        }
+  func update(iconName: CompositeIcon?) {
+    if iconName != nil && self.iconName != iconName {
+      self.iconName = iconName!
     }
+  }
 
-    func update(accessibilityLabel: String) {
-        if self.accessibilityLabel != accessibilityLabel {
-            self.accessibilityLabel = accessibilityLabel
-        }
+  func update(accessibilityLabel: String) {
+    if self.accessibilityLabel != accessibilityLabel {
+      self.accessibilityLabel = accessibilityLabel
     }
+  }
 
-    func update(accessibilityValue: String) {
-        if self.accessibilityValue != accessibilityValue {
-            self.accessibilityValue = accessibilityValue
-        }
+  func update(accessibilityValue: String) {
+    if self.accessibilityValue != accessibilityValue {
+      self.accessibilityValue = accessibilityValue
     }
+  }
 
-    func update(accessibilityHint: String) {
-        if self.accessibilityHint != accessibilityHint {
-            self.accessibilityHint = accessibilityHint
-        }
+  func update(accessibilityHint: String) {
+    if self.accessibilityHint != accessibilityHint {
+      self.accessibilityHint = accessibilityHint
     }
+  }
 
-    func update(isDisabled: Bool) {
-        if self.isDisabled != isDisabled {
-            self.isDisabled = isDisabled
-        }
+  func update(isDisabled: Bool) {
+    if self.isDisabled != isDisabled {
+      self.isDisabled = isDisabled
     }
+  }
 }

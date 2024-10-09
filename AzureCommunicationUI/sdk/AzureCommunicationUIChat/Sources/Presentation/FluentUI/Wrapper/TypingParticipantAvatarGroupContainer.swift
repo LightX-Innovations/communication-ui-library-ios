@@ -7,15 +7,15 @@ import SwiftUI
 
 struct TypingParticipantAvatarGroupContainer: UIViewRepresentable {
 
-    var participantList: [ParticipantInfoModel]
-    var avatarGroup: TypingParticipantAvatarGroup
+  var participantList: [ParticipantInfoModel]
+  var avatarGroup: TypingParticipantAvatarGroup
 
-    func makeUIView(context: Context) -> TypingParticipantAvatarGroup {
-        avatarGroup.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
-        return avatarGroup
-    }
+  func makeUIView(context: Context) -> TypingParticipantAvatarGroup {
+    avatarGroup.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+    return avatarGroup
+  }
 
-    func updateUIView(_ uiView: TypingParticipantAvatarGroup, context: Context) {
-        avatarGroup.setAvatars(to: participantList)
-    }
+  func updateUIView(_ uiView: TypingParticipantAvatarGroup, context: Context) {
+    avatarGroup.setAvatars(to: participantList)
+  }
 }

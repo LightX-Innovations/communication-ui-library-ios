@@ -6,5 +6,5 @@
 import Foundation
 
 struct Reducer<State, Actions> {
-    let reduce: (_ state: State, _ action: Actions) -> State
+  let reduce: (_ state: State, _ action: Actions) -> State
 }

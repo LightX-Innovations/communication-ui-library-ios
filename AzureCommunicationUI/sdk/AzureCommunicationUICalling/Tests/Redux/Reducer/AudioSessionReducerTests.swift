@@ -5,56 +5,57 @@
 
 import Foundation
 import XCTest
+
 @testable import AzureCommunicationUICalling
 
 class AudioSessionReducerTests: XCTestCase {
 
-    func test_audioSessionReducer_reduce_when_audioInterrupted_then_stateUpdated() {
-        let expectedAudioStatus: AudioSessionStatus = .interrupted
-        let currentAudioStatus: AudioSessionStatus = .active
-        let currentAudioState = AudioSessionState(status: currentAudioStatus)
-        let action = AudioSessionAction.audioInterrupted
-        let sut = makeSUT()
-        let resultState = sut.reduce(currentAudioState, action)
-        XCTAssertEqual(resultState.status, expectedAudioStatus)
-    }
+  func test_audioSessionReducer_reduce_when_audioInterrupted_then_stateUpdated() {
+    let expectedAudioStatus: AudioSessionStatus = .interrupted
+    let currentAudioStatus: AudioSessionStatus = .active
+    let currentAudioState = AudioSessionState(status: currentAudioStatus)
+    let action = AudioSessionAction.audioInterrupted
+    let sut = makeSUT()
+    let resultState = sut.reduce(currentAudioState, action)
+    XCTAssertEqual(resultState.status, expectedAudioStatus)
+  }
 
-    func test_audioSessionReducer_reduce_when_audioInterruptionEnded_then_stateUpdated() {
-        let expectedAudioStatus: AudioSessionStatus = .active
-        let currentAudioStatus: AudioSessionStatus = .interrupted
-        let currentAudioState = AudioSessionState(status: currentAudioStatus)
-        let action = AudioSessionAction.audioInterruptEnded
-        let sut = makeSUT()
-        let resultState = sut.reduce(currentAudioState, action)
+  func test_audioSessionReducer_reduce_when_audioInterruptionEnded_then_stateUpdated() {
+    let expectedAudioStatus: AudioSessionStatus = .active
+    let currentAudioStatus: AudioSessionStatus = .interrupted
+    let currentAudioState = AudioSessionState(status: currentAudioStatus)
+    let action = AudioSessionAction.audioInterruptEnded
+    let sut = makeSUT()
+    let resultState = sut.reduce(currentAudioState, action)
 
-        XCTAssertEqual(resultState.status, expectedAudioStatus)
-    }
+    XCTAssertEqual(resultState.status, expectedAudioStatus)
+  }
 
-    func test_audioSessionReducer_reduce_when_audioEngaged_then_stateUpdated() {
-        let expectedAudioStatus: AudioSessionStatus = .active
-        let currentAudioStatus: AudioSessionStatus = .interrupted
-        let currentAudioState = AudioSessionState(status: currentAudioStatus)
-        let action = AudioSessionAction.audioEngaged
-        let sut = makeSUT()
-        let resultState = sut.reduce(currentAudioState, action)
+  func test_audioSessionReducer_reduce_when_audioEngaged_then_stateUpdated() {
+    let expectedAudioStatus: AudioSessionStatus = .active
+    let currentAudioStatus: AudioSessionStatus = .interrupted
+    let currentAudioState = AudioSessionState(status: currentAudioStatus)
+    let action = AudioSessionAction.audioEngaged
+    let sut = makeSUT()
+    let resultState = sut.reduce(currentAudioState, action)
 
-        XCTAssertEqual(resultState.status, expectedAudioStatus)
-    }
+    XCTAssertEqual(resultState.status, expectedAudioStatus)
+  }
 
-    func test_audioSessionReducer_reduce_when_audioEngaged_then_stateNotUpdate() {
-        let expectedAudioStatus: AudioSessionStatus = .active
-        let currentAudioStatus = expectedAudioStatus
-        let currentAudioState = AudioSessionState(status: currentAudioStatus)
-        let action = AudioSessionAction.audioEngaged
-        let sut = makeSUT()
-        let resultState = sut.reduce(currentAudioState, action)
+  func test_audioSessionReducer_reduce_when_audioEngaged_then_stateNotUpdate() {
+    let expectedAudioStatus: AudioSessionStatus = .active
+    let currentAudioStatus = expectedAudioStatus
+    let currentAudioState = AudioSessionState(status: currentAudioStatus)
+    let action = AudioSessionAction.audioEngaged
+    let sut = makeSUT()
+    let resultState = sut.reduce(currentAudioState, action)
 
-        XCTAssertEqual(resultState.status, expectedAudioStatus)
-    }
+    XCTAssertEqual(resultState.status, expectedAudioStatus)
+  }
 }
 
 extension AudioSessionReducerTests {
-    func makeSUT() -> Reducer<AudioSessionState, AudioSessionAction> {
-        return .liveAudioSessionReducer
-    }
+  func makeSUT() -> Reducer<AudioSessionState, AudioSessionAction> {
+    return .liveAudioSessionReducer
+  }
 }

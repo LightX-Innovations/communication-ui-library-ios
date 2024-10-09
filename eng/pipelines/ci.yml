@@ -12,19 +12,18 @@ pr:
 
 resources:
   repositories:
-  - repository: 1esPipelines
-    type: git
-    name: 1ESPipelineTemplates/1ESPipelineTemplates
-    ref: refs/tags/release
+    - repository: 1esPipelines
+      type: git
+      name: 1ESPipelineTemplates/1ESPipelineTemplates
+      ref: refs/tags/release
 
 parameters:
-- name: pools
-  type: object
-  default:
-  - name: vsts-mac-131-xcode-142 
-    os: macos
+  - name: pools
+    type: object
+    default:
+      - name: vsts-mac-131-xcode-142
+        os: macos
 extends:
-
   template: v1/1ES.Unofficial.PipelineTemplate.yml@1esPipelines
   parameters:
     pool:
@@ -35,7 +34,7 @@ extends:
       suppression:
         suppressionFile: $(Build.SourcesDirectory)\guardian\SDL\.gdnsuppress
     stages:
-    - stage: Stage
-      jobs:
-      - job: Job
-      - template: eng/pipelines/jobs/CI-build-job.yml@self
+      - stage: Stage
+        jobs:
+          - job: Job
+          - template: eng/pipelines/jobs/CI-build-job.yml@self

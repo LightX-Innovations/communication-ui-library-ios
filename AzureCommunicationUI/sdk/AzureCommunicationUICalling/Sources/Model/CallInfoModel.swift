@@ -4,6 +4,6 @@
 //
 
 public struct CallInfoModel {
-    let status: CallingStatus
-    let internalError: CallCompositeInternalError?
+  let status: CallingStatus
+  let internalError: CallCompositeInternalError?
 }

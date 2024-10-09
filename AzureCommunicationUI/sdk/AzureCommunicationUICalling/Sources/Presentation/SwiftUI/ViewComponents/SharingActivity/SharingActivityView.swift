@@ -6,23 +6,29 @@
 import SwiftUI
 
 struct SharingActivityView: UIViewControllerRepresentable {
-    let viewModel: DebugInfoSharingActivityViewModel
-    let applicationActivities: [UIActivity]?
-    let sourceView: UIView
-    @Binding var isPresented: Bool
+  let viewModel: DebugInfoSharingActivityViewModel
+  let applicationActivities: [UIActivity]?
+  let sourceView: UIView
+  @Binding var isPresented: Bool
 
-    func makeUIViewController(context: Context) -> SharingActivityContainerController {
-        return SharingActivityContainerController(viewModel: viewModel,
-                                                  applicationActivities: applicationActivities,
-                                                  sourceView: sourceView) {
-            self.isPresented = false
-        }
+  func makeUIViewController(context: Context) -> SharingActivityContainerController {
+    return SharingActivityContainerController(
+      viewModel: viewModel,
+      applicationActivities: applicationActivities,
+      sourceView: sourceView
+    ) {
+      self.isPresented = false
     }
+  }
 
-    func updateUIViewController(_ uiViewController: SharingActivityContainerController, context: Context) {}
+  func updateUIViewController(
+    _ uiViewController: SharingActivityContainerController, context: Context
+  ) {}
 
-    static func dismantleUIViewController(_ controller: SharingActivityContainerController,
-                                          coordinator: Coordinator) {
-        controller.dismissPresentedController()
-    }
+  static func dismantleUIViewController(
+    _ controller: SharingActivityContainerController,
+    coordinator: Coordinator
+  ) {
+    controller.dismissPresentedController()
+  }
 }

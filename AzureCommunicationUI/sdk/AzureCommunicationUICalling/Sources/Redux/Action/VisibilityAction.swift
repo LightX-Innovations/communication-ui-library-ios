@@ -6,9 +6,9 @@
 import Foundation
 
 public enum VisibilityAction: Equatable {
-    case hideRequested
-    case hideEntered
-    case pipModeRequested
-    case pipModeEntered
-    case showNormalEntered
+  case hideRequested
+  case hideEntered
+  case pipModeRequested
+  case pipModeEntered
+  case showNormalEntered
 }

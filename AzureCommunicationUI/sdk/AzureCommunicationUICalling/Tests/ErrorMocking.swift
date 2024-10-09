@@ -6,5 +6,5 @@
 import Foundation
 
 enum ErrorMocking: Error {
-    case mockError
+  case mockError
 }

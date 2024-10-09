@@ -4,41 +4,42 @@
 //
 
 import XCTest
+
 @testable import AzureCommunicationUICalling
 
 class AzureCommunicationUIDemoAppTokenTests: XCUITestBase {
-    func testCallCompositeWithExpiredToken() {
-        tapInterfaceFor(.callUIKit)
+  func testCallCompositeWithExpiredToken() {
+    tapInterfaceFor(.callUIKit)
 
-        tapButton(accessibilityIdentifier: AccessibilityId.settingsButtonAccessibilityID.rawValue)
-        wait(for: app.switches[AccessibilityId.expiredAcsTokenToggleAccessibilityID.rawValue])
-        let toggle = app.switches[AccessibilityId.expiredAcsTokenToggleAccessibilityID.rawValue]
-        app.switches[AccessibilityId.expiredAcsTokenToggleAccessibilityID.rawValue].tap()
-        XCTAssertEqual(toggle.isOn, true)
+    tapButton(accessibilityIdentifier: AccessibilityId.settingsButtonAccessibilityID.rawValue)
+    wait(for: app.switches[AccessibilityId.expiredAcsTokenToggleAccessibilityID.rawValue])
+    let toggle = app.switches[AccessibilityId.expiredAcsTokenToggleAccessibilityID.rawValue]
+    app.switches[AccessibilityId.expiredAcsTokenToggleAccessibilityID.rawValue].tap()
+    XCTAssertEqual(toggle.isOn, true)
 
-        closeDemoAppSettingsPage()
+    closeDemoAppSettingsPage()
 
-        startExperience(useCallingSDKMock: false)
-        joinCall()
-        wait(for: app.buttons[AccessibilityId.startExperienceAccessibilityID.rawValue])
-    }
+    startExperience(useCallingSDKMock: false)
+    joinCall()
+    wait(for: app.buttons[AccessibilityId.startExperienceAccessibilityID.rawValue])
+  }
 
-    func testCallCompositeWithEmptyToken() {
-        tapInterfaceFor(.callSwiftUI)
-        tapButton(accessibilityIdentifier: AccessibilityId.clearTokenTextFieldAccessibilityID.rawValue)
+  func testCallCompositeWithEmptyToken() {
+    tapInterfaceFor(.callSwiftUI)
+    tapButton(accessibilityIdentifier: AccessibilityId.clearTokenTextFieldAccessibilityID.rawValue)
 
-        XCTAssertFalse(app.buttons[AccessibilityId.startExperienceAccessibilityID.rawValue].isEnabled)
-    }
+    XCTAssertFalse(app.buttons[AccessibilityId.startExperienceAccessibilityID.rawValue].isEnabled)
+  }
 
-    func testCallCompositeWithInvalidToken() {
-        tapInterfaceFor(.callSwiftUI)
-        tapButton(accessibilityIdentifier: AccessibilityId.clearTokenTextFieldAccessibilityID.rawValue)
-        let acsTokenTextField = app.textFields["ACS Token"]
+  func testCallCompositeWithInvalidToken() {
+    tapInterfaceFor(.callSwiftUI)
+    tapButton(accessibilityIdentifier: AccessibilityId.clearTokenTextFieldAccessibilityID.rawValue)
+    let acsTokenTextField = app.textFields["ACS Token"]
 
-        acsTokenTextField.tap()
-        acsTokenTextField.typeText("invalidToken")
+    acsTokenTextField.tap()
+    acsTokenTextField.typeText("invalidToken")
 
-        startExperience(useCallingSDKMock: false)
-        tapButton(accessibilityIdentifier: "Dismiss", shouldWait: true)
-    }
+    startExperience(useCallingSDKMock: false)
+    tapButton(accessibilityIdentifier: "Dismiss", shouldWait: true)
+  }
 }

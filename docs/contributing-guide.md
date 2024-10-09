@@ -18,7 +18,8 @@ Here are the steps to start and develop inside iOS Mobile UI Library repo.
 2. [Submitting a PR](#2-submitting-a-pr)
 3. [Having your changes published](#3-having-your-changes-published)
 
-## 1. Setup and Run Samples 
+## 1. Setup and Run Samples
+
 ### Setup Environment
 
 1. Begin by cloning the [Repo](https://github.com/Azure/azure-communication-ui-library-ios) in your local environment, `cd` to the `AzureCommunicationUI` folder in the root of the project directory.
@@ -49,6 +50,7 @@ When submitting a pull request, please add relevant tests and ensure your change
 3. Navigate to `Product` -> `Test` or hit `⌘+U` to start testing
 
 ### Running UI tests
+
 Please follow [Before running the sample for the first time](https://github.com/Azure/communication-ui-library-ios/tree/main/AzureCommunicationUI/AzureCommunicationUIDemoApp#before-running-the-sample-for-the-first-time) to have the `EnvConfig.xcconfig` in your project directory with necessary values for Calling or Chat.
 
 1. Open the `AzureCommunicationUI.xcworkspace` with Xcode

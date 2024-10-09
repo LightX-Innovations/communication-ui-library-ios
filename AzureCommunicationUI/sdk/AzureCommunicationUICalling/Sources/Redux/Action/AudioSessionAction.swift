@@ -6,7 +6,7 @@
 import Foundation
 
 public enum AudioSessionAction: Equatable {
-    case audioInterrupted
-    case audioInterruptEnded
-    case audioEngaged
+  case audioInterrupted
+  case audioInterruptEnded
+  case audioEngaged
 }

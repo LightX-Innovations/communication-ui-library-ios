@@ -6,7 +6,7 @@
 import Foundation
 
 public enum LifecycleAction: Equatable {
-    case foregroundEntered
-    case backgroundEntered
-    case willTerminate
+  case foregroundEntered
+  case backgroundEntered
+  case willTerminate
 }

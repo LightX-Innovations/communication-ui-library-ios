@@ -6,15 +6,15 @@
 import Foundation
 
 enum AppStatus {
-    case foreground
-    case background
+  case foreground
+  case background
 }
 
 struct LifeCycleState {
 
-    let currentStatus: AppStatus
+  let currentStatus: AppStatus
 
-    init(currentStatus: AppStatus = .foreground) {
-        self.currentStatus = currentStatus
-    }
+  init(currentStatus: AppStatus = .foreground) {
+    self.currentStatus = currentStatus
+  }
 }

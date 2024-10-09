@@ -1,6 +1,6 @@
 # UI Test Job
 
-jobs: 
+jobs:
   - job: CallingAutomatedUITest
     displayName: "Calling Automated UI Tests"
     pool:
@@ -8,9 +8,9 @@ jobs:
       demands: xcode
 
     variables:
-      - group: 'SPOOL-Communication-mobileUI'
-      - name: 'acsDisplayName'
-        value: 'iOS CI UI Automated Tester'
+      - group: "SPOOL-Communication-mobileUI"
+      - name: "acsDisplayName"
+        value: "iOS CI UI Automated Tester"
 
     steps:
       - task: servicetree-link-build-task@1
@@ -21,7 +21,7 @@ jobs:
         condition: always()
 
       - task: CocoaPods@0
-        displayName: 'pod install'
+        displayName: "pod install"
         inputs:
           workingDirectory: AzureCommunicationUI
           forceRepoUpdate: true
@@ -30,7 +30,7 @@ jobs:
       - template: templates/update-demo-app-plist-for-testing.yml
 
       - task: Xcode@5
-        displayName: 'Xcode build'
+        displayName: "Xcode build"
         inputs:
           configuration: Release
           sdk: iphoneos
@@ -39,7 +39,7 @@ jobs:
           xcodeVersion: default
 
       - task: Xcode@5
-        displayName: 'Xcode Demo UI test'
+        displayName: "Xcode Demo UI test"
         inputs:
           actions: test
           configuration: Debug
@@ -48,6 +48,5 @@ jobs:
           scheme: AzureCommunicationUIDemoApp
           xcodeVersion: default
           destinationPlatformOption: iOS
-          destinationSimulators: 'iPhone 14 Pro'
+          destinationSimulators: "iPhone 14 Pro"
           publishJUnitResults: true
-

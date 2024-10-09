@@ -6,26 +6,26 @@
 import Foundation
 
 public struct VideoStreamInfoModel: Hashable, Equatable {
-    public enum MediaStreamType {
-        case cameraVideo
-        case screenSharing
+  public enum MediaStreamType {
+    case cameraVideo
+    case screenSharing
 
-        public var description: String {
-            switch self {
-            case .cameraVideo:
-                return "cameraVideo"
-            case .screenSharing:
-                return "screenSharing"
-            }
-        }
+    public var description: String {
+      switch self {
+      case .cameraVideo:
+        return "cameraVideo"
+      case .screenSharing:
+        return "screenSharing"
+      }
     }
-    let videoStreamIdentifier: String
-    let mediaStreamType: MediaStreamType
+  }
+  let videoStreamIdentifier: String
+  let mediaStreamType: MediaStreamType
 
-    public func toJson() -> [String: Any] {
-        return [
-            "videoStreamIdentifier": self.videoStreamIdentifier,
-            "mediaStreamType": self.mediaStreamType.description
-        ]
-    }
+  public func toJson() -> [String: Any] {
+    return [
+      "videoStreamIdentifier": self.videoStreamIdentifier,
+      "mediaStreamType": self.mediaStreamType.description,
+    ]
+  }
 }

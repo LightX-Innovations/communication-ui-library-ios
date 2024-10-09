@@ -6,47 +6,50 @@
 import Foundation
 
 enum ParticipantsAction: Equatable {
-    // MARK: - Chat SDK Local Event Actions
-    case fetchListOfParticipantsSuccess(participants: [ParticipantInfoModel], localParticipantId: String?)
-    case fetchListOfParticipantsFailed(error: Error)
+  // MARK: - Chat SDK Local Event Actions
+  case fetchListOfParticipantsSuccess(
+    participants: [ParticipantInfoModel], localParticipantId: String?)
+  case fetchListOfParticipantsFailed(error: Error)
 
-    case leaveChatSuccess
+  case leaveChatSuccess
 
-    // MARK: - Chat SDK Remote Event Actions
-    case typingIndicatorReceived(participant: UserEventTimestampModel)
-    case clearIdleTypingParticipants
+  // MARK: - Chat SDK Remote Event Actions
+  case typingIndicatorReceived(participant: UserEventTimestampModel)
+  case clearIdleTypingParticipants
 
-    case participantsAdded(participants: [ParticipantInfoModel])
-    case participantsRemoved(participants: [ParticipantInfoModel])
-    case maskedParticipantsReceived(participantIds: Set<String>)
+  case participantsAdded(participants: [ParticipantInfoModel])
+  case participantsRemoved(participants: [ParticipantInfoModel])
+  case maskedParticipantsReceived(participantIds: Set<String>)
 
-    case readReceiptReceived(readReceiptInfo: ReadReceiptInfoModel)
-    case sendReadReceiptTriggered(messageId: String)
-    case sendReadReceiptSuccess(messageId: String)
-    case sendReadReceiptFailed(error: Error)
+  case readReceiptReceived(readReceiptInfo: ReadReceiptInfoModel)
+  case sendReadReceiptTriggered(messageId: String)
+  case sendReadReceiptSuccess(messageId: String)
+  case sendReadReceiptFailed(error: Error)
 
-    static func == (lhs: ParticipantsAction, rhs: ParticipantsAction) -> Bool {
-        switch (lhs, rhs) {
-        case let (.sendReadReceiptFailed(lErr), .sendReadReceiptFailed(rErr)),
-            let (.fetchListOfParticipantsFailed(lErr), .fetchListOfParticipantsFailed(rErr)):
-            return (lErr as NSError).code == (rErr as NSError).code
+  static func == (lhs: ParticipantsAction, rhs: ParticipantsAction) -> Bool {
+    switch (lhs, rhs) {
+    case let (.sendReadReceiptFailed(lErr), .sendReadReceiptFailed(rErr)),
+      let (.fetchListOfParticipantsFailed(lErr), .fetchListOfParticipantsFailed(rErr)):
+      return (lErr as NSError).code == (rErr as NSError).code
 
-        case let (.sendReadReceiptTriggered(lMsgId), .sendReadReceiptTriggered(rMsgId)),
-              let (.sendReadReceiptSuccess(lMsgId), .sendReadReceiptSuccess(rMsgId)):
-            return lMsgId == rMsgId
+    case let (.sendReadReceiptTriggered(lMsgId), .sendReadReceiptTriggered(rMsgId)),
+      let (.sendReadReceiptSuccess(lMsgId), .sendReadReceiptSuccess(rMsgId)):
+      return lMsgId == rMsgId
 
-        case let (.participantsAdded(lArr), .participantsAdded(rArr)),
-            let (.participantsRemoved(lArr), .participantsRemoved(rArr)):
-            return lArr == rArr
+    case let (.participantsAdded(lArr), .participantsAdded(rArr)),
+      let (.participantsRemoved(lArr), .participantsRemoved(rArr)):
+      return lArr == rArr
 
-        case let (.fetchListOfParticipantsSuccess(lArr, lId), .fetchListOfParticipantsSuccess(rArr, rId)):
-            return lId == rId && lArr == rArr
+    case let (
+      .fetchListOfParticipantsSuccess(lArr, lId), .fetchListOfParticipantsSuccess(rArr, rId)
+    ):
+      return lId == rId && lArr == rArr
 
-        case let (.maskedParticipantsReceived(lSet), .maskedParticipantsReceived(rSet)):
-            return lSet == rSet
+    case let (.maskedParticipantsReceived(lSet), .maskedParticipantsReceived(rSet)):
+      return lSet == rSet
 
-        default:
-            return false
-        }
+    default:
+      return false
     }
+  }
 }

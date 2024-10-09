@@ -6,40 +6,40 @@
 import Foundation
 
 public enum NavigationStatus {
-    case setup
-    case inCall
-    case exit
+  case setup
+  case inCall
+  case exit
 
-    public var description: String {
-        switch self {
-        case .setup:
-            return "setup"
-        case .inCall:
-            return "inCall"
-        case .exit:
-            return "exit"
-        }
+  public var description: String {
+    switch self {
+    case .setup:
+      return "setup"
+    case .inCall:
+      return "inCall"
+    case .exit:
+      return "exit"
     }
+  }
 }
 
 public struct NavigationState: Equatable {
 
-    let status: NavigationStatus
-    let supportFormVisible: Bool
+  let status: NavigationStatus
+  let supportFormVisible: Bool
 
-    init(status: NavigationStatus = .setup, supportFormVisible: Bool = false) {
-        self.status = status
-        self.supportFormVisible = supportFormVisible
-    }
+  init(status: NavigationStatus = .setup, supportFormVisible: Bool = false) {
+    self.status = status
+    self.supportFormVisible = supportFormVisible
+  }
 
-    public static func == (lhs: NavigationState, rhs: NavigationState) -> Bool {
-        return lhs.status == rhs.status
-    }
+  public static func == (lhs: NavigationState, rhs: NavigationState) -> Bool {
+    return lhs.status == rhs.status
+  }
 
-    public func toJson() -> [String: Any] {
-        return [
-            "status": self.status.description,
-            "supportFormVisible": self.supportFormVisible
-        ]
-    }
+  public func toJson() -> [String: Any] {
+    return [
+      "status": self.status.description,
+      "supportFormVisible": self.supportFormVisible,
+    ]
+  }
 }

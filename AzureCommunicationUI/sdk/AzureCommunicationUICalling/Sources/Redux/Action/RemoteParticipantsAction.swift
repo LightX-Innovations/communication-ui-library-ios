@@ -6,11 +6,11 @@
 import Foundation
 
 public enum RemoteParticipantsAction: Equatable {
-    case dominantSpeakersUpdated(speakers: [String])
-    case participantListUpdated(participants: [ParticipantInfoModel])
-    case admitAll
-    case declineAll
-    case admit(participantId: String)
-    case decline(participantId: String)
-    case lobbyError(errorCode: LobbyErrorCode?)
+  case dominantSpeakersUpdated(speakers: [String])
+  case participantListUpdated(participants: [ParticipantInfoModel])
+  case admitAll
+  case declineAll
+  case admit(participantId: String)
+  case decline(participantId: String)
+  case lobbyError(errorCode: LobbyErrorCode?)
 }

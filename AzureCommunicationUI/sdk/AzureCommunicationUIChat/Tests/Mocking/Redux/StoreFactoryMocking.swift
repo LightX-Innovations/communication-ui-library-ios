@@ -4,39 +4,40 @@
 //
 
 import Foundation
+
 @testable import AzureCommunicationUIChat
 
 class StoreFactoryMocking {
-    var store: Store<ChatAppState, Action>!
-    var actions = [Action]()
-    var firstAction: Action? { return actions.first }
-    var didRecordAction: Bool { return !actions.isEmpty }
+  var store: Store<ChatAppState, Action>!
+  var actions = [Action]()
+  var firstAction: Action? { return actions.first }
+  var didRecordAction: Bool { return !actions.isEmpty }
 
-    init() {
-        let middleWare = getMiddleware()
-        self.store = Store<ChatAppState, Action>(
-            reducer: .mockReducer(),
-            middlewares: [middleWare],
-            state: ChatAppState()
-        )
-    }
+  init() {
+    let middleWare = getMiddleware()
+    self.store = Store<ChatAppState, Action>(
+      reducer: .mockReducer(),
+      middlewares: [middleWare],
+      state: ChatAppState()
+    )
+  }
 
-    func reset() {
-        actions = []
-    }
+  func reset() {
+    actions = []
+  }
 
-    func setState(_ state: ChatAppState) {
-        store.state = state
-    }
+  func setState(_ state: ChatAppState) {
+    store.state = state
+  }
 
-    func getMiddleware() -> Middleware<ChatAppState, AzureCommunicationUIChat.Action> {
-        return .mock { [weak self] _, _ in
-            return { next in
-                return { action in
-                    self?.actions.append(action)
-                    return next(action)
-                }
-            }
+  func getMiddleware() -> Middleware<ChatAppState, AzureCommunicationUIChat.Action> {
+    return .mock { [weak self] _, _ in
+      return { next in
+        return { action in
+          self?.actions.append(action)
+          return next(action)
         }
+      }
     }
+  }
 }

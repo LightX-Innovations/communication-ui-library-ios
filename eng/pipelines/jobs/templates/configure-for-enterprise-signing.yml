@@ -3,24 +3,24 @@
 parameters:
   - name: provisioningProfileFile
     type: string
-    default: ''
+    default: ""
   - name: certificateFile
     type: string
-    default: ''
+    default: ""
 
 steps:
   # Configure signing for enterprise target
   - script: |
       export PROJ_FILE=$(system.defaultWorkingDirectory)/AzureCommunicationUI/AzureCommunicationUIDemoApp/AzureCommunicationUIDemoApp.xcodeproj/project.pbxproj
       sed -i -e '/PRODUCT_BUNDLE_IDENTIFIER =/ s/= .*/= "com.microsoft.azure.communication.ui.calling-df";/' $PROJ_FILE
-      
+
       export PROJ_FILE_COMPOSITE=$(system.defaultWorkingDirectory)/AzureCommunicationUI/sdk/AzureCommunicationUICalling/AzureCommunicationUICalling.xcodeproj/project.pbxproj
       sed -i -e '/PRODUCT_BUNDLE_IDENTIFIER =/ s/= .*/= "277WSW7QTT.com.microsoft.azure.communication.ui.calling-df"; CODE_SIGNING_REQUIRED = "NO"; CODE_SIGNING_ALLOWED = "NO";/' $PROJ_FILE_COMPOSITE
-    
+
       export CHAT_PROJ_FILE_COMPOSITE=$(system.defaultWorkingDirectory)/AzureCommunicationUI/sdk/AzureCommunicationUIChat/AzureCommunicationUIChat.xcodeproj/project.pbxproj
       sed -i -e '/PRODUCT_BUNDLE_IDENTIFIER =/ s/= .*/= "277WSW7QTT.com.microsoft.azure.communication.ui.chat-df"; CODE_SIGNING_REQUIRED = "NO"; CODE_SIGNING_ALLOWED = "NO";/' $CHAT_PROJ_FILE_COMPOSITE
-    
-    displayName: 'Edit Bundle Identifiers in project files'
+
+    displayName: "Edit Bundle Identifiers in project files"
 
   - script: |
       export POD_FILE=$(system.defaultWorkingDirectory)/AzureCommunicationUI/Podfile
@@ -35,16 +35,16 @@ steps:
       end
       EOF
 
-    displayName: 'Edit Podfile'
+    displayName: "Edit Podfile"
 
   - task: InstallAppleCertificate@2
-    displayName: 'Install Enterprise certificate'
+    displayName: "Install Enterprise certificate"
     inputs:
       certSecureFile: ${{ parameters.certificateFile }}
-      certPwd: '$(P12password)'
+      certPwd: "$(P12password)"
       setUpPartitionIdACLForPrivateKey: false
 
   - task: InstallAppleProvisioningProfile@1
-    displayName: 'Install Enterprise provisioning profile'
+    displayName: "Install Enterprise provisioning profile"
     inputs:
       provProfileSecureFile: ${{ parameters.provisioningProfileFile }}

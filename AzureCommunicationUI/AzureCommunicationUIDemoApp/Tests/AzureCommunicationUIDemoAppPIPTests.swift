@@ -4,18 +4,20 @@
 //
 
 import XCTest
+
 @testable import AzureCommunicationUICalling
 
 class AzureCommunicationUIDemoAppPIPTests: XCUITestBase {
-    func testCallCompositeCurrentParticipantOnlyCallNoPIP() {
-        tapInterfaceFor(.callUIKit)
-        startExperience()
+  func testCallCompositeCurrentParticipantOnlyCallNoPIP() {
+    tapInterfaceFor(.callUIKit)
+    startExperience()
 
-        joinCall()
+    joinCall()
 
-        wait(for: app.buttons[AccessibilityIdentifier.hangupAccessibilityID.rawValue])
+    wait(for: app.buttons[AccessibilityIdentifier.hangupAccessibilityID.rawValue])
 
-        let draggablePipViewRetest = app.otherElements[AccessibilityIdentifier.draggablePipViewAccessibilityID.rawValue]
-        XCTAssertFalse(draggablePipViewRetest.exists)
-    }
+    let draggablePipViewRetest = app.otherElements[
+      AccessibilityIdentifier.draggablePipViewAccessibilityID.rawValue]
+    XCTAssertFalse(draggablePipViewRetest.exists)
+  }
 }

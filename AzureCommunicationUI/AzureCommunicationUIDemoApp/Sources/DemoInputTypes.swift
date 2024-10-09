@@ -3,31 +3,31 @@
 //  Licensed under the MIT License.
 //
 
-import Foundation
 import AzureCommunicationUICalling
+import Foundation
 
 enum MeetingType: Int {
-    case groupCall
-    case teamsMeeting
+  case groupCall
+  case teamsMeeting
 }
 
 enum ChatType: Int {
-    case groupChat
-    case teamsChat
+  case groupChat
+  case teamsChat
 }
 
 enum ACSTokenType: Int {
-    case tokenUrl
-    case token
+  case tokenUrl
+  case token
 }
 
 enum DemoError: Error {
-    case invalidToken
+  case invalidToken
 
-    func getErrorCode() -> String {
-        switch self {
-        case .invalidToken:
-            return CallCompositeErrorCode.tokenExpired
-        }
+  func getErrorCode() -> String {
+    switch self {
+    case .invalidToken:
+      return CallCompositeErrorCode.tokenExpired
     }
+  }
 }
