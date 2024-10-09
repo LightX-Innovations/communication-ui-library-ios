@@ -116,12 +116,13 @@ class VideoViewManager: NSObject, RendererDelegate, RendererViewManager {
             // Apply rotation
             let rotationAngle = 90.0
             let rotation = CGFloat(rotationAngle * Double.pi / 180)
-            self.localRendererView.transform = self.localRendererView.transform.rotated(by: rotation)
+            localRendererView.transform = localRendererView.transform.rotated(by: rotation)
             
             // Apply horizontal flip
             let scaleX = -1.0
-            self.localRendererView.transform = self.localRendererView.transform.scaledBy(x: scaleX, y: 1.0)
+            localRendererView.transform = localRendererView.transform.scaledBy(x: scaleX, y: 1.0)
         }
+        self.localRendererView = localRendererView
     }
 
     // MARK: ParticipantRendererViewManager
