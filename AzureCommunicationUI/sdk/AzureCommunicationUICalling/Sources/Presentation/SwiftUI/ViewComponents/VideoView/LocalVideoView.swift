@@ -73,10 +73,7 @@ struct LocalVideoView: View {
           let rendererView = viewManager.getLocalVideoRendererView(streamId)
         {
           ZStack(alignment: viewType.cameraSwitchButtonAlignment) {
-            if let transforms = transforms {
-              applyTransforms(to: rendererView, with: transforms)
-            }
-            VideoRendererView(rendererView: rendererView)
+            VideoRendererView(rendererView: applyTransforms(to: rendererView, with: transforms))
               .frame(
                 width: geometry.size.width,
                 height: geometry.size.height
@@ -146,7 +143,12 @@ struct LocalVideoView: View {
     }
   }
 
-  func applyTransforms(to rendererView: UIView, with transforms: [CameraTransforms<Any>]) {
+  func applyTransforms(to rendererView: UIView, with transforms: [CameraTransforms<Any>]?) -> UIView
+  {
+    guard let transforms = transforms else {
+      return rendererView
+    }
+
     let sortedTransforms = transforms.sorted { $0.order < $1.order }
 
     sortedTransforms.forEach { transform in
@@ -169,5 +171,6 @@ struct LocalVideoView: View {
         }
       }
     }
+    return rendererView
   }
 }
