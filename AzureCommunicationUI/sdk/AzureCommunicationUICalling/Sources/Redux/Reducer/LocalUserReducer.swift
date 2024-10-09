@@ -81,6 +81,8 @@ where
       audioError = error
     case .participantRoleChanged(let newParticipantRole):
       participantRole = newParticipantRole
+    case .angleChanged(let angle):
+      angle = angle
     }
 
     let cameraState = LocalUserState.CameraState(
@@ -97,7 +99,9 @@ where
       audioState: audioState,
       displayName: displayName,
       localVideoStreamIdentifier: localVideoStreamIdentifier,
-      participantRole: participantRole)
+      participantRole: participantRole,
+      angle: angle
+    )
   }
 }
 

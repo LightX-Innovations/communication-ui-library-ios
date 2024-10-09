@@ -41,6 +41,8 @@ public enum LocalUserAction: Equatable {
 
   case participantRoleChanged(participantRole: ParticipantRole)
 
+  case angleChanged(angle: Double)
+
   public static func == (lhs: LocalUserAction, rhs: LocalUserAction) -> Bool {
 
     switch (lhs, rhs) {

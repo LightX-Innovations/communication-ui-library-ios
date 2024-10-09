@@ -239,13 +239,15 @@ public struct LocalUserState {
       device: .receiverSelected),
     displayName: String? = nil,
     localVideoStreamIdentifier: String? = nil,
-    participantRole: ParticipantRole? = nil
+    participantRole: ParticipantRole? = nil,
+    angle: Double? = nil
   ) {
     self.cameraState = cameraState
     self.audioState = audioState
     self.displayName = displayName
     self.localVideoStreamIdentifier = localVideoStreamIdentifier
     self.participantRole = participantRole
+    self.angle = angle
   }
 
   public func toJson() -> [String: Any] {
@@ -255,6 +257,7 @@ public struct LocalUserState {
       "displayName": self.displayName ?? "",
       "localVideoStreamIdentifier": self.localVideoStreamIdentifier ?? "",
       "participantRole": self.participantRole?.description ?? "",
+      "angle": self.angle ?? 0.0,
     ]
   }
 }
