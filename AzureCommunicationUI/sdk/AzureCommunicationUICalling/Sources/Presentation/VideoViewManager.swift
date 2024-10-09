@@ -87,7 +87,8 @@ class VideoViewManager: NSObject, RendererDelegate, RendererViewManager {
             // Flip the view horizontally
             newRendererView.transform = newRendererView.transform.scaledBy(x: -1.0, y: 1.0)
             // Rotate the view by 90 degrees (π/2 radians)
-             newRendererView.transform = newRendererView.transform.rotated(by: .pi / 2)
+            let angleInDegrees = 90.0
+            newRendererView.transform = newRendererView.transform.rotated(by: CGFloat(angleInDegrees * .pi / 180))
 
             let cache = VideoStreamCache(
                 renderer: newRenderer,
