@@ -41,7 +41,7 @@ public enum LocalUserAction: Equatable {
 
   case participantRoleChanged(participantRole: ParticipantRole)
 
-  case angleChanged(angle: Double)
+  case updateCameraTransforms(transforms: [CameraTransforms<Any>])
 
   public static func == (lhs: LocalUserAction, rhs: LocalUserAction) -> Bool {
 

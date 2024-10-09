@@ -25,7 +25,7 @@ where
     let displayName = localUserState.displayName
     var localVideoStreamIdentifier = localUserState.localVideoStreamIdentifier
     var participantRole = localUserState.participantRole
-    var angle = localUserState.angle
+    var transforms = localUserState.transforms
 
     switch action {
     case .cameraPreviewOnTriggered:
@@ -82,15 +82,16 @@ where
       audioError = error
     case .participantRoleChanged(let newParticipantRole):
       participantRole = newParticipantRole
-    case .angleChanged(let newAngle):
-      angle = newAngle
+    case .updateCameraTransforms(let newTransforms):
+      transforms = newTransforms
     }
 
     let cameraState = LocalUserState.CameraState(
       operation: cameraStatus,
       device: cameraDeviceStatus,
       transmission: cameraTransmissionStatus,
-      error: cameraError)
+      error: cameraError
+    )
     let audioState = LocalUserState.AudioState(
       operation: audioOperationStatus,
       device: audioDeviceStatus,
@@ -101,7 +102,7 @@ where
       displayName: displayName,
       localVideoStreamIdentifier: localVideoStreamIdentifier,
       participantRole: participantRole,
-      angle: angle
+      transforms: transforms
     )
   }
 }

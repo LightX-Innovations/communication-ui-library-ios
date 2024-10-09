@@ -227,7 +227,7 @@ public struct LocalUserState {
   let displayName: String?
   let localVideoStreamIdentifier: String?
   let participantRole: ParticipantRole?
-  let angle: Double?
+  let transforms: [CameraTransforms<Any>]?
 
   init(
     cameraState: CameraState = CameraState(
@@ -240,14 +240,14 @@ public struct LocalUserState {
     displayName: String? = nil,
     localVideoStreamIdentifier: String? = nil,
     participantRole: ParticipantRole? = nil,
-    angle: Double? = nil
+    transforms: [CameraTransforms<Any>]? = nil
   ) {
     self.cameraState = cameraState
     self.audioState = audioState
     self.displayName = displayName
     self.localVideoStreamIdentifier = localVideoStreamIdentifier
     self.participantRole = participantRole
-    self.angle = angle
+    self.transforms = transforms
   }
 
   public func toJson() -> [String: Any] {
@@ -257,7 +257,6 @@ public struct LocalUserState {
       "displayName": self.displayName ?? "",
       "localVideoStreamIdentifier": self.localVideoStreamIdentifier ?? "",
       "participantRole": self.participantRole?.description ?? "",
-      "angle": self.angle ?? 0.0,
     ]
   }
 }

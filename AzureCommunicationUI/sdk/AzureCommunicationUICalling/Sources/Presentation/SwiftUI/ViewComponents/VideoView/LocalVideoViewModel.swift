@@ -16,7 +16,7 @@ class LocalVideoViewModel: ObservableObject {
   @Published var isMuted: Bool = false
   @Published var cameraOperationalStatus: LocalUserState.CameraOperationalStatus = .off
   @Published var isInPip: Bool = false
-  @Published var angle: Double?
+  @Published var transforms: [CameraTransforms<Any>]?
 
   var cameraSwitchButtonPipViewModel: IconButtonViewModel!
   var cameraSwitchButtonFullViewModel: IconButtonViewModel!
@@ -66,8 +66,8 @@ class LocalVideoViewModel: ObservableObject {
       displayName = localUserState.displayName
     }
 
-    if angle != localUserState.angle {
-      angle = localUserState.angle
+    if transforms != localUserState.transforms {
+      transforms = localUserState.transforms
     }
 
     if cameraOperationalStatus != localUserState.cameraState.operation {

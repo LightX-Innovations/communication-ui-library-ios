@@ -63,7 +63,7 @@ struct LocalVideoView: View {
 
   @State private var avatarImage: UIImage?
   @State private var localVideoStreamId: String?
-  @State private var angle: Double?
+  @State private var transforms: [CameraTransforms<Any>]?
 
   var body: some View {
     Group {
@@ -73,11 +73,13 @@ struct LocalVideoView: View {
           let rendererView = viewManager.getLocalVideoRendererView(streamId)
         {
           ZStack(alignment: viewType.cameraSwitchButtonAlignment) {
+            applyTransforms(to: rendererView, with: transforms)
             VideoRendererView(rendererView: rendererView)
               .rotationEffect(.degrees(angle ?? 0))
               .frame(
                 width: geometry.size.width,
-                height: geometry.size.height)
+                height: geometry.size.height,
+              )
             if viewType.hasGradient {
               GradientView()
             }
@@ -121,8 +123,8 @@ struct LocalVideoView: View {
       if localVideoStreamId != $0 {
         localVideoStreamId = $0
       }
-    }.onReceive(viewModel.$angle) { newAngle in
-      angle = newAngle
+    }.onReceive(viewModel.$transforms) { newTransforms in
+      transforms = newTransforms
     }.accessibilityIgnoresInvertColors(true)
   }
 
