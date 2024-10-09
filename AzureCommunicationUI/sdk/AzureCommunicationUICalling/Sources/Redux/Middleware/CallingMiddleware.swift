@@ -105,7 +105,7 @@ private func handleLocalUserAction(
     .audioDeviceChangeRequested(device: _),
     .audioDeviceChangeSucceeded(device: _),
     .audioDeviceChangeFailed(error: _),
-    .participantRoleChanged(participantRole: _):
+    .participantRoleChanged(participantRole: _),
     .angleChanged(angle: _):
     break
   }

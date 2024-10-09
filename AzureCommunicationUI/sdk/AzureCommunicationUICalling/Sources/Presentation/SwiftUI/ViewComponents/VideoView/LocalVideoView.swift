@@ -72,14 +72,9 @@ struct LocalVideoView: View {
           let streamId = localVideoStreamId,
           let rendererView = viewManager.getLocalVideoRendererView(streamId)
         {
-
-          if let angle = angle, let localRendererView = rendererView {
-            let rotation = angle * Double.pi / 180.0
-            localRendererView.transform = localRendererView.transform.rotated(by: rotation)
-          }
-
           ZStack(alignment: viewType.cameraSwitchButtonAlignment) {
             VideoRendererView(rendererView: rendererView)
+              .rotationEffect(.degrees(angle ?? 0))
               .frame(
                 width: geometry.size.width,
                 height: geometry.size.height)
@@ -126,10 +121,8 @@ struct LocalVideoView: View {
       if localVideoStreamId != $0 {
         localVideoStreamId = $0
       }
-    }.onReceive(viewModel.$angle) {
-      if angle != $0 {
-        angle = $0
-      }
+    }.onReceive(viewModel.$angle) { newAngle in
+      angle = newAngle
     }.accessibilityIgnoresInvertColors(true)
   }
 
