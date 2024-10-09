@@ -75,10 +75,9 @@ struct LocalVideoView: View {
           ZStack(alignment: viewType.cameraSwitchButtonAlignment) {
             applyTransforms(to: rendererView, with: transforms)
             VideoRendererView(rendererView: rendererView)
-              .rotationEffect(.degrees(angle ?? 0))
               .frame(
                 width: geometry.size.width,
-                height: geometry.size.height,
+                height: geometry.size.height
               )
             if viewType.hasGradient {
               GradientView()
@@ -141,6 +140,31 @@ struct LocalVideoView: View {
           .padding(cameraSwitchButtonPaddingFull)
       default:
         EmptyView()
+      }
+    }
+  }
+
+  func applyTransforms(to rendererView: UIView, with transforms: [CameraTransforms<Any>]) {
+    let sortedTransforms = transforms.sorted { $0.order < $1.order }
+
+    sortedTransforms.forEach { transform in
+      switch transform.type {
+      case .rotate:
+        if let rotateArgs = transform.args as? TransformTransformsRotateArgs {
+          rendererView.transform = rendererView.transform.rotated(
+            by: CGFloat(rotateArgs.angle * .pi / 180.0))
+        }
+      case .flip:
+        if let flipArgs = transform.args as? TransformTransformsFlipArgs {
+          switch flipArgs.axis {
+          case .horizontal:
+            rendererView.transform = rendererView.transform.scaledBy(x: -1, y: 1)
+          case .vertical:
+            rendererView.transform = rendererView.transform.scaledBy(x: 1, y: -1)
+          default:
+            break
+          }
+        }
       }
     }
   }

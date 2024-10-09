@@ -66,9 +66,7 @@ class LocalVideoViewModel: ObservableObject {
       displayName = localUserState.displayName
     }
 
-    if transforms != localUserState.transforms {
-      transforms = localUserState.transforms
-    }
+    transforms = localUserState.transforms
 
     if cameraOperationalStatus != localUserState.cameraState.operation {
       cameraOperationalStatus = localUserState.cameraState.operation
