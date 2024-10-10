@@ -75,6 +75,7 @@ struct LocalVideoView: View {
           ZStack(alignment: viewType.cameraSwitchButtonAlignment) {
             VideoRendererView(rendererView: applyTransforms(to: rendererView, with: transforms))
               .aspectRatio(contentMode: .fill)
+              .background(Color(.black))
               .frame(
                 width: geometry.size.width,
                 height: geometry.size.height
@@ -147,13 +148,13 @@ struct LocalVideoView: View {
 
   func applyTransforms(to rendererView: UIView, with transforms: [CameraTransforms<Any>]?) -> UIView
   {
+    rendererView.transform = .identity
+
     guard let transforms = transforms else {
-      rendererView.transform = .identity
       return rendererView
     }
 
     if transforms.isEmpty {
-      rendererView.transform = .identity
       return rendererView
     }
 
