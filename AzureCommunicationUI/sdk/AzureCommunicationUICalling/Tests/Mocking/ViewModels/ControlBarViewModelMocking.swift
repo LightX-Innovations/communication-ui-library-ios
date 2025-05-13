@@ -4,32 +4,38 @@
 //
 
 import Foundation
+
 @testable import AzureCommunicationUICalling
 
 class ControlBarViewModelMocking: ControlBarViewModel {
-    private let updateState: ((LocalUserState, PermissionState, VisibilityState) -> Void)?
+  private let updateState: ((LocalUserState, PermissionState, VisibilityState) -> Void)?
 
-    init(compositeViewModelFactory: CompositeViewModelFactoryProtocol,
-         logger: Logger,
-         localizationProvider: LocalizationProviderProtocol,
-         dispatchAction: @escaping ActionDispatch,
-         endCallConfirm: @escaping (() -> Void),
-         localUserState: LocalUserState,
-         updateState: ((LocalUserState, PermissionState, VisibilityState) -> Void)? = nil) {
-        self.updateState = updateState
-        super.init(compositeViewModelFactory: compositeViewModelFactory,
-                   logger: logger,
-                   localizationProvider: localizationProvider,
-                   dispatchAction: dispatchAction,
-                   endCallConfirm: endCallConfirm,
-                   localUserState: localUserState,
-                   audioVideoMode: .audioAndVideo)
-    }
+  init(
+    compositeViewModelFactory: CompositeViewModelFactoryProtocol,
+    logger: Logger,
+    localizationProvider: LocalizationProviderProtocol,
+    dispatchAction: @escaping ActionDispatch,
+    endCallConfirm: @escaping (() -> Void),
+    localUserState: LocalUserState,
+    updateState: ((LocalUserState, PermissionState, VisibilityState) -> Void)? = nil
+  ) {
+    self.updateState = updateState
+    super.init(
+      compositeViewModelFactory: compositeViewModelFactory,
+      logger: logger,
+      localizationProvider: localizationProvider,
+      dispatchAction: dispatchAction,
+      endCallConfirm: endCallConfirm,
+      localUserState: localUserState,
+      audioVideoMode: .audioAndVideo)
+  }
 
-    override func update(localUserState: LocalUserState,
-                         permissionState: PermissionState,
-                         callingState: CallingState,
-                         visibilityState: VisibilityState) {
-        updateState?(localUserState, permissionState, visibilityState)
-    }
+  override func update(
+    localUserState: LocalUserState,
+    permissionState: PermissionState,
+    callingState: CallingState,
+    visibilityState: VisibilityState
+  ) {
+    updateState?(localUserState, permissionState, visibilityState)
+  }
 }

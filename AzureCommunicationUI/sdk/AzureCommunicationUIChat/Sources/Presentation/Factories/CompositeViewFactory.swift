@@ -6,20 +6,22 @@
 import Foundation
 
 protocol CompositeViewFactoryProtocol {
-    func makeChatView() -> ChatView
+  func makeChatView() -> ChatView
 }
 
 struct CompositeViewFactory: CompositeViewFactoryProtocol {
-    private let logger: Logger
-    private let compositeViewModelFactory: CompositeViewModelFactoryProtocol
+  private let logger: Logger
+  private let compositeViewModelFactory: CompositeViewModelFactoryProtocol
 
-    init(logger: Logger,
-         compositeViewModelFactory: CompositeViewModelFactoryProtocol) {
-        self.logger = logger
-        self.compositeViewModelFactory = compositeViewModelFactory
-    }
+  init(
+    logger: Logger,
+    compositeViewModelFactory: CompositeViewModelFactoryProtocol
+  ) {
+    self.logger = logger
+    self.compositeViewModelFactory = compositeViewModelFactory
+  }
 
-    func makeChatView() -> ChatView {
-        return ChatView(viewModel: compositeViewModelFactory.getChatViewModel())
-    }
+  func makeChatView() -> ChatView {
+    return ChatView(viewModel: compositeViewModelFactory.getChatViewModel())
+  }
 }

@@ -6,9 +6,9 @@
 import SwiftUI
 
 struct ContainerView: View {
-    let viewFactory: CompositeViewFactoryProtocol
+  let viewFactory: CompositeViewFactoryProtocol
 
-    var body: some View {
-        viewFactory.makeChatView()
-    }
+  var body: some View {
+    viewFactory.makeChatView()
+  }
 }

@@ -7,207 +7,218 @@ import Combine
 import Foundation
 
 class InfoHeaderViewModel: ObservableObject {
-    @Published var accessibilityLabel: String
-    @Published var infoLabel: String
-    @Published var isInfoHeaderDisplayed: Bool = true
-    @Published var isParticipantsListDisplayed: Bool = false
-    @Published var isVoiceOverEnabled: Bool = false
-    private let logger: Logger
-    private let dispatch: ActionDispatch
-    private let accessibilityProvider: AccessibilityProviderProtocol
-    private let localizationProvider: LocalizationProviderProtocol
-    private var infoHeaderDismissTimer: Timer?
-    private var participantsCount: Int = 0
-    private var callingStatus: CallingStatus = .none
-    let enableMultitasking: Bool
-    private let enableSystemPipWhenMultitasking: Bool
+  @Published var accessibilityLabel: String
+  @Published var infoLabel: String
+  @Published var isInfoHeaderDisplayed: Bool = true
+  @Published var isParticipantsListDisplayed: Bool = false
+  @Published var isVoiceOverEnabled: Bool = false
+  private let logger: Logger
+  private let dispatch: ActionDispatch
+  private let accessibilityProvider: AccessibilityProviderProtocol
+  private let localizationProvider: LocalizationProviderProtocol
+  private var infoHeaderDismissTimer: Timer?
+  private var participantsCount: Int = 0
+  private var callingStatus: CallingStatus = .none
+  let enableMultitasking: Bool
+  private let enableSystemPipWhenMultitasking: Bool
 
-    let participantsListViewModel: ParticipantsListViewModel
-    var participantListButtonViewModel: IconButtonViewModel!
-    var dismissButtonViewModel: IconButtonViewModel!
+  let participantsListViewModel: ParticipantsListViewModel
+  var participantListButtonViewModel: IconButtonViewModel!
+  var dismissButtonViewModel: IconButtonViewModel!
 
-    var isPad: Bool = false
+  var isPad: Bool = false
 
-    init(compositeViewModelFactory: CompositeViewModelFactoryProtocol,
-         logger: Logger,
-         localUserState: LocalUserState,
-         localizationProvider: LocalizationProviderProtocol,
-         accessibilityProvider: AccessibilityProviderProtocol,
-         dispatchAction: @escaping ActionDispatch,
-         enableMultitasking: Bool,
-         enableSystemPipWhenMultitasking: Bool) {
-        self.dispatch = dispatchAction
-        self.logger = logger
-        self.accessibilityProvider = accessibilityProvider
-        self.localizationProvider = localizationProvider
-        let title = localizationProvider.getLocalizedString(.callWith0Person)
-        self.infoLabel = title
-        self.accessibilityLabel = title
-        self.enableMultitasking = enableMultitasking
-        self.enableSystemPipWhenMultitasking = enableSystemPipWhenMultitasking
-        self.participantsListViewModel = compositeViewModelFactory.makeParticipantsListViewModel(
-            localUserState: localUserState, dispatchAction: dispatchAction)
-        self.participantListButtonViewModel = compositeViewModelFactory.makeIconButtonViewModel(
-            iconName: .showParticipant,
-            buttonType: .infoButton,
-            isDisabled: false) { [weak self] in
-                guard let self = self else {
-                    return
-                }
-                self.showParticipantListButtonTapped()
-        }
-        self.participantListButtonViewModel.accessibilityLabel = self.localizationProvider.getLocalizedString(
-            .participantListAccessibilityLabel)
+  init(
+    compositeViewModelFactory: CompositeViewModelFactoryProtocol,
+    logger: Logger,
+    localUserState: LocalUserState,
+    localizationProvider: LocalizationProviderProtocol,
+    accessibilityProvider: AccessibilityProviderProtocol,
+    dispatchAction: @escaping ActionDispatch,
+    enableMultitasking: Bool,
+    enableSystemPipWhenMultitasking: Bool
+  ) {
+    self.dispatch = dispatchAction
+    self.logger = logger
+    self.accessibilityProvider = accessibilityProvider
+    self.localizationProvider = localizationProvider
+    let title = localizationProvider.getLocalizedString(.callWith0Person)
+    self.infoLabel = title
+    self.accessibilityLabel = title
+    self.enableMultitasking = enableMultitasking
+    self.enableSystemPipWhenMultitasking = enableSystemPipWhenMultitasking
+    self.participantsListViewModel = compositeViewModelFactory.makeParticipantsListViewModel(
+      localUserState: localUserState, dispatchAction: dispatchAction)
+    self.participantListButtonViewModel = compositeViewModelFactory.makeIconButtonViewModel(
+      iconName: .showParticipant,
+      buttonType: .infoButton,
+      isDisabled: false
+    ) { [weak self] in
+      guard let self = self else {
+        return
+      }
+      self.showParticipantListButtonTapped()
+    }
+    self.participantListButtonViewModel.accessibilityLabel = self.localizationProvider
+      .getLocalizedString(
+        .participantListAccessibilityLabel)
 
-        dismissButtonViewModel = compositeViewModelFactory.makeIconButtonViewModel(
-            iconName: .leftArrow,
-            buttonType: .infoButton,
-            isDisabled: false) { [weak self] in
-                guard let self = self else {
-                    return
-                }
-                self.dismissButtonTapped()
-        }
-        dismissButtonViewModel.update(
-            accessibilityLabel: self.localizationProvider.getLocalizedString(.dismissAccessibilityLabel))
+    dismissButtonViewModel = compositeViewModelFactory.makeIconButtonViewModel(
+      iconName: .leftArrow,
+      buttonType: .infoButton,
+      isDisabled: false
+    ) { [weak self] in
+      guard let self = self else {
+        return
+      }
+      self.dismissButtonTapped()
+    }
+    dismissButtonViewModel.update(
+      accessibilityLabel: self.localizationProvider.getLocalizedString(.dismissAccessibilityLabel))
 
-        self.accessibilityProvider.subscribeToVoiceOverStatusDidChangeNotification(self)
-        self.accessibilityProvider.subscribeToUIFocusDidUpdateNotification(self)
-        updateInfoHeaderAvailability()
+    self.accessibilityProvider.subscribeToVoiceOverStatusDidChangeNotification(self)
+    self.accessibilityProvider.subscribeToUIFocusDidUpdateNotification(self)
+    updateInfoHeaderAvailability()
+  }
+
+  func showParticipantListButtonTapped() {
+    logger.debug("Show participant list button tapped")
+    if isPad {
+      self.infoHeaderDismissTimer?.invalidate()
+    }
+    self.displayParticipantsList()
+  }
+
+  func displayParticipantsList() {
+    self.isParticipantsListDisplayed = true
+  }
+
+  func toggleDisplayInfoHeaderIfNeeded() {
+    guard !isVoiceOverEnabled else {
+      return
+    }
+    self.isInfoHeaderDisplayed ? hideInfoHeader() : displayWithTimer()
+  }
+
+  func update(
+    localUserState: LocalUserState,
+    remoteParticipantsState: RemoteParticipantsState,
+    callingState: CallingState,
+    visibilityState: VisibilityState
+  ) {
+    isHoldingCall(callingState: callingState)
+    let shouldDisplayInfoHeaderValue = shouldDisplayInfoHeader(for: callingStatus)
+    let newDisplayInfoHeaderValue = shouldDisplayInfoHeader(for: callingState.status)
+    callingStatus = callingState.status
+    if isVoiceOverEnabled && newDisplayInfoHeaderValue != shouldDisplayInfoHeaderValue {
+      updateInfoHeaderAvailability()
     }
 
-    func showParticipantListButtonTapped() {
-        logger.debug("Show participant list button tapped")
-        if isPad {
-            self.infoHeaderDismissTimer?.invalidate()
-        }
-        self.displayParticipantsList()
+    let updatedRemoteparticipantCount = remoteParticipantsState.participantInfoList
+      .filter({ participantInfoModel in
+        participantInfoModel.status != .inLobby && participantInfoModel.status != .disconnected
+      })
+      .count
+
+    if participantsCount != updatedRemoteparticipantCount {
+      participantsCount = updatedRemoteparticipantCount
+      updateInfoLabel()
+    }
+    participantsListViewModel.update(
+      localUserState: localUserState,
+      remoteParticipantsState: remoteParticipantsState)
+
+    if visibilityState.currentStatus == .pipModeEntered {
+      hideInfoHeader()
     }
 
-    func displayParticipantsList() {
-        self.isParticipantsListDisplayed = true
+    if visibilityState.currentStatus != .visible {
+      isParticipantsListDisplayed = false
     }
+  }
 
-    func toggleDisplayInfoHeaderIfNeeded() {
-        guard !isVoiceOverEnabled else {
-            return
-        }
-        self.isInfoHeaderDisplayed ? hideInfoHeader() : displayWithTimer()
+  private func isHoldingCall(callingState: CallingState) {
+    guard callingState.status == .localHold,
+      callingStatus != callingState.status
+    else {
+      return
     }
-
-    func update(localUserState: LocalUserState,
-                remoteParticipantsState: RemoteParticipantsState,
-                callingState: CallingState,
-                visibilityState: VisibilityState) {
-        isHoldingCall(callingState: callingState)
-        let shouldDisplayInfoHeaderValue = shouldDisplayInfoHeader(for: callingStatus)
-        let newDisplayInfoHeaderValue = shouldDisplayInfoHeader(for: callingState.status)
-        callingStatus = callingState.status
-        if isVoiceOverEnabled && newDisplayInfoHeaderValue != shouldDisplayInfoHeaderValue {
-            updateInfoHeaderAvailability()
-        }
-
-        let updatedRemoteparticipantCount = remoteParticipantsState.participantInfoList
-            .filter({ participantInfoModel in
-                participantInfoModel.status != .inLobby && participantInfoModel.status != .disconnected
-            })
-            .count
-
-        if participantsCount != updatedRemoteparticipantCount {
-            participantsCount = updatedRemoteparticipantCount
-            updateInfoLabel()
-        }
-        participantsListViewModel.update(localUserState: localUserState,
-                                         remoteParticipantsState: remoteParticipantsState)
-
-        if visibilityState.currentStatus == .pipModeEntered {
-            hideInfoHeader()
-        }
-
-        if visibilityState.currentStatus != .visible {
-            isParticipantsListDisplayed = false
-        }
+    if isInfoHeaderDisplayed {
+      isInfoHeaderDisplayed = false
     }
-
-    private func isHoldingCall(callingState: CallingState) {
-        guard callingState.status == .localHold,
-              callingStatus != callingState.status else {
-            return
-        }
-        if isInfoHeaderDisplayed {
-            isInfoHeaderDisplayed = false
-        }
-        if isParticipantsListDisplayed {
-            isParticipantsListDisplayed = false
-        }
+    if isParticipantsListDisplayed {
+      isParticipantsListDisplayed = false
     }
+  }
 
-    private func updateInfoLabel() {
-        let content: String
-        switch participantsCount {
-        case 0:
-            content = localizationProvider.getLocalizedString(.callWith0Person)
-        case 1:
-            content = localizationProvider.getLocalizedString(.callWith1Person)
-        default:
-            content = localizationProvider.getLocalizedString(.callWithNPerson, participantsCount)
-        }
-        infoLabel = content
-        accessibilityLabel = content
+  private func updateInfoLabel() {
+    let content: String
+    switch participantsCount {
+    case 0:
+      content = localizationProvider.getLocalizedString(.callWith0Person)
+    case 1:
+      content = localizationProvider.getLocalizedString(.callWith1Person)
+    default:
+      content = localizationProvider.getLocalizedString(.callWithNPerson, participantsCount)
     }
+    infoLabel = content
+    accessibilityLabel = content
+  }
 
-    private func displayWithTimer() {
-        self.isInfoHeaderDisplayed = true
-        resetTimer()
-    }
+  private func displayWithTimer() {
+    self.isInfoHeaderDisplayed = true
+    resetTimer()
+  }
 
-    @objc private func hideInfoHeader() {
-        self.isInfoHeaderDisplayed = false
-        self.infoHeaderDismissTimer?.invalidate()
-    }
+  @objc private func hideInfoHeader() {
+    self.isInfoHeaderDisplayed = false
+    self.infoHeaderDismissTimer?.invalidate()
+  }
 
-    private func resetTimer() {
-        self.infoHeaderDismissTimer = Timer.scheduledTimer(withTimeInterval: 3.0,
-                             repeats: false) { [weak self] _ in
-            self?.hideInfoHeader()
-        }
+  private func resetTimer() {
+    self.infoHeaderDismissTimer = Timer.scheduledTimer(
+      withTimeInterval: 3.0,
+      repeats: false
+    ) { [weak self] _ in
+      self?.hideInfoHeader()
     }
+  }
 
-    private func updateInfoHeaderAvailability() {
-        let shouldDisplayInfoHeader = shouldDisplayInfoHeader(for: callingStatus)
-        isVoiceOverEnabled = accessibilityProvider.isVoiceOverEnabled
-        // invalidating timer is required for setting the next timer and when VoiceOver is enabled
-        infoHeaderDismissTimer?.invalidate()
-        if self.isVoiceOverEnabled {
-            isInfoHeaderDisplayed = shouldDisplayInfoHeader
-        } else if shouldDisplayInfoHeader {
-            displayWithTimer()
-        }
+  private func updateInfoHeaderAvailability() {
+    let shouldDisplayInfoHeader = shouldDisplayInfoHeader(for: callingStatus)
+    isVoiceOverEnabled = accessibilityProvider.isVoiceOverEnabled
+    // invalidating timer is required for setting the next timer and when VoiceOver is enabled
+    infoHeaderDismissTimer?.invalidate()
+    if self.isVoiceOverEnabled {
+      isInfoHeaderDisplayed = shouldDisplayInfoHeader
+    } else if shouldDisplayInfoHeader {
+      displayWithTimer()
     }
+  }
 
-    private func shouldDisplayInfoHeader(for callingStatus: CallingStatus) -> Bool {
-        return callingStatus != .inLobby && callingStatus != .localHold
-    }
+  private func shouldDisplayInfoHeader(for callingStatus: CallingStatus) -> Bool {
+    return callingStatus != .inLobby && callingStatus != .localHold
+  }
 
-    private func dismissButtonTapped() {
-        if self.enableSystemPipWhenMultitasking {
-            dispatch(.visibilityAction(.pipModeRequested))
-        } else if self.enableMultitasking {
-            dispatch(.visibilityAction(.hideRequested))
-        }
+  private func dismissButtonTapped() {
+    if self.enableSystemPipWhenMultitasking {
+      dispatch(.visibilityAction(.pipModeRequested))
+    } else if self.enableMultitasking {
+      dispatch(.visibilityAction(.hideRequested))
     }
+  }
 }
 
 extension InfoHeaderViewModel: AccessibilityProviderNotificationsObserver {
-    func didUIFocusUpdateNotification(_ notification: NSNotification) {
-        updateInfoHeaderAvailability()
+  func didUIFocusUpdateNotification(_ notification: NSNotification) {
+    updateInfoHeaderAvailability()
+  }
+
+  func didChangeVoiceOverStatus(_ notification: NSNotification) {
+    guard isVoiceOverEnabled != accessibilityProvider.isVoiceOverEnabled else {
+      return
     }
 
-    func didChangeVoiceOverStatus(_ notification: NSNotification) {
-        guard isVoiceOverEnabled != accessibilityProvider.isVoiceOverEnabled else {
-            return
-        }
-
-        updateInfoHeaderAvailability()
-    }
+    updateInfoHeaderAvailability()
+  }
 }

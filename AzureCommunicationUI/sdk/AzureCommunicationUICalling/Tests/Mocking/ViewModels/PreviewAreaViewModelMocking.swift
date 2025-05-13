@@ -4,23 +4,29 @@
 //
 
 import Foundation
+
 @testable import AzureCommunicationUICalling
 
 class PreviewAreaViewModelMocking: PreviewAreaViewModel {
-    private let updateState: ((LocalUserState, PermissionState, VisibilityState) -> Void)?
+  private let updateState: ((LocalUserState, PermissionState, VisibilityState) -> Void)?
 
-    init(compositeViewModelFactory: CompositeViewModelFactoryProtocol,
-         dispatchAction: @escaping ActionDispatch,
-         updateState: ((LocalUserState, PermissionState, VisibilityState) -> Void)? = nil) {
-        self.updateState = updateState
-        super.init(compositeViewModelFactory: compositeViewModelFactory,
-                   dispatchAction: dispatchAction,
-                   localizationProvider: LocalizationProviderMocking())
-    }
+  init(
+    compositeViewModelFactory: CompositeViewModelFactoryProtocol,
+    dispatchAction: @escaping ActionDispatch,
+    updateState: ((LocalUserState, PermissionState, VisibilityState) -> Void)? = nil
+  ) {
+    self.updateState = updateState
+    super.init(
+      compositeViewModelFactory: compositeViewModelFactory,
+      dispatchAction: dispatchAction,
+      localizationProvider: LocalizationProviderMocking())
+  }
 
-    override func update(localUserState: LocalUserState,
-                         permissionState: PermissionState,
-                         visibilityState: VisibilityState) {
-        updateState?(localUserState, permissionState, visibilityState)
-    }
+  override func update(
+    localUserState: LocalUserState,
+    permissionState: PermissionState,
+    visibilityState: VisibilityState
+  ) {
+    updateState?(localUserState, permissionState, visibilityState)
+  }
 }

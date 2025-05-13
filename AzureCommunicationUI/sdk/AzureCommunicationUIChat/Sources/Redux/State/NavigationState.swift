@@ -6,20 +6,20 @@
 import Foundation
 
 enum NavigationStatus {
-    case inChat
-    case headless
-    case exit
+  case inChat
+  case headless
+  case exit
 }
 
 struct NavigationState: Equatable {
 
-    let status: NavigationStatus
+  let status: NavigationStatus
 
-    init(status: NavigationStatus = .inChat) {
-        self.status = status
-    }
+  init(status: NavigationStatus = .inChat) {
+    self.status = status
+  }
 
-    static func == (lhs: NavigationState, rhs: NavigationState) -> Bool {
-        return lhs.status == rhs.status
-    }
+  static func == (lhs: NavigationState, rhs: NavigationState) -> Bool {
+    return lhs.status == rhs.status
+  }
 }

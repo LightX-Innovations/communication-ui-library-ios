@@ -5,34 +5,40 @@
 
 import Foundation
 
-enum VisibilityStatus {
-    case visible
-    case hideRequested
-    case hidden
-    case pipModeRequested
-    case pipModeEntered
+public enum VisibilityStatus {
+  case visible
+  case hideRequested
+  case hidden
+  case pipModeRequested
+  case pipModeEntered
 
-    var description: String {
-        switch self {
-        case .visible:
-            return "visible"
-        case .hideRequested:
-            return "hideRequested"
-        case .hidden:
-            return "hidden"
-        case .pipModeRequested:
-            return "pipModeRequested"
-        case .pipModeEntered:
-            return "pipModeEntered"
-        }
+  var description: String {
+    switch self {
+    case .visible:
+      return "visible"
+    case .hideRequested:
+      return "hideRequested"
+    case .hidden:
+      return "hidden"
+    case .pipModeRequested:
+      return "pipModeRequested"
+    case .pipModeEntered:
+      return "pipModeEntered"
     }
+  }
 }
 
-struct VisibilityState {
+public struct VisibilityState {
 
-    let currentStatus: VisibilityStatus
+  let currentStatus: VisibilityStatus
 
-    init(currentStatus: VisibilityStatus = .visible) {
-        self.currentStatus = currentStatus
-    }
+  init(currentStatus: VisibilityStatus = .visible) {
+    self.currentStatus = currentStatus
+  }
+
+  public func toJson() -> [String: Any] {
+    return [
+      "currentStatus": self.currentStatus.description
+    ]
+  }
 }

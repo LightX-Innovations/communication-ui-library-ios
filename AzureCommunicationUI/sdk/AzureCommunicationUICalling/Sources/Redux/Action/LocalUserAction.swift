@@ -3,86 +3,90 @@
 //  Licensed under the MIT License.
 //
 
-import Foundation
 import Combine
+import Foundation
 
-enum LocalUserAction: Equatable {
+public enum LocalUserAction: Equatable {
 
-    case cameraPreviewOnTriggered
-    case cameraOnTriggered
-    case cameraOnSucceeded(videoStreamIdentifier: String)
-    case cameraOnFailed(error: Error)
+  case cameraPreviewOnTriggered
+  case cameraOnTriggered
+  case cameraOnSucceeded(videoStreamIdentifier: String)
+  case cameraOnFailed(error: Error)
 
-    case cameraOffTriggered
-    case cameraOffSucceeded
-    case cameraOffFailed(error: Error)
+  case cameraOffTriggered
+  case cameraOffSucceeded
+  case cameraOffFailed(error: Error)
 
-    case cameraPausedSucceeded
-    case cameraPausedFailed(error: Error)
+  case cameraPausedSucceeded
+  case cameraPausedFailed(error: Error)
 
-    case cameraSwitchTriggered
-    case cameraSwitchSucceeded(cameraDevice: CameraDevice)
-    case cameraSwitchFailed(previousCamera: LocalUserState.CameraDeviceSelectionStatus, error: Error)
+  case cameraSwitchTriggered
+  case cameraSwitchSucceeded(cameraDevice: CameraDevice)
+  case cameraSwitchFailed(previousCamera: LocalUserState.CameraDeviceSelectionStatus, error: Error)
 
-    case microphoneOnTriggered
-    case microphoneOnFailed(error: Error)
+  case microphoneOnTriggered
+  case microphoneOnFailed(error: Error)
 
-    case microphoneOffTriggered
-    case microphoneOffFailed(error: Error)
+  case microphoneOffTriggered
+  case microphoneOffFailed(error: Error)
 
-    case microphoneMuteStateUpdated(isMuted: Bool)
+  case microphoneMuteStateUpdated(isMuted: Bool)
 
-    case microphonePreviewOn
-    case microphonePreviewOff
+  case microphonePreviewOn
+  case microphonePreviewOff
 
-    case audioDeviceChangeRequested(device: AudioDeviceType)
-    case audioDeviceChangeSucceeded(device: AudioDeviceType)
-    case audioDeviceChangeFailed(error: Error)
+  case audioDeviceChangeRequested(device: AudioDeviceType)
+  case audioDeviceChangeSucceeded(device: AudioDeviceType)
+  case audioDeviceChangeFailed(error: Error)
 
-    case participantRoleChanged(participantRole: ParticipantRole)
+  case participantRoleChanged(participantRole: ParticipantRole)
 
-    static func == (lhs: LocalUserAction, rhs: LocalUserAction) -> Bool {
+  case updateCameraTransforms(transforms: [CameraTransforms<Any>])
 
-        switch (lhs, rhs) {
-        case let (.cameraOnFailed(lErr), .cameraOnFailed(rErr)),
-            let (.cameraOffFailed(lErr), .cameraOffFailed(rErr)),
-            let (.cameraPausedFailed(lErr), .cameraPausedFailed(rErr)),
-            let (.microphoneOnFailed(lErr), .microphoneOnFailed(rErr)),
-            let (.microphoneOffFailed(lErr), .microphoneOffFailed(rErr)),
-            let (.audioDeviceChangeFailed(lErr), .audioDeviceChangeFailed(rErr)):
+  public static func == (lhs: LocalUserAction, rhs: LocalUserAction) -> Bool {
 
-            return (lErr as NSError).code == (rErr as NSError).code
+    switch (lhs, rhs) {
+    case let (.cameraOnFailed(lErr), .cameraOnFailed(rErr)),
+      let (.cameraOffFailed(lErr), .cameraOffFailed(rErr)),
+      let (.cameraPausedFailed(lErr), .cameraPausedFailed(rErr)),
+      let (.microphoneOnFailed(lErr), .microphoneOnFailed(rErr)),
+      let (.microphoneOffFailed(lErr), .microphoneOffFailed(rErr)),
+      let (.audioDeviceChangeFailed(lErr), .audioDeviceChangeFailed(rErr)):
 
-        case (.cameraPreviewOnTriggered, .cameraPreviewOnTriggered),
-            (.cameraOnTriggered, .cameraOnTriggered),
-            (.cameraOffTriggered, .cameraOffTriggered),
-            (.cameraOffSucceeded, .cameraOffSucceeded),
-            (.cameraPausedSucceeded, .cameraPausedSucceeded),
-            (.cameraSwitchTriggered, .cameraSwitchTriggered),
-            (.microphoneOnTriggered, .microphoneOnTriggered),
-            (.microphoneOffTriggered, .microphoneOffTriggered),
-            (.microphonePreviewOn, .microphonePreviewOn),
-            (.microphonePreviewOff, .microphonePreviewOff):
-            return true
+      return (lErr as NSError).code == (rErr as NSError).code
 
-        case let (.audioDeviceChangeRequested(lDev), .audioDeviceChangeRequested(rDev)),
-            let (.audioDeviceChangeSucceeded(lDev), .audioDeviceChangeSucceeded(rDev)):
-            return lDev == rDev
+    case (.cameraPreviewOnTriggered, .cameraPreviewOnTriggered),
+      (.cameraOnTriggered, .cameraOnTriggered),
+      (.cameraOffTriggered, .cameraOffTriggered),
+      (.cameraOffSucceeded, .cameraOffSucceeded),
+      (.cameraPausedSucceeded, .cameraPausedSucceeded),
+      (.cameraSwitchTriggered, .cameraSwitchTriggered),
+      (.microphoneOnTriggered, .microphoneOnTriggered),
+      (.microphoneOffTriggered, .microphoneOffTriggered),
+      (.microphonePreviewOn, .microphonePreviewOn),
+      (.microphonePreviewOff, .microphonePreviewOff):
+      return true
 
-        case let (.microphoneMuteStateUpdated(lMuted), .microphoneMuteStateUpdated(rMuted)):
-            return lMuted == rMuted
+    case let (.audioDeviceChangeRequested(lDev), .audioDeviceChangeRequested(rDev)),
+      let (.audioDeviceChangeSucceeded(lDev), .audioDeviceChangeSucceeded(rDev)):
+      return lDev == rDev
 
-        case let (.cameraOnSucceeded(lId), .cameraOnSucceeded(rId)):
-            return lId == rId
+    case let (.microphoneMuteStateUpdated(lMuted), .microphoneMuteStateUpdated(rMuted)):
+      return lMuted == rMuted
 
-        case let (.cameraSwitchSucceeded(lDev), .cameraSwitchSucceeded(rDev)):
-            return lDev == rDev
+    case let (.cameraOnSucceeded(lId), .cameraOnSucceeded(rId)):
+      return lId == rId
 
-        case let (.cameraSwitchFailed(lPreviousDevice, lErr), .cameraSwitchFailed(rPreviousDevice, rErr)):
-            return lPreviousDevice == rPreviousDevice && (lErr as NSError).code == (rErr as NSError).code
+    case let (.cameraSwitchSucceeded(lDev), .cameraSwitchSucceeded(rDev)):
+      return lDev == rDev
 
-        default:
-            return false
-        }
+    case let (
+      .cameraSwitchFailed(lPreviousDevice, lErr), .cameraSwitchFailed(rPreviousDevice, rErr)
+    ):
+      return lPreviousDevice == rPreviousDevice && (lErr as NSError).code == (rErr as NSError).code
+
+    default:
+      return false
     }
+  }
 }

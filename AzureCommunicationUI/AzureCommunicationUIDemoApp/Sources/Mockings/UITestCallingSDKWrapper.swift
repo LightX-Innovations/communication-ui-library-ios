@@ -3,13 +3,14 @@
 //  Licensed under the MIT License.
 //
 
-import Foundation
-import Combine
 import AzureCommunicationCalling
-#if DEBUG
-@testable import AzureCommunicationUICalling
+import Combine
+import Foundation
 
-class UITestCallingSDKWrapper: NSObject, CallingSDKWrapperProtocol {
+#if DEBUG
+  @testable import AzureCommunicationUICalling
+
+  class UITestCallingSDKWrapper: NSObject, CallingSDKWrapperProtocol {
     let callingEventsHandler: CallingSDKEventsHandling
 
     private let logger: Logger
@@ -21,371 +22,374 @@ class UITestCallingSDKWrapper: NSObject, CallingSDKWrapperProtocol {
     private var newVideoDeviceAddedHandler: ((VideoDeviceInfoMocking) -> Void)?
 
     private var mediaDiagnostics: [MediaCallDiagnostic] = [
-        .speakingWhileMicrophoneIsMuted,
-        .cameraStartFailed,
-        .cameraStartTimedOut,
-        .noSpeakerDevicesAvailable,
-        .noMicrophoneDevicesAvailable,
-        .microphoneNotFunctioning,
-        .speakerNotFunctioning,
-        .speakerMuted
+      .speakingWhileMicrophoneIsMuted,
+      .cameraStartFailed,
+      .cameraStartTimedOut,
+      .noSpeakerDevicesAvailable,
+      .noMicrophoneDevicesAvailable,
+      .microphoneNotFunctioning,
+      .speakerNotFunctioning,
+      .speakerMuted,
     ]
 
     private var currentMediaDiagnostic: Int = 0
     private var currentNetworkDiagnostic: Int = 0
 
     public override init() {
-        logger = DefaultLogger()
-        callingEventsHandler = CallingSDKEventsHandlerMocking(logger: logger)
-        callConfigurationMocking = CallConfigurationMocking()
-        super.init()
+      logger = DefaultLogger()
+      callingEventsHandler = CallingSDKEventsHandlerMocking(logger: logger)
+      callConfigurationMocking = CallConfigurationMocking()
+      super.init()
     }
 
     deinit {
-        logger.debug("CallingSDKWrapper deallocated")
+      logger.debug("CallingSDKWrapper deallocated")
     }
 
     func setupCall() async throws {
-        try await setupCallClientAndDeviceManager()
+      try await setupCallClientAndDeviceManager()
     }
 
     func startCall(isCameraPreferred: Bool, isAudioPreferred: Bool) async throws {
-        logger.debug("Reset Subjects in callingEventsHandler")
-        if let callingEventsHandler = self.callingEventsHandler
-            as? CallingSDKEventsHandlerMocking {
-            callingEventsHandler.setupProperties()
-        }
-        logger.debug( "Starting call")
-        do {
-            try await setupCallAgent()
-        } catch {
-            throw CallCompositeInternalError.callJoinFailed
-        }
-        try await joinCall(isCameraPreferred: isCameraPreferred, isAudioPreferred: isAudioPreferred)
+      logger.debug("Reset Subjects in callingEventsHandler")
+      if let callingEventsHandler = self.callingEventsHandler
+        as? CallingSDKEventsHandlerMocking
+      {
+        callingEventsHandler.setupProperties()
+      }
+      logger.debug("Starting call")
+      do {
+        try await setupCallAgent()
+      } catch {
+        throw CallCompositeInternalError.callJoinFailed
+      }
+      try await joinCall(isCameraPreferred: isCameraPreferred, isAudioPreferred: isAudioPreferred)
     }
 
     func joinCall(isCameraPreferred: Bool, isAudioPreferred: Bool) async throws {
-        logger.debug( "Joining call")
+      logger.debug("Joining call")
 
-        guard let callAgent = callAgentMocking else {
-            logger.error( "callAgent is nil")
-            throw CallCompositeInternalError.callJoinFailed
-        }
-        let joinedCall = callAgent.join()
-        guard let joinedCall = joinedCall else {
-            logger.error( "Join call failed")
-            throw CallCompositeInternalError.callJoinFailed
-        }
+      guard let callAgent = callAgentMocking else {
+        logger.error("callAgent is nil")
+        throw CallCompositeInternalError.callJoinFailed
+      }
+      let joinedCall = callAgent.join()
+      guard let joinedCall = joinedCall else {
+        logger.error("Join call failed")
+        throw CallCompositeInternalError.callJoinFailed
+      }
 
-        if let callingEventsHandler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
-            joinedCall.delegate = callingEventsHandler
-            if callConfigurationMocking.compositeCallType == .groupCall {
-                callingEventsHandler.joinCall()
-            } else if callConfigurationMocking.compositeCallType == .teamsMeeting {
-                callingEventsHandler.joinLobby()
-            } else {
-                logger.error("Invalid groupID / meeting link")
-                throw CallCompositeInternalError.callJoinFailed
-            }
+      if let callingEventsHandler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
+        joinedCall.delegate = callingEventsHandler
+        if callConfigurationMocking.compositeCallType == .groupCall {
+          callingEventsHandler.joinCall()
+        } else if callConfigurationMocking.compositeCallType == .teamsMeeting {
+          callingEventsHandler.joinLobby()
+        } else {
+          logger.error("Invalid groupID / meeting link")
+          throw CallCompositeInternalError.callJoinFailed
         }
+      }
 
-        callMocking = joinedCall
+      callMocking = joinedCall
     }
 
     func endCall() async throws {
-        guard callMocking != nil else {
-            throw CallCompositeInternalError.callEndFailed
-            logger.debug("EndCall() has failed; callMocking is nil")
-        }
-        logger.debug("Call ended successfully")
-        if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
-            handler.endCall()
-            callMocking = nil
-        }
+      guard callMocking != nil else {
+        throw CallCompositeInternalError.callEndFailed
+        logger.debug("EndCall() has failed; callMocking is nil")
+      }
+      logger.debug("Call ended successfully")
+      if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
+        handler.endCall()
+        callMocking = nil
+      }
     }
 
     func getRemoteParticipant<ParticipantType, StreamType>(_ identifier: String)
-    -> CompositeRemoteParticipant<ParticipantType, StreamType>? {
-        return nil
+      -> CompositeRemoteParticipant<ParticipantType, StreamType>?
+    {
+      return nil
     }
 
     func getLocalVideoStream<LocalVideoStreamType>(_ identifier: String)
-    -> CompositeLocalVideoStream<LocalVideoStreamType>? {
-        return nil
+      -> CompositeLocalVideoStream<LocalVideoStreamType>?
+    {
+      return nil
     }
 
     func startCallLocalVideoStream() async throws -> String {
-        return ""
+      return ""
     }
 
     func stopLocalVideoStream() async throws {
     }
 
     func switchCamera() async throws -> CameraDevice {
-        return .front
+      return .front
     }
 
     func getLogFiles() -> [URL] {
-        return []
+      return []
     }
 
     func startPreviewVideoStream() async throws -> String {
-        return ""
+      return ""
     }
 
     func muteLocalMic() async throws {
-        guard callMocking != nil else {
-            return
-        }
-        if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
-            handler.muteLocalMic()
-        }
+      guard callMocking != nil else {
+        return
+      }
+      if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
+        handler.muteLocalMic()
+      }
     }
 
     func unmuteLocalMic() async throws {
-        guard callMocking != nil else {
-            return
-        }
-        if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
-            handler.unmuteLocalMic()
-        }
+      guard callMocking != nil else {
+        return
+      }
+      if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
+        handler.unmuteLocalMic()
+      }
     }
 
     func holdCall() async throws {
-        guard callMocking != nil else {
-            return
-        }
-        if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
-            handler.holdCall()
-        }
+      guard callMocking != nil else {
+        return
+      }
+      if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
+        handler.holdCall()
+      }
     }
 
     func resumeCall() async throws {
-        guard callMocking != nil else {
-            return
-        }
-        if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
-            handler.resumeCall()
-        }
+      guard callMocking != nil else {
+        return
+      }
+      if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
+        handler.resumeCall()
+      }
     }
 
     func transcriptionOn() async throws {
-        guard callMocking != nil else {
-            return
-        }
-        if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
-            handler.transcriptionOn()
-        }
+      guard callMocking != nil else {
+        return
+      }
+      if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
+        handler.transcriptionOn()
+      }
     }
 
     func transcriptionOff() async throws {
-        guard callMocking != nil else {
-            return
-        }
-        if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
-            handler.transcriptionOff()
-        }
+      guard callMocking != nil else {
+        return
+      }
+      if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
+        handler.transcriptionOff()
+      }
     }
 
     func recordingOn() async throws {
-        guard callMocking != nil else {
-            return
-        }
-        if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
-            handler.recordingOn()
-        }
+      guard callMocking != nil else {
+        return
+      }
+      if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
+        handler.recordingOn()
+      }
     }
 
     func recordingOff() async throws {
-        guard callMocking != nil else {
-            return
-        }
-        if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
-            handler.recordingOff()
-        }
+      guard callMocking != nil else {
+        return
+      }
+      if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
+        handler.recordingOff()
+      }
     }
 
     func addParticipant() async throws {
-        try await addParticipant(status: .connected)
+      try await addParticipant(status: .connected)
     }
 
     func addInLobbyParticipant() async throws {
-        try await addParticipant(status: .inLobby)
+      try await addParticipant(status: .inLobby)
     }
 
     func addParticipant(status: ParticipantStatus) async throws {
-        guard callMocking != nil else {
-            return
-        }
-        if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
-            handler.addParticipant(status: status)
-        }
+      guard callMocking != nil else {
+        return
+      }
+      if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
+        handler.addParticipant(status: status)
+      }
     }
 
     func removeParticipant() async throws {
-        guard callMocking != nil else {
-            return
-        }
-        if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
-            handler.removeParticipant()
-        }
+      guard callMocking != nil else {
+        return
+      }
+      if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
+        handler.removeParticipant()
+      }
     }
 
     func unmuteParticipant() async throws {
-        guard callMocking != nil else {
-            return
-        }
-        if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
-            handler.unmuteParticipant()
-        }
+      guard callMocking != nil else {
+        return
+      }
+      if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
+        handler.unmuteParticipant()
+      }
     }
 
     func holdParticipant() async throws {
-        guard callMocking != nil else {
-            return
-        }
-        if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
-            handler.holdParticipant()
-        }
+      guard callMocking != nil else {
+        return
+      }
+      if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
+        handler.holdParticipant()
+      }
     }
 
     func admitAllLobbyParticipants() async throws {
-        guard callMocking != nil else {
-            return
-        }
-        if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
-            handler.admitAllLobbyParticipants()
-        }
+      guard callMocking != nil else {
+        return
+      }
+      if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
+        handler.admitAllLobbyParticipants()
+      }
     }
 
     func admitLobbyParticipant(_ participantId: String) async throws {
-        guard callMocking != nil else {
-            return
-        }
-        if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
-            handler.admitLobbyParticipant(participantId)
-        }
+      guard callMocking != nil else {
+        return
+      }
+      if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
+        handler.admitLobbyParticipant(participantId)
+      }
     }
 
     func emitMediaCallDiagnosticBadState() {
-        guard callMocking != nil else {
-            return
-        }
-        if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
-            handler.emitMediaDiagnostic(mediaDiagnostics[currentMediaDiagnostic], value: true)
-        }
+      guard callMocking != nil else {
+        return
+      }
+      if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
+        handler.emitMediaDiagnostic(mediaDiagnostics[currentMediaDiagnostic], value: true)
+      }
     }
 
     func emitMediaCallDiagnosticGoodState() {
-        guard callMocking != nil else {
-            return
-        }
-        if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
-            handler.emitMediaDiagnostic(mediaDiagnostics[currentMediaDiagnostic], value: false)
-        }
+      guard callMocking != nil else {
+        return
+      }
+      if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
+        handler.emitMediaDiagnostic(mediaDiagnostics[currentMediaDiagnostic], value: false)
+      }
     }
 
     func declineLobbyParticipant(_ participantId: String) async throws {
-        guard callMocking != nil else {
-            return
-        }
-        if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
-            handler.declineLobbyParticipant(participantId)
-        }
+      guard callMocking != nil else {
+        return
+      }
+      if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
+        handler.declineLobbyParticipant(participantId)
+      }
     }
 
     func changeLocalParticipantRole(_ role: ParticipantRole) async throws {
-        guard callMocking != nil else {
-            return
-        }
-        if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
-            handler.setParticipantRole(role)
-        }
+      guard callMocking != nil else {
+        return
+      }
+      if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
+        handler.setParticipantRole(role)
+      }
     }
 
     func changeCurrentMediaDiagnostic() {
-        if currentMediaDiagnostic == mediaDiagnostics.count - 1 {
-            currentMediaDiagnostic = 0
-        } else {
-            currentMediaDiagnostic += 1
-        }
+      if currentMediaDiagnostic == mediaDiagnostics.count - 1 {
+        currentMediaDiagnostic = 0
+      } else {
+        currentMediaDiagnostic += 1
+      }
     }
 
     func emitNetworkCallDiagnosticBadState() {
-        guard callMocking != nil else {
-            return
-        }
+      guard callMocking != nil else {
+        return
+      }
 
-        if currentNetworkDiagnostic <= 1 {
-            if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
-                handler.emitNetworkDiagnostic(
-                    NetworkCallDiagnostic.allCases[currentNetworkDiagnostic], value: true)
-            }
-        } else {
-            if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
-                handler.emitNetworkQualityDiagnostic(
-                    NetworkQualityCallDiagnostic.allCases[currentNetworkDiagnostic - 2], value: .bad)
-            }
+      if currentNetworkDiagnostic <= 1 {
+        if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
+          handler.emitNetworkDiagnostic(
+            NetworkCallDiagnostic.allCases[currentNetworkDiagnostic], value: true)
         }
+      } else {
+        if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
+          handler.emitNetworkQualityDiagnostic(
+            NetworkQualityCallDiagnostic.allCases[currentNetworkDiagnostic - 2], value: .bad)
+        }
+      }
     }
 
     func emitNetworkCallDiagnosticGoodState() {
-        guard callMocking != nil else {
-            return
-        }
+      guard callMocking != nil else {
+        return
+      }
 
-        if currentNetworkDiagnostic <= 1 {
-            if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
-                handler.emitNetworkDiagnostic(
-                    NetworkCallDiagnostic.allCases[currentNetworkDiagnostic], value: false)
-            }
-        } else {
-            if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
-                handler.emitNetworkQualityDiagnostic(
-                    NetworkQualityCallDiagnostic.allCases[currentNetworkDiagnostic - 2], value: .good)
-            }
+      if currentNetworkDiagnostic <= 1 {
+        if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
+          handler.emitNetworkDiagnostic(
+            NetworkCallDiagnostic.allCases[currentNetworkDiagnostic], value: false)
         }
+      } else {
+        if let handler = self.callingEventsHandler as? CallingSDKEventsHandlerMocking {
+          handler.emitNetworkQualityDiagnostic(
+            NetworkQualityCallDiagnostic.allCases[currentNetworkDiagnostic - 2], value: .good)
+        }
+      }
     }
 
     func changeCurrentNetworkDiagnostic() {
-        let count = NetworkCallDiagnostic.allCases.count + NetworkQualityCallDiagnostic.allCases.count
-        if currentNetworkDiagnostic == count - 1 {
-            currentNetworkDiagnostic = 0
-        } else {
-            currentNetworkDiagnostic += 1
-        }
+      let count = NetworkCallDiagnostic.allCases.count + NetworkQualityCallDiagnostic.allCases.count
+      if currentNetworkDiagnostic == count - 1 {
+        currentNetworkDiagnostic = 0
+      } else {
+        currentNetworkDiagnostic += 1
+      }
     }
-}
+  }
 
-extension UITestCallingSDKWrapper {
+  extension UITestCallingSDKWrapper {
     private func setupCallClientAndDeviceManager() async throws {
-        let client = makeCallClientMocking()
-        callClientMocking = client
+      let client = makeCallClientMocking()
+      callClientMocking = client
     }
 
     private func setupCallAgent() async throws {
-        guard callAgentMocking == nil else {
-            logger.debug("Reusing call agent")
-            return
-        }
+      guard callAgentMocking == nil else {
+        logger.debug("Reusing call agent")
+        return
+      }
 
-        let options = CallAgentOptions()
-        if let displayName = callConfigurationMocking.displayName {
-            options.displayName = displayName
-        }
-        do {
-            let callAgentMocking = try await callClientMocking?.createCallAgentMocking()
-            self.logger.debug("Call agent successfully created.")
-            self.callAgentMocking = callAgentMocking
-        } catch {
-            logger.error("It was not possible to create a call agent.")
-            throw error
-        }
+      let options = CallAgentOptions()
+      if let displayName = callConfigurationMocking.displayName {
+        options.displayName = displayName
+      }
+      do {
+        let callAgentMocking = try await callClientMocking?.createCallAgentMocking()
+        self.logger.debug("Call agent successfully created.")
+        self.callAgentMocking = callAgentMocking
+      } catch {
+        logger.error("It was not possible to create a call agent.")
+        throw error
+      }
     }
 
     private func makeCallClientMocking() -> CallClientMocking {
-        let clientOptionsMocking = CallClientOptionsMocking()
-        return CallClientMocking(options: clientOptionsMocking)
+      let clientOptionsMocking = CallClientOptionsMocking()
+      return CallClientMocking(options: clientOptionsMocking)
     }
-}
+  }
 #endif

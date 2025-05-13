@@ -3,21 +3,21 @@
 parameters:
   - name: devices
     type: string
-    default: ''
+    default: ""
   - name: appFile
     type: string
-    default: ''
+    default: ""
 
 steps:
   - task: AppCenterTest@1
-    displayName: 'Test with Visual Studio App Center (${{ parameters.devices }})'
+    displayName: "Test with Visual Studio App Center (${{ parameters.devices }})"
     inputs:
-      appFile: '${{ parameters.appFile }}'
+      appFile: "${{ parameters.appFile }}"
       frameworkOption: xcuitest
-      xcUITestBuildDirectory: '$(build.artifactStagingDirectory)/DerivedData/Build/Products/Debug-iphoneos'
-      serverEndpoint: 'SPOOL-CallingComposite-iOS-AppCenter2'
-      appSlug: 'Azure-Communication-Services/Azure-Communication-Services-Call-UI-Library-Sample-iOS-Internal'
-      devices: '${{ parameters.devices }}'
-      dsymDirectory: '**/*.dSYM/**'
+      xcUITestBuildDirectory: "$(build.artifactStagingDirectory)/DerivedData/Build/Products/Debug-iphoneos"
+      serverEndpoint: "SPOOL-CallingComposite-iOS-AppCenter2"
+      appSlug: "Azure-Communication-Services/Azure-Communication-Services-Call-UI-Library-Sample-iOS-Internal"
+      devices: "${{ parameters.devices }}"
+      dsymDirectory: "**/*.dSYM/**"
       skipWaitingForResults: true
       showDebugOutput: true

@@ -50,7 +50,7 @@ steps:
         sys.exit(1)
       EOF
 
-    displayName: 'Get ACS Access Token'
+    displayName: "Get ACS Access Token"
     name: RetrieveTokens
     failOnStderr: false # Warnings generated need to be ignored
     env:

@@ -6,9 +6,9 @@
 import Foundation
 
 struct JoiningCallActivityViewModel {
-    let localizationProvider: LocalizationProviderProtocol
+  let localizationProvider: LocalizationProviderProtocol
 
-    var title: String {
-        return localizationProvider.getLocalizedString(.joiningCall)
-    }
+  var title: String {
+    return localizationProvider.getLocalizedString(.joiningCall)
+  }
 }

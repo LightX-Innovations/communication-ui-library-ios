@@ -7,12 +7,13 @@ import Foundation
 import SwiftUI
 
 struct AppPhaseKey: EnvironmentKey {
-    static let defaultValue: AppStatus = .foreground
+  static let defaultValue: AppStatus = .foreground
 }
 
 extension EnvironmentValues {
-    var appPhase: AppStatus {
-        get { self[AppPhaseKey.self] }
-        set { self[AppPhaseKey.self] = newValue }
-    }
+  var appPhase: AppStatus {
+    // swiftlint:disable:next implicit_getter
+    get { self[AppPhaseKey.self] }
+    set { self[AppPhaseKey.self] = newValue }
+  }
 }

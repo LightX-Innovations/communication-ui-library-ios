@@ -4,12 +4,13 @@
 //
 
 import Foundation
+
 @testable import AzureCommunicationUICalling
 
 class AvatarViewManagerMocking: AvatarViewManager {
-    var updateStorage: (([String]) -> Void)?
+  var updateStorage: (([String]) -> Void)?
 
-    override func updateStorage(with removedParticipantsIds: [String]) {
-        updateStorage?(removedParticipantsIds)
-    }
+  override func updateStorage(with removedParticipantsIds: [String]) {
+    updateStorage?(removedParticipantsIds)
+  }
 }

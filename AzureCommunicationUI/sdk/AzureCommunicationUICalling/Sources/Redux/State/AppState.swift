@@ -5,40 +5,56 @@
 
 import Foundation
 
-struct AppState {
-    let callingState: CallingState
-    let permissionState: PermissionState
-    let localUserState: LocalUserState
-    let lifeCycleState: LifeCycleState
-    let visibilityState: VisibilityState
-    let audioSessionState: AudioSessionState
-    let remoteParticipantsState: RemoteParticipantsState
-    let navigationState: NavigationState
-    let errorState: ErrorState
-    let defaultUserState: DefaultUserState
-    let diagnosticsState: CallDiagnosticsState
+public struct AppState {
+  let callingState: CallingState
+  let permissionState: PermissionState
+  let localUserState: LocalUserState
+  let lifeCycleState: LifeCycleState
+  let visibilityState: VisibilityState
+  let audioSessionState: AudioSessionState
+  let remoteParticipantsState: RemoteParticipantsState
+  let navigationState: NavigationState
+  let errorState: ErrorState
+  let defaultUserState: DefaultUserState
+  let diagnosticsState: CallDiagnosticsState
 
-    init(callingState: CallingState = .init(),
-         permissionState: PermissionState = .init(),
-         localUserState: LocalUserState = .init(),
-         lifeCycleState: LifeCycleState = .init(),
-         audioSessionState: AudioSessionState = .init(),
-         navigationState: NavigationState = .init(),
-         remoteParticipantsState: RemoteParticipantsState = .init(),
-         errorState: ErrorState = .init(),
-         defaultUserState: DefaultUserState = .init(),
-         visibilityState: VisibilityState = .init(),
-         diagnosticsState: CallDiagnosticsState = .init()) {
-        self.callingState = callingState
-        self.permissionState = permissionState
-        self.localUserState = localUserState
-        self.lifeCycleState = lifeCycleState
-        self.audioSessionState = audioSessionState
-        self.navigationState = navigationState
-        self.remoteParticipantsState = remoteParticipantsState
-        self.errorState = errorState
-        self.defaultUserState = defaultUserState
-        self.visibilityState = visibilityState
-        self.diagnosticsState = diagnosticsState
-    }
+  init(
+    callingState: CallingState = .init(),
+    permissionState: PermissionState = .init(),
+    localUserState: LocalUserState = .init(),
+    lifeCycleState: LifeCycleState = .init(),
+    audioSessionState: AudioSessionState = .init(),
+    navigationState: NavigationState = .init(),
+    remoteParticipantsState: RemoteParticipantsState = .init(),
+    errorState: ErrorState = .init(),
+    defaultUserState: DefaultUserState = .init(),
+    visibilityState: VisibilityState = .init(),
+    diagnosticsState: CallDiagnosticsState = .init()
+  ) {
+    self.callingState = callingState
+    self.permissionState = permissionState
+    self.localUserState = localUserState
+    self.lifeCycleState = lifeCycleState
+    self.audioSessionState = audioSessionState
+    self.navigationState = navigationState
+    self.remoteParticipantsState = remoteParticipantsState
+    self.errorState = errorState
+    self.defaultUserState = defaultUserState
+    self.visibilityState = visibilityState
+    self.diagnosticsState = diagnosticsState
+  }
+
+  public func toJson() -> [String: Any] {
+    return [
+      "callingState": self.callingState.toJson(),
+      "permissionState": self.permissionState.toJson(),
+      "localUserState": self.localUserState.toJson(),
+      "lifeCycleState": self.lifeCycleState.toJson(),
+      "audioSessionState": self.audioSessionState.toJson(),
+      "navigationState": self.navigationState.toJson(),
+      "remoteParticipantsState": self.remoteParticipantsState.toJson(),
+      "errorState": self.errorState.toJson(),
+      "visibilityState": self.visibilityState.toJson(),
+    ]
+  }
 }

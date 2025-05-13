@@ -4,14 +4,16 @@
 //
 
 import Foundation
+
 @testable import AzureCommunicationUICalling
 
 extension Middleware where State == AppState {
-    static func mock<State>(
-        applyingClosure: @escaping (
-            @escaping ActionDispatch,
-            @escaping () -> State) -> (@escaping ActionDispatch) -> ActionDispatch
-    ) -> Middleware<State, AzureCommunicationUICalling.Action> {
-        return .init(apply: applyingClosure)
-    }
+  static func mock<State>(
+    applyingClosure: @escaping (
+      @escaping ActionDispatch,
+      @escaping () -> State
+    ) -> (@escaping ActionDispatch) -> ActionDispatch
+  ) -> Middleware<State, AzureCommunicationUICalling.Action> {
+    return .init(apply: applyingClosure)
+  }
 }

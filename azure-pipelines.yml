@@ -1,6 +1,5 @@
 name: $(date:yyyyMMdd)$(rev:.r)
 variables:
-
   - name: Configuration
     value: Release
   - name: Ic3PipelineUsage
@@ -22,11 +21,11 @@ resources:
       ref: refs/tags/release
 trigger: none
 parameters:
-- name: pools
-  type: object
-  default:
-  - name: vsts-mac-131-xcode-142 
-    os: macos
+  - name: pools
+    type: object
+    default:
+      - name: vsts-mac-131-xcode-142
+        os: macos
 extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1esPipelines
   parameters:
@@ -70,11 +69,11 @@ extends:
                 displayName: Call Touchdown build task for components
                 condition: ne(variables['commit'], 'true')
                 inputs:
-                  environment: 'PRODEXT'
-                  teamId: '44988'
-                  authType: 'OAuth'
-                  authId: 'fa441387-cab4-4f61-969d-fd23388fc7b4'
-                  authKey: '$(AUTHKEY)'
+                  environment: "PRODEXT"
+                  teamId: "44988"
+                  authType: "OAuth"
+                  authId: "fa441387-cab4-4f61-969d-fd23388fc7b4"
+                  authKey: "$(AUTHKEY)"
                   resourceFilePath: AzureCommunicationUI/sdk/AzureCommunicationUICalling/Sources/Localization/en.lproj/Localizable.strings
                   outputDirectoryRoot: AzureCommunicationUI/sdk/AzureCommunicationUICalling/Sources/Localization
                   cultureMappingType: FilePath
@@ -84,8 +83,8 @@ extends:
                 condition: eq(variables['commit'], 'true')
                 inputs:
                   teamId: "44988"
-                  authId: 'fa441387-cab4-4f61-969d-fd23388fc7b4'
-                  authKey: '$(AUTH_KEY)'
+                  authId: "fa441387-cab4-4f61-969d-fd23388fc7b4"
+                  authKey: "$(AUTH_KEY)"
                   resourceFilePath: AzureCommunicationUI/sdk/AzureCommunicationUICalling/Sources/Localization/en.lproj/Localizable.strings
                   outputDirectoryRoot: AzureCommunicationUI/sdk/AzureCommunicationUICalling/Sources/Localization
                   cultureMappingType: FilePath

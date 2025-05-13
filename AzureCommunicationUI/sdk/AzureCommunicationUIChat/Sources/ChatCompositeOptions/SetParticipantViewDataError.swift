@@ -7,6 +7,6 @@ import Foundation
 
 /// An error that occurs during setting participants view data.
 enum SetParticipantViewDataError: String, Error {
-    /// Error when the remote participant is not in the chat.
-    case participantNotInChat
+  /// Error when the remote participant is not in the chat.
+  case participantNotInChat
 }

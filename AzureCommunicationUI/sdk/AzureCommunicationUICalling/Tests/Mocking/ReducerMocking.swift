@@ -4,18 +4,19 @@
 //
 
 import Foundation
+
 @testable import AzureCommunicationUICalling
 
 extension Reducer {
-    static func mockReducer<State, Action>(
-        outputState: State? = nil
-    ) -> Reducer<State, Action> {
+  static func mockReducer<State, Action>(
+    outputState: State? = nil
+  ) -> Reducer<State, Action> {
 
-        return Reducer<State, Action> { state, _ in
-            if let outputState = outputState {
-                return outputState
-            }
-            return state
-        }
+    return Reducer<State, Action> { state, _ in
+      if let outputState = outputState {
+        return outputState
+      }
+      return state
     }
+  }
 }

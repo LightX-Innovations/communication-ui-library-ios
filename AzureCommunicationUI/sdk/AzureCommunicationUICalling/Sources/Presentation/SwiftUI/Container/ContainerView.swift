@@ -7,50 +7,50 @@ import SwiftUI
 
 struct ContainerView: View {
 
-    @ObservedObject var router: NavigationRouter
+  @ObservedObject var router: NavigationRouter
 
-    let logger: Logger
-    let viewFactory: CompositeViewFactoryProtocol
-    let setupViewDefaultOrientation: UIInterfaceOrientationMask =
+  let logger: Logger
+  let viewFactory: CompositeViewFactoryProtocol
+  let setupViewDefaultOrientation: UIInterfaceOrientationMask =
     UIDevice.current.userInterfaceIdiom == .phone ? .portrait : .allButUpsideDown
-    let setupViewOrientationMask: UIInterfaceOrientationMask?
-    let callingViewOrientationMask: UIInterfaceOrientationMask?
-    let isRightToLeft: Bool
-    var isCallingScreenLocked: Bool {
-        return !(callingViewOrientationMask  == .allButUpsideDown || callingViewOrientationMask == nil)
-    }
+  let setupViewOrientationMask: UIInterfaceOrientationMask?
+  let callingViewOrientationMask: UIInterfaceOrientationMask?
+  let isRightToLeft: Bool
+  var isCallingScreenLocked: Bool {
+    return !(callingViewOrientationMask == .allButUpsideDown || callingViewOrientationMask == nil)
+  }
 
-    var body: some View {
-        Group {
-            contentView
-        }
-        .accessibilityElement(children: .contain)
-        .accessibilityAddTraits(.isModal)
-        .environment(\.layoutDirection, isRightToLeft ? .rightToLeft : .leftToRight)
+  var body: some View {
+    Group {
+      contentView
     }
+    .accessibilityElement(children: .contain)
+    .accessibilityAddTraits(.isModal)
+    .environment(\.layoutDirection, isRightToLeft ? .rightToLeft : .leftToRight)
+  }
 
-    @ViewBuilder
-    private var contentView: some View {
-        switch router.currentView {
-        case .setupView:
-            setupView.supportedOrientations(setupViewOrientationMask ?? setupViewDefaultOrientation)
-        case .callingView:
-            if isCallingScreenLocked {
-                callingView.proximitySensorEnabled(true)
-                    .supportedOrientations(callingViewOrientationMask ?? .portrait)
-            } else {
-            callingView.proximitySensorEnabled(true)
-            }
-        }
+  @ViewBuilder
+  private var contentView: some View {
+    switch router.currentView {
+    case .setupView:
+      setupView.supportedOrientations(setupViewOrientationMask ?? setupViewDefaultOrientation)
+    case .callingView:
+      if isCallingScreenLocked {
+        callingView.proximitySensorEnabled(true)
+          .supportedOrientations(callingViewOrientationMask ?? .portrait)
+      } else {
+        callingView.proximitySensorEnabled(true)
+      }
     }
+  }
 
-    var setupView: SetupView {
-        logger.debug("Displaying view: setupView")
-        return viewFactory.makeSetupView()
-    }
+  var setupView: SetupView {
+    logger.debug("Displaying view: setupView")
+    return viewFactory.makeSetupView()
+  }
 
-    var callingView: CallingView {
-        logger.debug("Displaying view: callingView")
-        return viewFactory.makeCallingView()
-    }
+  var callingView: CallingView {
+    logger.debug("Displaying view: callingView")
+    return viewFactory.makeCallingView()
+  }
 }

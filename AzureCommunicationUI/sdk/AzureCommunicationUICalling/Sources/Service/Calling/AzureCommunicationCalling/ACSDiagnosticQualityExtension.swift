@@ -6,18 +6,18 @@
 import AzureCommunicationCalling
 
 extension AzureCommunicationCalling.DiagnosticQuality {
-    func toCallCompositeDiagnosticQuality() -> CallDiagnosticQuality {
-        switch self {
-        case .unknown:
-            return .unknown
-        case .good:
-            return .good
-        case .poor:
-            return .poor
-        case .bad:
-            return .bad
-        @unknown default:
-            return .unknown
-        }
+  func toCallCompositeDiagnosticQuality() -> CallDiagnosticQuality {
+    switch self {
+    case .unknown:
+      return .unknown
+    case .good:
+      return .good
+    case .poor:
+      return .poor
+    case .bad:
+      return .bad
+    @unknown default:
+      return .unknown
     }
+  }
 }

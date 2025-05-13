@@ -6,32 +6,33 @@
 import Foundation
 
 enum AccessibilityId: String {
-    /* DemoView */
-    case startExperienceAccessibilityID =
-            "AzureCommunicationUICalling.DemoView.StartExperience.AccessibilityID"
-    case showExperienceAccessibilityID =
-            "AzureCommunicationUICalling.DemoView.ShowExperience.AccessibilityID"
-    case clearTokenTextFieldAccessibilityID =
-            "AzureCommunicationUICalling.DemoView.ClearTokenTextField.AccessibilityID"
-    case settingsButtonAccessibilityID =
-            "AzureCommunicationUICalling.DemoView.Settings.AccessibilityID"
+  /* DemoView */
+  case startExperienceAccessibilityID =
+    "AzureCommunicationUICalling.DemoView.StartExperience.AccessibilityID"
+  case showExperienceAccessibilityID =
+    "AzureCommunicationUICalling.DemoView.ShowExperience.AccessibilityID"
+  case clearTokenTextFieldAccessibilityID =
+    "AzureCommunicationUICalling.DemoView.ClearTokenTextField.AccessibilityID"
+  case settingsButtonAccessibilityID =
+    "AzureCommunicationUICalling.DemoView.Settings.AccessibilityID"
 
-    case startHeadlessAccessibilityID =
-            "AzureCommunicationUIChat.DemoView.StartHeadless.AccessibilityID"
-    case showChatUIAccessibilityID =
-            "AzureCommunicationUIChat.DemoView.ShowChatUI.AccessibilityID"
-    case stopChatAccessibilityID =
-            "AzureCommunicationUIhat.DemoView.StopChat.AccessibilityID"
+  case startHeadlessAccessibilityID =
+    "AzureCommunicationUIChat.DemoView.StartHeadless.AccessibilityID"
+  case showChatUIAccessibilityID =
+    "AzureCommunicationUIChat.DemoView.ShowChatUI.AccessibilityID"
+  case stopChatAccessibilityID =
+    "AzureCommunicationUIhat.DemoView.StopChat.AccessibilityID"
 
-    /* SettingsView */
-    case expiredAcsTokenToggleAccessibilityID =
-            "AzureCommunicationUICalling.SettingsView.expiredAcstokenToggle.AccessibilityID"
-    case useMockCallingSDKHandlerToggleAccessibilityID =
-            "AzureCommunicationUICalling.SettingsView.useMockCallingSDKHandler.AccessibilityID"
-    case settingsCloseButtonAccessibilityID =
-            "AzureCommunicationUICalling.SettingsView.CloseButton.AccessibilityID"
-    case useRelaunchOnDismissedToggleToggleAccessibilityID =
-            "AzureCommunicationUICalling.SettingsView.useRelaunchOnDismissed.AccessibilityID"
-    case toggleAudioOnlyModeAccessibilityID = "AzureCommunicationUICalling.SettingsView.AudioOnly.AccessibilityID"
-    case userReportedIssueAccessibilityID = "AzureCommunicationUICalling.Launcher.UserFeedback"
+  /* SettingsView */
+  case expiredAcsTokenToggleAccessibilityID =
+    "AzureCommunicationUICalling.SettingsView.expiredAcstokenToggle.AccessibilityID"
+  case useMockCallingSDKHandlerToggleAccessibilityID =
+    "AzureCommunicationUICalling.SettingsView.useMockCallingSDKHandler.AccessibilityID"
+  case settingsCloseButtonAccessibilityID =
+    "AzureCommunicationUICalling.SettingsView.CloseButton.AccessibilityID"
+  case useRelaunchOnDismissedToggleToggleAccessibilityID =
+    "AzureCommunicationUICalling.SettingsView.useRelaunchOnDismissed.AccessibilityID"
+  case toggleAudioOnlyModeAccessibilityID =
+    "AzureCommunicationUICalling.SettingsView.AudioOnly.AccessibilityID"
+  case userReportedIssueAccessibilityID = "AzureCommunicationUICalling.Launcher.UserFeedback"
 }

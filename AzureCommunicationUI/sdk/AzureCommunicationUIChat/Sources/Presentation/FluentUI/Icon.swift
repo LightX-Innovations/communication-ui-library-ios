@@ -6,12 +6,12 @@
 import SwiftUI
 
 struct Icon: View {
-    var name: CompositeIcon
-    var size: CGFloat
+  var name: CompositeIcon
+  var size: CGFloat
 
-    var body: some View {
-        StyleProvider.icon.getImage(for: name)
-            .resizable()
-            .frame(width: size, height: size, alignment: .center)
-    }
+  var body: some View {
+    StyleProvider.icon.getImage(for: name)
+      .resizable()
+      .frame(width: size, height: size, alignment: .center)
+  }
 }
