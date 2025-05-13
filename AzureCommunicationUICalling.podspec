@@ -9,15 +9,15 @@ Pod::Spec.new do |spec|
   spec.module_name          = 'AzureCommunicationUICalling'
   spec.swift_version        = '5.8'
 
-  spec.platform             = :ios, '15.6'
-  spec.ios.deployment_target = '15.6'
+  spec.platform             = :ios, '16.0'
+  spec.ios.deployment_target = '16.0'
 
   spec.source_files         = 'AzureCommunicationUI/sdk/AzureCommunicationUICalling/Sources/**/*.swift', 'AzureCommunicationUI/sdk/AzureCommunicationUICommon/Sources/AzureCommunicationUICommon/*.swift', 'AzureCommunicationUI/sdk/common/**/Sources/**/*.swift'
   spec.resources            = 'AzureCommunicationUI/sdk/AzureCommunicationUICalling/Sources/**/*.{xcassets,strings}'
   spec.pod_target_xcconfig  = { "EXCLUDED_ARCHS[sdk=iphonesimulator*]": "arm64", "ENABLE_BITCODE": "NO"}
   spec.info_plist           = {'UILibrarySemVersion' => "#{spec.version}"}
 
-  spec.dependency             'AzureCommunicationCalling', '2.8.0'
+  spec.dependency             'AzureCommunicationCalling', '2.15.0'
   spec.dependency             'AzureCore', '1.0.0-beta.16'
   spec.dependency             'MicrosoftFluentUI/Avatar_ios', '0.10.0'
   spec.dependency             'MicrosoftFluentUI/BottomSheet_ios', '0.10.0'
