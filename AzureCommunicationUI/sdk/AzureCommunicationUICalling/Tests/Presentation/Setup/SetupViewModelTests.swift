@@ -5,6 +5,7 @@
 
 import Foundation
 import XCTest
+import AzureCommunicationCommon
 @testable import AzureCommunicationUICalling
 
 class SetupViewModelTests: XCTestCase {
@@ -20,7 +21,11 @@ class SetupViewModelTests: XCTestCase {
         cancellable = CancelBag()
         logger = LoggerMocking()
         factoryMocking = CompositeViewModelFactoryMocking(logger: logger,
-                                                          store: storeFactory.store)
+                                                          store: storeFactory.store,
+                                                          avatarManager: AvatarViewManagerMocking(store: storeFactory.store,
+                                                                                                  localParticipantId: createCommunicationIdentifier(fromRawId: ""),
+                                                                                                  localParticipantViewData: nil),
+                                                          updatableOptionsManager: UpdatableOptionsManager(store: storeFactory.store, setupScreenOptions: nil, callScreenOptions: nil))
     }
 
     override func tearDown() {
@@ -114,16 +119,19 @@ class SetupViewModelTests: XCTestCase {
                                 permissionState: PermissionState(audioPermission: .granted),
                                 localUserState: LocalUserState(displayName: "DisplayName"))
         let expectation = XCTestExpectation(description: "SetupControlBarViewModel is updated")
-        let updateSetupControlBarViewModel: ((LocalUserState, PermissionState, CallingState) -> Void) = { userState, permissionsState, callingState in
+        let updateSetupControlBarViewModel: ((LocalUserState, PermissionState, CallingState, ButtonViewDataState) -> Void) = { userState, permissionsState, callingState, buttonViewDataState in
             XCTAssertEqual(userState.displayName, appState.localUserState.displayName)
             XCTAssertEqual(permissionsState.audioPermission, appState.permissionState.audioPermission)
             XCTAssertEqual(callingState, appState.callingState)
+            XCTAssertEqual(buttonViewDataState, appState.buttonViewDataState)
             expectation.fulfill()
         }
         factoryMocking.setupControlBarViewModel = SetupControlBarViewModelMocking(compositeViewModelFactory: factoryMocking,
                                                                                   logger: logger,
                                                                                   dispatchAction: storeFactory.store.dispatch,
+                                                                                  updatableOptionsManager: UpdatableOptionsManager(store: storeFactory.store, setupScreenOptions: nil, callScreenOptions: nil),
                                                                                   localUserState: LocalUserState(),
+                                                                                  buttonViewDataState: ButtonViewDataState(),
                                                                                   updateState: updateSetupControlBarViewModel)
         let sut = makeSUT()
         sut.receive(appState)
@@ -136,7 +144,9 @@ class SetupViewModelTests: XCTestCase {
         let setupControlBarViewModel = SetupControlBarViewModelMocking(compositeViewModelFactory: factoryMocking,
                                                                        logger: logger,
                                                                        dispatchAction: storeFactory.store.dispatch,
-                                                                       localUserState: LocalUserState())
+                                                                       updatableOptionsManager: UpdatableOptionsManager(store: storeFactory.store, setupScreenOptions: nil, callScreenOptions: nil),
+                                                                       localUserState: LocalUserState(),
+                                                                       buttonViewDataState: ButtonViewDataState())
         factoryMocking.setupControlBarViewModel = setupControlBarViewModel
         let sut = makeSUT()
         let updateIsJoinRequested: ((Bool) -> Void) = { isJoinRequested in
@@ -163,6 +173,76 @@ class SetupViewModelTests: XCTestCase {
         wait(for: [expectation], timeout: timeout)
     }
 
+    func test_setupViewModel_receive_when_appStateUpdated_then_startCallButtonViewModelUpdated() {
+        let appState = AppState()
+        let expectation = XCTestExpectation(description: "StartCallButtonViewModel is updated")
+        var stringList: [String?] = []
+        let updateJoinCallButtonViewModel: ((String?) -> Void) = { accessibilityLabel in
+            stringList.append(accessibilityLabel)
+            expectation.fulfill()
+        }
+        factoryMocking.primaryButtonViewModel = PrimaryButtonViewModelMocking(buttonStyle: .primaryFilled,
+                                                                              buttonLabel: "buttonLabel",
+                                                                              updateLabel: updateJoinCallButtonViewModel)
+        let sut = makeSUT(callType: .oneToNOutgoing)
+        sut.receive(appState)
+        wait(for: [expectation], timeout: timeout)
+        XCTAssertEqual(true, stringList.contains(LocalizationKey.startCall.rawValue))
+    }
+
+    func test_setupViewModel_receive_when_appStateUpdated_then_joinCallButtonViewModelLabelUpdated() {
+        let appState = AppState()
+        let expectation = XCTestExpectation(description: "JoinCallButtonViewModel is updated")
+        var stringList: [String?] = []
+        let updateJoinCallButtonViewModel: ((String?) -> Void) = { accessibilityLabel in
+            stringList.append(accessibilityLabel)
+            expectation.fulfill()
+        }
+        factoryMocking.primaryButtonViewModel = PrimaryButtonViewModelMocking(buttonStyle: .primaryFilled,
+                                                                              buttonLabel: "buttonLabel",
+                                                                              updateLabel: updateJoinCallButtonViewModel)
+        let sut = makeSUT(callType: .groupCall)
+        sut.receive(appState)
+        wait(for: [expectation], timeout: timeout)
+        XCTAssertEqual(true, stringList.contains(LocalizationKey.joinCall.rawValue))
+    }
+
+    func test_setupViewModel_receive_when_appStateUpdatedWithNoAudioPermissions_then_startCallButtonViewModelUpdated() {
+        let appState = AppState(permissionState: PermissionState(audioPermission: .denied))
+        let expectation = XCTestExpectation(description: "StartCallButtonViewModel is updated")
+        var stringList: [String?] = []
+        let updateJoinCallButtonViewModel: ((String?) -> Void) = { accessibilityLabel in
+            stringList.append(accessibilityLabel)
+            expectation.fulfill()
+        }
+        factoryMocking.primaryButtonViewModel = PrimaryButtonViewModelMocking(buttonStyle: .primaryFilled,
+                                                                              buttonLabel: "buttonLabel",
+                                                                              isDisabled: true,
+                                                                              updateLabel: updateJoinCallButtonViewModel)
+        let sut = makeSUT(callType: .oneToNOutgoing)
+        sut.receive(appState)
+        wait(for: [expectation], timeout: timeout)
+        XCTAssertEqual(true, stringList.contains(LocalizationKey.startCallDiableStateAccessibilityLabel.rawValue))
+    }
+
+    func test_setupViewModel_receive_when_appStateUpdatedWithNoAudioPermissions_then_joinCallButtonViewModelLabelUpdated() {
+        let appState = AppState(permissionState: PermissionState(audioPermission: .denied))
+        let expectation = XCTestExpectation(description: "JoinCallButtonViewModel is updated")
+        var stringList: [String?] = []
+        let updateJoinCallButtonViewModel: ((String?) -> Void) = { accessibilityLabel in
+            stringList.append(accessibilityLabel)
+            expectation.fulfill()
+        }
+        factoryMocking.primaryButtonViewModel = PrimaryButtonViewModelMocking(buttonStyle: .primaryFilled,
+                                                                              buttonLabel: "buttonLabel",
+                                                                              isDisabled: true,
+                                                                              updateLabel: updateJoinCallButtonViewModel)
+        let sut = makeSUT(callType: .groupCall)
+        sut.receive(appState)
+        wait(for: [expectation], timeout: timeout)
+        XCTAssertEqual(true, stringList.contains(LocalizationKey.joinCallDiableStateAccessibilityLabel.rawValue))
+    }
+
     func test_setupViewModel_receive_when_appStateUpdated_then_errorInfoViewModelUpdated() {
         let appState = AppState()
         let expectation = XCTestExpectation(description: "ErrorInfoViewModel is updated")
@@ -184,12 +264,13 @@ extension SetupViewModelTests {
                             isTranscriptionActive: false)
     }
 
-    func makeSUT() -> SetupViewModel {
+    func makeSUT(callType: CompositeCallType = .groupCall) -> SetupViewModel {
         return SetupViewModel(compositeViewModelFactory: factoryMocking,
                               logger: logger,
                               store: storeFactory.store,
                               networkManager: NetworkManager(),
-                              audioSessionManager: AudioSessionManager(store: storeFactory.store, logger: logger),
-                              localizationProvider: LocalizationProviderMocking())
+                              audioSessionManager: AudioSessionManager(store: storeFactory.store, logger: logger, isCallKitEnabled: false),
+                              localizationProvider: LocalizationProviderMocking(),
+                              callType: callType)
     }
 }

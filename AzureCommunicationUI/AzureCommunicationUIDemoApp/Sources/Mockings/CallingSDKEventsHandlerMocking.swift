@@ -20,7 +20,9 @@ class CallingSDKEventsHandlerMocking: CallingSDKEventsHandler {
             try await Task<Never, Never>.sleep(nanoseconds: 2 * Constants.nanosecondsInSecond)
 
             self?.callInfoSubject.send(CallInfoModel(status: .connected,
-                                                    internalError: nil))
+                                                    internalError: nil,
+                                                    callEndReasonCode: nil,
+                                                    callEndReasonSubCode: nil))
         }
     }
 
@@ -29,28 +31,36 @@ class CallingSDKEventsHandlerMocking: CallingSDKEventsHandler {
             try await Task<Never, Never>.sleep(nanoseconds: 2 * Constants.nanosecondsInSecond)
 
             self?.callInfoSubject.send(CallInfoModel(status: .inLobby,
-                                                    internalError: nil))
+                                                    internalError: nil,
+                                                     callEndReasonCode: nil,
+                                                     callEndReasonSubCode: nil))
         }
     }
 
     func endCall() {
         Task { @MainActor [weak self] in
             self?.callInfoSubject.send(CallInfoModel(status: .disconnected,
-                                                    internalError: nil))
+                                                    internalError: nil,
+                                                     callEndReasonCode: nil,
+                                                     callEndReasonSubCode: nil))
         }
     }
 
     func holdCall() {
         Task { @MainActor [weak self] in
             self?.callInfoSubject.send(CallInfoModel(status: .localHold,
-                                                    internalError: nil))
+                                                    internalError: nil,
+                                                     callEndReasonCode: nil,
+                                                     callEndReasonSubCode: nil))
         }
     }
 
     func resumeCall() {
         Task { @MainActor [weak self] in
             self?.callInfoSubject.send(CallInfoModel(status: .connected,
-                                                    internalError: nil))
+                                                    internalError: nil,
+                                                     callEndReasonCode: nil,
+                                                     callEndReasonSubCode: nil))
         }
     }
 
@@ -98,6 +108,7 @@ class CallingSDKEventsHandlerMocking: CallingSDKEventsHandler {
             let participantNameIdentifier = "RM-\(self.remoteParticipantsMocking.count + 1)"
             let newParticipant = ParticipantInfoModel(displayName: participantNameIdentifier,
                                                       isSpeaking: false,
+                                                      isTypingRtt: false,
                                                       isMuted: true,
                                                       isRemoteUser: true,
                                                       userIdentifier: participantNameIdentifier,
@@ -129,6 +140,7 @@ class CallingSDKEventsHandlerMocking: CallingSDKEventsHandler {
             let last = self.remoteParticipantsMocking.removeLast()
             let lastUnmuted = ParticipantInfoModel(displayName: last.displayName,
                                                    isSpeaking: last.isSpeaking,
+                                                   isTypingRtt: last.isTypingRtt,
                                                    isMuted: !last.isMuted,
                                                    isRemoteUser: last.isRemoteUser,
                                                    userIdentifier: last.userIdentifier,
@@ -149,6 +161,7 @@ class CallingSDKEventsHandlerMocking: CallingSDKEventsHandler {
             let last = self.remoteParticipantsMocking.removeLast()
             let lastUnmuted = ParticipantInfoModel(displayName: last.displayName,
                                                    isSpeaking: last.isSpeaking,
+                                                   isTypingRtt: last.isTypingRtt,
                                                    isMuted: !last.isMuted,
                                                    isRemoteUser: last.isRemoteUser,
                                                    userIdentifier: last.userIdentifier,
@@ -178,6 +191,7 @@ class CallingSDKEventsHandlerMocking: CallingSDKEventsHandler {
             let connectedParticipants = inLobbyParticipants.map { participantInfoModel in
                 ParticipantInfoModel(displayName: participantInfoModel.displayName,
                                      isSpeaking: participantInfoModel.isSpeaking,
+                                     isTypingRtt: participantInfoModel.isTypingRtt,
                                      isMuted: participantInfoModel.isMuted,
                                      isRemoteUser: participantInfoModel.isRemoteUser,
                                      userIdentifier: participantInfoModel.userIdentifier,
@@ -213,6 +227,7 @@ class CallingSDKEventsHandlerMocking: CallingSDKEventsHandler {
             let connectedParticipant =
                 ParticipantInfoModel(displayName: participantInfoModel.displayName,
                                      isSpeaking: participantInfoModel.isSpeaking,
+                                     isTypingRtt: participantInfoModel.isTypingRtt,
                                      isMuted: participantInfoModel.isMuted,
                                      isRemoteUser: participantInfoModel.isRemoteUser,
                                      userIdentifier: participantInfoModel.userIdentifier,
@@ -239,7 +254,7 @@ class CallingSDKEventsHandlerMocking: CallingSDKEventsHandler {
         }
     }
 
-    func setParticipantRole(_ role: ParticipantRole) {
+    func setParticipantRole(_ role: ParticipantRoleEnum) {
         Task { @MainActor [weak self] in
             self?.participantRoleSubject.send(role)
         }

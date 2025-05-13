@@ -5,6 +5,7 @@
 
 import Foundation
 import XCTest
+import AzureCommunicationCommon
 @testable import AzureCommunicationUICalling
 
 class LobbyWaitingHeaderViewModelTests: XCTestCase {
@@ -22,7 +23,11 @@ class LobbyWaitingHeaderViewModelTests: XCTestCase {
         cancellable = CancelBag()
         localizationProvider = LocalizationProviderMocking()
         logger = LoggerMocking()
-        factoryMocking = CompositeViewModelFactoryMocking(logger: logger, store: storeFactory.store)
+        factoryMocking = CompositeViewModelFactoryMocking(logger: logger, store: storeFactory.store,
+                                                          avatarManager: AvatarViewManagerMocking(store: storeFactory.store,
+                                                                                                  localParticipantId: createCommunicationIdentifier(fromRawId: ""),
+                                                                                                  localParticipantViewData: nil),
+                                                          updatableOptionsManager: UpdatableOptionsManager(store: storeFactory.store, setupScreenOptions: nil, callScreenOptions: nil))
     }
 
     override func tearDown() {
@@ -255,6 +260,7 @@ extension LobbyWaitingHeaderViewModelTests {
             ParticipantInfoModel(
                 displayName: "Participant \(index)",
                 isSpeaking: false,
+                isTypingRtt: false,
                 isMuted: false,
                 isRemoteUser: true,
                 userIdentifier: "testUserIdentifier\(index)",

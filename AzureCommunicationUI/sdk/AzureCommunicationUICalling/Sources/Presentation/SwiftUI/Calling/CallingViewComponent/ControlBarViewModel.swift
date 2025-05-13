@@ -5,30 +5,31 @@
 
 import Combine
 import Foundation
+import UIKit
+import SwiftUI
 
+// swiftlint:disable type_body_length
 class ControlBarViewModel: ObservableObject {
     private let logger: Logger
     private let localizationProvider: LocalizationProviderProtocol
     private let dispatch: ActionDispatch
-    private var isCameraStateUpdating: Bool = false
-    private var isDefaultUserStateMapped: Bool = false
+    private var isCameraStateUpdating = false
+    private var isDefaultUserStateMapped = false
     private(set) var cameraButtonViewModel: IconButtonViewModel!
-
+    private let controlBarOptions: CallScreenControlBarOptions?
+    private let audioVideoMode: CallCompositeAudioVideoMode
+    var onDrawerViewDidDisappearBlock: (() -> Void)?
+    private let accessibilityProvider: AccessibilityProviderProtocol
     @Published var cameraPermission: AppPermission.Status = .unknown
-    @Published var isAudioDeviceSelectionDisplayed: Bool = false
-    @Published var isConfirmLeaveListDisplayed: Bool = false
-    @Published var isMoreCallOptionsListDisplayed: Bool = false
-    @Published var isShareActivityDisplayed: Bool = false
-    @Published var isSupportFormOptionDisplayed: Bool = false
-    @Published var isDisplayed: Bool = false
-    @Published var isCameraDisplayed: Bool = true
-
-    let audioDevicesListViewModel: AudioDevicesListViewModel
+    @Published var isShareActivityDisplayed = false
+    @Published var isDisplayed = false
+    @Published var isCameraDisplayed = true
+    @Published var totalButtonCount = 5
+    @Published var isMoreButtonShouldFocused = false
     var micButtonViewModel: IconButtonViewModel!
     var audioDeviceButtonViewModel: IconButtonViewModel!
     var hangUpButtonViewModel: IconButtonViewModel!
     var moreButtonViewModel: IconButtonViewModel!
-    var moreCallOptionsListViewModel: MoreCallOptionsListViewModel!
     var debugInfoSharingActivityViewModel: DebugInfoSharingActivityViewModel!
     var callingStatus: CallingStatus = .none
     var operationStatus: OperationStatus = .none
@@ -37,120 +38,126 @@ class ControlBarViewModel: ObservableObject {
                                                  transmission: .local)
     var audioState = LocalUserState.AudioState(operation: .off,
                                                device: .receiverSelected)
-    var displayEndCallConfirm: (() -> Void)
+    var buttonViewDataState = ButtonViewDataState()
 
+    var onEndCallTapped: (() -> Void)
+
+    var capabilitiesManager: CapabilitiesManager
+    var capabilities: Set<ParticipantCapabilityType>
+
+    // swaftlint:disable function_body_length
     init(compositeViewModelFactory: CompositeViewModelFactoryProtocol,
          logger: Logger,
          localizationProvider: LocalizationProviderProtocol,
          dispatchAction: @escaping ActionDispatch,
-         endCallConfirm: @escaping (() -> Void),
+         onEndCallTapped: @escaping (() -> Void),
          localUserState: LocalUserState,
-         audioVideoMode: CallCompositeAudioVideoMode
-    ) {
-
+         accessibilityProvider: AccessibilityProviderProtocol,
+         audioVideoMode: CallCompositeAudioVideoMode,
+         capabilitiesManager: CapabilitiesManager,
+         controlBarOptions: CallScreenControlBarOptions?,
+         buttonViewDataState: ButtonViewDataState) {
         self.logger = logger
         self.localizationProvider = localizationProvider
         self.dispatch = dispatchAction
-        self.displayEndCallConfirm = endCallConfirm
+        self.onEndCallTapped = onEndCallTapped
+        self.audioVideoMode = audioVideoMode
+        self.accessibilityProvider = accessibilityProvider
+        self.capabilitiesManager = capabilitiesManager
+        self.capabilities = localUserState.capabilities
+        self.controlBarOptions = controlBarOptions
+        self.buttonViewDataState = buttonViewDataState
+        setupCameraButtonViewModel(factory: compositeViewModelFactory)
+        setupMicButtonViewModel(factory: compositeViewModelFactory)
+        setupAudioDeviceButtonViewModel(factory: compositeViewModelFactory)
+        setupHangUpButtonViewModel(factory: compositeViewModelFactory)
+        setupMoreButtonViewModel(factory: compositeViewModelFactory)
 
-        audioDevicesListViewModel = compositeViewModelFactory.makeAudioDevicesListViewModel(
-            dispatchAction: dispatch,
-            localUserState: localUserState)
+        debugInfoSharingActivityViewModel = compositeViewModelFactory.makeDebugInfoSharingActivityViewModel()
+        updateTotalButtonCount()
+        accessibilityProvider.subscribeToUIFocusDidUpdateNotification(self)
+        accessibilityProvider.subscribeToVoiceOverStatusDidChangeNotification(self)
+    }
 
-        cameraButtonViewModel = compositeViewModelFactory.makeIconButtonViewModel(
+    private func setupCameraButtonViewModel(factory: CompositeViewModelFactoryProtocol) {
+        cameraButtonViewModel = factory.makeIconButtonViewModel(
             iconName: .videoOff,
             buttonType: .controlButton,
-            isDisabled: false) { [weak self] in
+            isDisabled: isCameraDisabled(),
+            isVisible: isCameraVisible()) { [weak self] in
                 guard let self = self else {
                     return
                 }
                 self.logger.debug("Toggle camera button tapped")
                 self.cameraButtonTapped()
         }
+        cameraButtonViewModel.accessibilityLabel = localizationProvider.getLocalizedString(.videoOffAccessibilityLabel)
+    }
 
-        cameraButtonViewModel.accessibilityLabel = self.localizationProvider.getLocalizedString(
-            .videoOffAccessibilityLabel)
-
-        micButtonViewModel = compositeViewModelFactory.makeIconButtonViewModel(
+    private func setupMicButtonViewModel(factory: CompositeViewModelFactoryProtocol) {
+        micButtonViewModel = factory.makeIconButtonViewModel(
             iconName: .micOff,
             buttonType: .controlButton,
-            isDisabled: false) { [weak self] in
+            isDisabled: isMicDisabled(),
+            isVisible: isMicVisible()) { [weak self] in
                 guard let self = self else {
                     return
                 }
                 self.logger.debug("Toggle microphone button tapped")
                 self.microphoneButtonTapped()
         }
+        micButtonViewModel.accessibilityLabel = localizationProvider.getLocalizedString(.micOffAccessibilityLabel)
+    }
 
-        micButtonViewModel.accessibilityLabel = self.localizationProvider.getLocalizedString(
-            .micOffAccessibilityLabel)
-
-        audioDeviceButtonViewModel = compositeViewModelFactory.makeIconButtonViewModel(
+    private func setupAudioDeviceButtonViewModel(factory: CompositeViewModelFactoryProtocol) {
+        audioDeviceButtonViewModel = factory.makeIconButtonViewModel(
             iconName: .speakerFilled,
             buttonType: .controlButton,
-            isDisabled: false) { [weak self] in
+            isDisabled: false,
+            isVisible: isAudioDeviceVisible()) { [weak self] in
                 guard let self = self else {
                     return
                 }
                 self.logger.debug("Select audio device button tapped")
                 self.selectAudioDeviceButtonTapped()
         }
+        audioDeviceButtonViewModel.accessibilityLabel = localizationProvider.getLocalizedString(
+            .deviceAccesibiiltyLabel
+        )
+    }
 
-        audioDeviceButtonViewModel.accessibilityLabel = self.localizationProvider.getLocalizedString(
-            .deviceAccesibiiltyLabel)
-
-        hangUpButtonViewModel = compositeViewModelFactory.makeIconButtonViewModel(
+    private func setupHangUpButtonViewModel(factory: CompositeViewModelFactoryProtocol) {
+        hangUpButtonViewModel = factory.makeIconButtonViewModel(
             iconName: .endCall,
             buttonType: .roundedRectButton,
-            isDisabled: false) { [weak self] in
+            isDisabled: false,
+            isVisible: true) { [weak self] in
                 guard let self = self else {
                     return
                 }
                 self.logger.debug("Hangup button tapped")
-                self.endCallButtonTapped()
+                self.onEndCallTapped()
         }
+        hangUpButtonViewModel.accessibilityLabel = localizationProvider.getLocalizedString(.leaveCall)
+    }
 
-        hangUpButtonViewModel.accessibilityLabel = self.localizationProvider.getLocalizedString(
-            .leaveCall)
-
-        moreButtonViewModel = compositeViewModelFactory.makeIconButtonViewModel(
+    private func setupMoreButtonViewModel(factory: CompositeViewModelFactoryProtocol) {
+        moreButtonViewModel = factory.makeIconButtonViewModel(
             iconName: .more,
             buttonType: .controlButton,
-            isDisabled: false) {
-                [weak self] in
+            isDisabled: false,
+            isVisible: isMoreButtonVisible()) { [weak self] in
                 guard let self = self else {
                     return
                 }
                 self.moreButtonTapped()
         }
-
-        moreButtonViewModel.accessibilityLabel = self.localizationProvider.getLocalizedString(
-            .moreAccessibilityLabel)
-
-        moreCallOptionsListViewModel = compositeViewModelFactory.makeMoreCallOptionsListViewModel(
-            showSharingViewAction: { [weak self] in
-                guard let self = self else {
-                    return
-                }
-                self.isShareActivityDisplayed = true
-            },
-            showSupportFormAction: { [weak self] in
-                guard let self = self else {
-                    return
-                }
-                self.dispatch(.showSupportForm)
-            }
-        )
-
-        debugInfoSharingActivityViewModel = compositeViewModelFactory.makeDebugInfoSharingActivityViewModel()
-
-        isCameraDisplayed = audioVideoMode != .audioOnly
+        moreButtonViewModel.accessibilityLabel = localizationProvider.getLocalizedString(.moreAccessibilityLabel)
     }
 
-    func endCallButtonTapped() {
-        self.isConfirmLeaveListDisplayed = true
+    func setAccessibilityFocus(_ focusType: any View) {
+            UIAccessibility.post(notification: .layoutChanged, argument: focusType)
     }
-
     func cameraButtonTapped() {
         guard !isCameraStateUpdating else {
             return
@@ -162,90 +169,98 @@ class ControlBarViewModel: ObservableObject {
         dispatch(.localUserAction(action))
     }
 
+    func isMoreButtonVisible() -> Bool {
+        buttonViewDataState.callScreenCustomButtonsState.filter({ button in button.visible }).isEmpty == false ||
+        buttonViewDataState.liveCaptionsButton?.visible ?? true ||
+        buttonViewDataState.liveCaptionsToggleButton?.visible ?? true ||
+        buttonViewDataState.captionsLanguageButton?.visible ?? true ||
+        buttonViewDataState.spokenLanguageButton?.visible ?? true ||
+        buttonViewDataState.shareDiagnosticsButton?.visible ?? true ||
+        buttonViewDataState.reportIssueButton?.visible ?? true
+    }
+
+    func isMicVisible() -> Bool {
+        buttonViewDataState.callScreenMicButtonState?.visible ?? true
+    }
+
+    func isMicDisabled() -> Bool {
+        buttonViewDataState.callScreenMicButtonState?.enabled == false ||
+        audioState.operation == .pending ||
+        callingStatus == .localHold ||
+        isBypassLoadingOverlay() ||
+        callingStatus == .inLobby ||
+        !self.capabilitiesManager.hasCapability(capabilities: self.capabilities,
+                                                capability: ParticipantCapabilityType.unmuteMicrophone)
+    }
+    func isBypassLoadingOverlay() -> Bool {
+        operationStatus == .skipSetupRequested &&
+        callingStatus != .connected &&
+        callingStatus != .inLobby
+    }
+
+    func isAudioDeviceVisible() -> Bool {
+        buttonViewDataState.callScreenAudioDeviceButtonState?.visible ?? true
+    }
+    func isAudioDeviceDisabled() -> Bool {
+        buttonViewDataState.callScreenAudioDeviceButtonState?.enabled == false ||
+        callingStatus == .localHold ||
+        isBypassLoadingOverlay() ||
+        callingStatus == .inLobby
+    }
+
     func microphoneButtonTapped() {
+        self.callCustomOnClickHandler(controlBarOptions?.microphoneButton)
         let action: LocalUserAction = audioState.operation == .on ?
         .microphoneOffTriggered : .microphoneOnTriggered
         dispatch(.localUserAction(action))
     }
 
     func selectAudioDeviceButtonTapped() {
-        self.isAudioDeviceSelectionDisplayed = true
+        self.callCustomOnClickHandler(controlBarOptions?.audioDeviceButton)
+        dispatch(.showAudioSelection)
     }
 
     func moreButtonTapped() {
-        isMoreCallOptionsListDisplayed = true
+        NotificationCenter.default.addObserver(
+            forName: Notification.Name(NotificationCenterName.drawerViewDidDisappear.rawValue),
+            object: nil, queue: .main) { _ in
+            self.onDrawerViewDidDisappearBlock?()
+        }
+        dispatch(.showMoreOptions)
     }
-
-    func dismissConfirmLeaveDrawerList() {
-        self.isConfirmLeaveListDisplayed = false
-    }
-
     func isMoreButtonDisabled() -> Bool {
-        isBypassLoadingOverlay()
+            isBypassLoadingOverlay() || callingStatus == .inLobby
+    }
+
+    func isCameraVisible() -> Bool {
+        return audioVideoMode != .audioOnly &&
+        buttonViewDataState.callScreenCameraButtonState?.visible ?? true
     }
 
     func isCameraDisabled() -> Bool {
-        cameraPermission == .denied || cameraState.operation == .pending ||
-        callingStatus == .localHold || isCameraStateUpdating || isBypassLoadingOverlay()
-    }
-
-    func isMicDisabled() -> Bool {
-        audioState.operation == .pending || callingStatus == .localHold || isBypassLoadingOverlay()
-    }
-
-    func isAudioDeviceDisabled() -> Bool {
-        callingStatus == .localHold || isBypassLoadingOverlay()
-    }
-
-    func isBypassLoadingOverlay() -> Bool {
-        operationStatus == .skipSetupRequested && callingStatus != .connected &&
-        callingStatus != .inLobby
-    }
-
-    func getLeaveCallButtonViewModel() -> DrawerListItemViewModel {
-        return DrawerListItemViewModel(
-            icon: .endCallRegular,
-            title: localizationProvider.getLocalizedString(.leaveCall),
-            accessibilityIdentifier: AccessibilityIdentifier.leaveCallAccessibilityID.rawValue,
-            action: { [weak self] in
-                guard let self = self else {
-                    return
-                }
-                self.logger.debug("Leave call button tapped")
-                self.displayEndCallConfirm()
-            })
-    }
-
-    func getCancelButtonViewModel() -> DrawerListItemViewModel {
-        return DrawerListItemViewModel(
-            icon: .dismiss,
-            title: localizationProvider.getLocalizedString(.cancel),
-            accessibilityIdentifier: AccessibilityIdentifier.cancelAccessibilityID.rawValue,
-            action: { [weak self] in
-                guard let self = self else {
-                    return
-                }
-                self.logger.debug("Cancel button tapped")
-                self.dismissConfirmLeaveDrawerList()
-            })
-    }
-
-    func getLeaveCallConfirmationListViewModel() -> LeaveCallConfirmationListViewModel {
-        let leaveCallConfirmationVm: [DrawerListItemViewModel] = [
-            getLeaveCallButtonViewModel(),
-            getCancelButtonViewModel()
-        ]
-        let headerName = localizationProvider.getLocalizedString(.leaveCallListHeader)
-        return LeaveCallConfirmationListViewModel(headerName: headerName,
-                                                  listItemViewModel: leaveCallConfirmationVm)
+        buttonViewDataState.callScreenCameraButtonState?.enabled == false ||
+                cameraPermission == .denied ||
+                cameraState.operation == .pending ||
+                callingStatus == .localHold ||
+        callingStatus == .inLobby ||
+                isCameraStateUpdating ||
+                isBypassLoadingOverlay() ||
+        !capabilitiesManager.hasCapability(capabilities: self.capabilities,
+                                           capability: ParticipantCapabilityType.turnVideoOn)
     }
 
     func update(localUserState: LocalUserState,
                 permissionState: PermissionState,
                 callingState: CallingState,
-                visibilityState: VisibilityState) {
+                visibilityState: VisibilityState,
+                navigationState: NavigationState,
+                buttonViewDataState: ButtonViewDataState
+                ) {
+        isShareActivityDisplayed = navigationState.supportShareSheetVisible
         callingStatus = callingState.status
         operationStatus = callingState.operationStatus
+        self.buttonViewDataState = buttonViewDataState
+        self.capabilities = localUserState.capabilities
         if cameraPermission != permissionState.cameraPermission {
             cameraPermission = permissionState.cameraPermission
         }
@@ -260,6 +275,7 @@ class ControlBarViewModel: ObservableObject {
                                      ? localizationProvider.getLocalizedString(.videoOnAccessibilityLabel)
                                      : localizationProvider.getLocalizedString(.videoOffAccessibilityLabel))
         cameraButtonViewModel.update(isDisabled: isCameraDisabled())
+        cameraButtonViewModel.update(isVisible: isCameraVisible())
 
         audioState = localUserState.audioState
         micButtonViewModel.update(iconName: audioState.operation == .on ? .micOn : .micOff)
@@ -267,6 +283,7 @@ class ControlBarViewModel: ObservableObject {
                                      ? localizationProvider.getLocalizedString(.micOnAccessibilityLabel)
                                      : localizationProvider.getLocalizedString(.micOffAccessibilityLabel))
         micButtonViewModel.update(isDisabled: isMicDisabled())
+        micButtonViewModel.update(isVisible: isMicVisible())
         audioDeviceButtonViewModel.update(isDisabled: isAudioDeviceDisabled())
         let audioDeviceState = localUserState.audioState.device
         audioDeviceButtonViewModel.update(
@@ -274,10 +291,51 @@ class ControlBarViewModel: ObservableObject {
         )
         audioDeviceButtonViewModel.update(
             accessibilityValue: audioDeviceState.getLabel(localizationProvider: localizationProvider))
-        audioDevicesListViewModel.update(audioDeviceStatus: audioDeviceState)
+        audioDeviceButtonViewModel.update(isVisible: isAudioDeviceVisible())
 
         moreButtonViewModel.update(isDisabled: isMoreButtonDisabled())
-
+        moreButtonViewModel.update(isVisible: isMoreButtonVisible())
         isDisplayed = visibilityState.currentStatus != .pipModeEntered
+        isMoreButtonShouldFocused = true
+        updateTotalButtonCount()
+    }
+
+    func callCustomOnClickHandler(_ button: ButtonViewData?) {
+        guard let button = button else {
+            return
+        }
+        button.onClick?(button)
+    }
+
+    private func updateTotalButtonCount() {
+        // we always have a hangUp button
+        var newCount = 1
+        if cameraButtonViewModel.isVisible {
+            newCount += 1
+        }
+        if micButtonViewModel.isVisible {
+            newCount += 1
+        }
+        if audioDeviceButtonViewModel.isVisible {
+            newCount += 1
+        }
+        if moreButtonViewModel.isVisible {
+            newCount += 1
+        }
+        if newCount != totalButtonCount {
+            totalButtonCount = newCount
+        }
+    }
+}
+// swiftlint:enable type_body_length
+
+extension ControlBarViewModel: AccessibilityProviderNotificationsObserver {
+    func didChangeVoiceOverStatus(_ notification: NSNotification) {
+        // Call the closure to handle the drawer view disappearance
+        onDrawerViewDidDisappearBlock?()
+    }
+    func didUIFocusUpdateNotification(_ notification: NSNotification) {
+        // Call the closure to handle the drawer view disappearance
+        onDrawerViewDidDisappearBlock?()
     }
 }

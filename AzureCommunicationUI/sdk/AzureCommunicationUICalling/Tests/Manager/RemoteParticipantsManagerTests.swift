@@ -14,6 +14,7 @@ class RemoteParticipantsManagerTests: XCTestCase {
     var eventsHandler: CallComposite.Events!
     var remoteParticipantsJoinedExpectation: XCTestExpectation!
     var expectedIds: [String]!
+    var localParticipantId = CommunicationUserIdentifier("")
 
     override func setUp() {
         super.setUp()
@@ -21,6 +22,7 @@ class RemoteParticipantsManagerTests: XCTestCase {
         mockStoreFactory = StoreFactoryMocking()
         eventsHandler = CallComposite.Events()
         avatarViewManager = AvatarViewManagerMocking(store: mockStoreFactory.store,
+                                                     localParticipantId: localParticipantId,
                                                      localParticipantViewData: nil)
     }
 
@@ -40,6 +42,7 @@ class RemoteParticipantsManagerTests: XCTestCase {
         let participant1 = ParticipantInfoModel(
             displayName: "Participant 1",
             isSpeaking: false,
+            isTypingRtt: false,
             isMuted: false,
             isRemoteUser: true,
             userIdentifier: "testUserIdentifier1",
@@ -49,6 +52,7 @@ class RemoteParticipantsManagerTests: XCTestCase {
         let participant2 = ParticipantInfoModel(
             displayName: "Participant 2",
             isSpeaking: false,
+            isTypingRtt: false,
             isMuted: false,
             isRemoteUser: true,
             userIdentifier: "testUserIdentifier2",
@@ -73,6 +77,7 @@ class RemoteParticipantsManagerTests: XCTestCase {
         let participantInfoModel = ParticipantInfoModel(
             displayName: "Participant 1",
             isSpeaking: false,
+            isTypingRtt: false,
             isMuted: false,
             isRemoteUser: true,
             userIdentifier: "testUserIdentifier1",
@@ -90,6 +95,7 @@ class RemoteParticipantsManagerTests: XCTestCase {
         let participantInfoModel = ParticipantInfoModel(
             displayName: "Participant 1",
             isSpeaking: false,
+            isTypingRtt: false,
             isMuted: false,
             isRemoteUser: true,
             userIdentifier: "testUserIdentifier1",
@@ -108,6 +114,7 @@ class RemoteParticipantsManagerTests: XCTestCase {
         let participantInfoModel = ParticipantInfoModel(
             displayName: "Participant 1",
             isSpeaking: false,
+            isTypingRtt: false,
             isMuted: false,
             isRemoteUser: true,
             userIdentifier: "testUserIdentifier1",
@@ -130,6 +137,7 @@ class RemoteParticipantsManagerTests: XCTestCase {
         let participantInfoModel = ParticipantInfoModel(
             displayName: "Participant 1",
             isSpeaking: false,
+            isTypingRtt: false,
             isMuted: false,
             isRemoteUser: true,
             userIdentifier: "testUserIdentifier1",
@@ -151,13 +159,14 @@ class RemoteParticipantsManagerTests: XCTestCase {
     func test_remoteParticipantsManager_receive_when_participantLeftCall_then_didRemoteParticipantsJoinEventIsNotPosted() {
         makeSUT()
         var participantInfoModels: [ParticipantInfoModel] = []
-        for i in 0...5 {
+        for idx in 0...5 {
             participantInfoModels.append(ParticipantInfoModel(
-                displayName: "Participant \(i)",
+                displayName: "Participant \(idx)",
                 isSpeaking: false,
+                isTypingRtt: false,
                 isMuted: false,
                 isRemoteUser: true,
-                userIdentifier: "testUserIdentifier\(i)",
+                userIdentifier: "testUserIdentifier\(idx)",
                 status: .idle,
                 screenShareVideoStreamModel: nil,
                 cameraVideoStreamModel: nil))

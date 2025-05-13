@@ -19,6 +19,7 @@ enum ParticipantStatus: Int {
 struct ParticipantInfoModel: Hashable, Equatable {
     let displayName: String
     let isSpeaking: Bool
+    var isTypingRtt: Bool
     let isMuted: Bool
 
     let isRemoteUser: Bool
@@ -27,5 +28,4 @@ struct ParticipantInfoModel: Hashable, Equatable {
 
     let screenShareVideoStreamModel: VideoStreamInfoModel?
     let cameraVideoStreamModel: VideoStreamInfoModel?
-
 }

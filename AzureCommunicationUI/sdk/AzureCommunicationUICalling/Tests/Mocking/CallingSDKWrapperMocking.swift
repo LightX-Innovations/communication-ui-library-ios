@@ -22,6 +22,15 @@ class CallingSDKWrapperMocking: CallingSDKWrapperProtocol {
         []
     }
 
+    func dispose() {
+    }
+
+    /* <CALL_START_TIME>
+    func callStartTime() -> Date? {
+        return nil
+    }
+    </CALL_START_TIME> */
+
     func startCallLocalVideoStream() async throws -> String {
         return try await Task<String, Error> {
             ""
@@ -46,11 +55,13 @@ class CallingSDKWrapperMocking: CallingSDKWrapperProtocol {
     var switchCameraCallCount: Int = 0
     var getRemoteParticipantCallIds: [String] = []
 
-    var holdCallCalled: Bool = false
-    var resumeCallCalled: Bool = false
-    var muteLocalMicCalled: Bool = false
-    var unmuteLocalMicCalled: Bool = false
-    var startPreviewVideoStreamCalled: Bool = false
+    var holdCallCalled = false
+    var resumeCallCalled = false
+    var muteLocalMicCalled = false
+    var unmuteLocalMicCalled = false
+    var startPreviewVideoStreamCalled = false
+    var removeParticipantCalled = false
+    var getCapabilitiesCalled = false
 
     var isMuted: Bool?
     var isCameraPreferred: Bool?
@@ -159,5 +170,24 @@ class CallingSDKWrapperMocking: CallingSDKWrapperProtocol {
 
     func declineLobbyParticipant(_ participantId: String) async throws {
     }
+    func startCaptions(_ language: String) async throws {
+    }
 
+    func stopCaptions() async throws {
+    }
+
+    func setCaptionsSpokenLanguage(_ language: String) async throws {
+    }
+    func sendRttMessage(_ message: String, isFinal: Bool) async throws {
+    }
+
+    func setCaptionsCaptionLanguage(_ language: String) async throws {}
+    func removeParticipant(_ participantId: String) async throws {
+        removeParticipantCalled = true
+    }
+
+    func getCapabilities() async throws -> Set<AzureCommunicationUICalling.ParticipantCapabilityType> {
+        getCapabilitiesCalled = true
+        return [.unmuteMicrophone, .turnVideoOn]
+    }
 }

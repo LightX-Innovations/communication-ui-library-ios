@@ -17,7 +17,13 @@ extension Reducer {
             = .liveRemoteParticipantsReducer,
         errorReducer: Reducer<ErrorState, Action> = .liveErrorReducer,
         visibilityReducer: Reducer<VisibilityState, VisibilityAction> = .visibilityReducer,
-        diagnosticsReducer: Reducer<CallDiagnosticsState, Action> = .liveDiagnosticsReducer
+        diagnosticsReducer: Reducer<CallDiagnosticsState, Action> = .liveDiagnosticsReducer,
+        captionsReducer: Reducer<CaptionsState, CaptionsAction> = .captionsReducer,
+        toastNotificationReducer: Reducer<ToastNotificationState, ToastNotificationAction> = .toastNotificationReducer,
+        callScreenInfoHeaderReducer: Reducer<CallScreenInfoHeaderState, CallScreenInfoHeaderAction>
+            = .callScreenInfoHeaderReducer,
+        buttonViewDataReducer: Reducer<ButtonViewDataState, ButtonViewDataAction> = .buttonViewDataReducer,
+        rttReducer: Reducer<RttState, RttAction> = .rttReducer
     ) -> Reducer<AppState, Action> {
 
         return Reducer<AppState, Action> { state, action in
@@ -33,6 +39,11 @@ extension Reducer {
             var diagnosticsState = state.diagnosticsState
             let defaultUserState = state.defaultUserState
             var visibilityState = state.visibilityState
+            var captionsState = state.captionsState
+            var toastNotificationState = state.toastNotificationState
+            var callScreenInfoHeaderState = state.callScreenInfoHeaderState
+            var buttonViewDataState = state.buttonViewDataState
+            var rttState = state.rttState
 
             switch action {
             case let .permissionAction(permAction):
@@ -47,6 +58,16 @@ extension Reducer {
             case let .visibilityAction(visibilityAction):
                 visibilityState = visibilityReducer.reduce(state.visibilityState, visibilityAction)
 
+            case let .captionsAction(captionsAction):
+                captionsState = captionsReducer.reduce(state.captionsState, captionsAction)
+            case let .toastNotificationAction(action):
+                toastNotificationState = toastNotificationReducer.reduce(state.toastNotificationState, action)
+            case let .callScreenInfoHeaderAction(action):
+                callScreenInfoHeaderState = callScreenInfoHeaderReducer.reduce(state.callScreenInfoHeaderState, action)
+            case let .buttonViewDataAction(action):
+                buttonViewDataState = buttonViewDataReducer.reduce(state.buttonViewDataState, action)
+            case let .rttAction(action):
+                rttState = rttReducer.reduce(state.rttState, action)
             default:
                 break
             }
@@ -70,7 +91,13 @@ extension Reducer {
                             errorState: errorState,
                             defaultUserState: defaultUserState,
                             visibilityState: visibilityState,
-                            diagnosticsState: diagnosticsState)
+                            diagnosticsState: diagnosticsState,
+                            captionsState: captionsState,
+                            toastNotificationState: toastNotificationState,
+                            callScreenInfoHeaderState: callScreenInfoHeaderState,
+                            buttonViewDataState: buttonViewDataState,
+                            rttState: rttState
+            )
         }
     }
 }

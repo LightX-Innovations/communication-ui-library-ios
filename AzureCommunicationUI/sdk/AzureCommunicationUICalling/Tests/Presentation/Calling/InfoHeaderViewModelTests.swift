@@ -5,11 +5,12 @@
 
 import Foundation
 import XCTest
+import AzureCommunicationCommon
 @testable import AzureCommunicationUICalling
 
 class InfoHeaderViewModelTests: XCTestCase {
 
-    typealias ParticipantsListViewModelUpdateStates = (LocalUserState, RemoteParticipantsState) -> Void
+    typealias ParticipantsListViewModelUpdateStates = (LocalUserState, RemoteParticipantsState, Bool) -> Void
     var storeFactory: StoreFactoryMocking!
     var cancellable: CancelBag!
     var localizationProvider: LocalizationProviderMocking!
@@ -22,7 +23,15 @@ class InfoHeaderViewModelTests: XCTestCase {
         cancellable = CancelBag()
         localizationProvider = LocalizationProviderMocking()
         logger = LoggerMocking()
-        factoryMocking = CompositeViewModelFactoryMocking(logger: logger, store: storeFactory.store)
+        factoryMocking = CompositeViewModelFactoryMocking(
+            logger: logger, store: storeFactory.store,
+            localizationProvider: localizationProvider,
+            avatarManager: AvatarViewManagerMocking(
+                store: storeFactory.store,
+                localParticipantId: createCommunicationIdentifier(fromRawId: ""),
+                localParticipantViewData: nil),
+            updatableOptionsManager: UpdatableOptionsManager(store: storeFactory.store, setupScreenOptions: nil, callScreenOptions: nil)
+        )
     }
 
     override func tearDown() {
@@ -38,7 +47,7 @@ class InfoHeaderViewModelTests: XCTestCase {
         let sut = makeSUT()
         let expectation = XCTestExpectation(description: "Should not publish infoLabel")
         expectation.isInverted = true
-        sut.$infoLabel
+        sut.$title
             .dropFirst()
             .sink(receiveValue: { _ in
                 expectation.fulfill()
@@ -52,16 +61,19 @@ class InfoHeaderViewModelTests: XCTestCase {
         sut.update(localUserState: storeFactory.store.state.localUserState,
                    remoteParticipantsState: remoteParticipantsState,
                    callingState: CallingState(),
-                   visibilityState: VisibilityState(currentStatus: .visible))
+                   visibilityState: VisibilityState(currentStatus: .visible),
+                   callScreenInfoHeaderState: CallScreenInfoHeaderState(),
+                   buttonViewDataState: ButtonViewDataState()
+                    )
 
-        XCTAssertEqual(sut.infoLabel, "Waiting for others to join")
+        XCTAssertEqual(sut.title, "Waiting for others to join")
         wait(for: [expectation], timeout: 1)
     }
 
     func test_infoHeaderViewModel_update_when_participantInfoListCountChanged_then_shouldBePublished() {
         let sut = makeSUT()
         let expectation = XCTestExpectation(description: "Should publish infoLabel")
-        sut.$infoLabel
+        sut.$title
             .dropFirst()
             .sink(receiveValue: { infoLabel in
                 XCTAssertEqual(infoLabel, "Call with 1 person")
@@ -71,6 +83,7 @@ class InfoHeaderViewModelTests: XCTestCase {
         let participantInfoModel = ParticipantInfoModel(
             displayName: "Participant 1",
             isSpeaking: false,
+            isTypingRtt: false,
             isMuted: false,
             isRemoteUser: true,
             userIdentifier: "testUserIdentifier1",
@@ -78,14 +91,17 @@ class InfoHeaderViewModelTests: XCTestCase {
             screenShareVideoStreamModel: nil,
             cameraVideoStreamModel: nil)
         let remoteParticipantsState = RemoteParticipantsState(
-            participantInfoList: [participantInfoModel], lastUpdateTimeStamp: Date())
+            participantInfoList: [participantInfoModel], lastUpdateTimeStamp: Date(), totalParticipantCount: 1)
 
-        XCTAssertEqual(sut.infoLabel, "Waiting for others to join")
+        XCTAssertEqual(sut.title, "Waiting for others to join")
         sut.update(localUserState: storeFactory.store.state.localUserState,
                    remoteParticipantsState: remoteParticipantsState,
                    callingState: CallingState(),
-                   visibilityState: VisibilityState(currentStatus: .visible))
-        XCTAssertEqual(sut.infoLabel, "Call with 1 person")
+                   visibilityState: VisibilityState(currentStatus: .visible),
+                   callScreenInfoHeaderState: CallScreenInfoHeaderState(),
+                   buttonViewDataState: ButtonViewDataState()
+        )
+        XCTAssertEqual(sut.title, "Call with 1 person")
 
         wait(for: [expectation], timeout: 1)
     }
@@ -93,7 +109,7 @@ class InfoHeaderViewModelTests: XCTestCase {
     func test_infoHeaderViewModel_update_when_multipleParticipantInfoListCountChanged_then_shouldBePublished() {
         let sut = makeSUT()
         let expectation = XCTestExpectation(description: "Should publish infoLabel")
-        sut.$infoLabel
+        sut.$title
             .dropFirst()
             .sink(receiveValue: { infoLabel in
                 XCTAssertEqual(infoLabel, "Call with 2 people")
@@ -104,6 +120,7 @@ class InfoHeaderViewModelTests: XCTestCase {
         let firstParticipantInfoModel = ParticipantInfoModel(
             displayName: "Participant 1",
             isSpeaking: false,
+            isTypingRtt: false,
             isMuted: false,
             isRemoteUser: true,
             userIdentifier: "testUserIdentifier1",
@@ -115,6 +132,7 @@ class InfoHeaderViewModelTests: XCTestCase {
         let secondParticipantInfoModel = ParticipantInfoModel(
             displayName: "Participant 2",
             isSpeaking: false,
+            isTypingRtt: false,
             isMuted: false,
             isRemoteUser: true,
             userIdentifier: "testUserIdentifier1",
@@ -124,14 +142,17 @@ class InfoHeaderViewModelTests: XCTestCase {
         participantList.append(secondParticipantInfoModel)
 
         let remoteParticipantsState = RemoteParticipantsState(
-            participantInfoList: participantList, lastUpdateTimeStamp: Date())
+            participantInfoList: participantList, lastUpdateTimeStamp: Date(), totalParticipantCount: 2)
 
-        XCTAssertEqual(sut.infoLabel, "Waiting for others to join")
+        XCTAssertEqual(sut.title, "Waiting for others to join")
         sut.update(localUserState: storeFactory.store.state.localUserState,
                    remoteParticipantsState: remoteParticipantsState,
                    callingState: CallingState(),
-                   visibilityState: VisibilityState(currentStatus: .visible))
-        XCTAssertEqual(sut.infoLabel, "Call with 2 people")
+                   visibilityState: VisibilityState(currentStatus: .visible),
+                   callScreenInfoHeaderState: CallScreenInfoHeaderState(),
+                   buttonViewDataState: ButtonViewDataState()
+        )
+        XCTAssertEqual(sut.title, "Call with 2 people")
 
         wait(for: [expectation], timeout: 1)
     }
@@ -139,7 +160,7 @@ class InfoHeaderViewModelTests: XCTestCase {
     func test_infoHeaderViewModel_update_when_multipleParticipantInfoListCountChanged_then_shouldBePublishedWithoutInLobbyNorDisconnected() {
         let sut = makeSUT()
         let expectation = XCTestExpectation(description: "Should publish infoLabel")
-        sut.$infoLabel
+        sut.$title
             .dropFirst()
             .sink(receiveValue: { infoLabel in
                 XCTAssertEqual(infoLabel, "Call with 1 person")
@@ -151,6 +172,7 @@ class InfoHeaderViewModelTests: XCTestCase {
         let participant1 = ParticipantInfoModel(
             displayName: "Participant 1",
             isSpeaking: false,
+            isTypingRtt: false,
             isMuted: false,
             isRemoteUser: true,
             userIdentifier: "testUserIdentifier1",
@@ -162,6 +184,7 @@ class InfoHeaderViewModelTests: XCTestCase {
         let participant2 = ParticipantInfoModel(
             displayName: "Participant 2",
             isSpeaking: false,
+            isTypingRtt: false,
             isMuted: false,
             isRemoteUser: true,
             userIdentifier: "testUserIdentifier2",
@@ -173,6 +196,7 @@ class InfoHeaderViewModelTests: XCTestCase {
         let participant3 = ParticipantInfoModel(
             displayName: "Participant 3",
             isSpeaking: false,
+            isTypingRtt: false,
             isMuted: false,
             isRemoteUser: true,
             userIdentifier: "testUserIdentifier3",
@@ -182,52 +206,19 @@ class InfoHeaderViewModelTests: XCTestCase {
         participantList.append(participant3)
 
         let remoteParticipantsState = RemoteParticipantsState(
-            participantInfoList: participantList, lastUpdateTimeStamp: Date())
+            participantInfoList: participantList, lastUpdateTimeStamp: Date(), totalParticipantCount: 3)
 
-        XCTAssertEqual(sut.infoLabel, "Waiting for others to join")
+        XCTAssertEqual(sut.title, "Waiting for others to join")
         sut.update(localUserState: storeFactory.store.state.localUserState,
                    remoteParticipantsState: remoteParticipantsState,
                    callingState: CallingState(),
-                   visibilityState: VisibilityState(currentStatus: .visible))
-        XCTAssertEqual(sut.infoLabel, "Call with 1 person")
+                   visibilityState: VisibilityState(currentStatus: .visible),
+                   callScreenInfoHeaderState: CallScreenInfoHeaderState(),
+                   buttonViewDataState: ButtonViewDataState()
+        )
+        XCTAssertEqual(sut.title, "Call with 1 person")
 
         wait(for: [expectation], timeout: 1)
-    }
-
-    func test_infoHeaderViewModel_update_when_statesUpdated_then_participantsListViewModelUpdated() {
-        let expectation = XCTestExpectation(description: "Should update participantsListViewModel")
-        let participantList = ParticipantInfoModelBuilder.getArray(count: 2)
-        let remoteParticipantsStateValue = RemoteParticipantsState(participantInfoList: participantList,
-                                                                   lastUpdateTimeStamp: Date())
-        let localUserStateValue = LocalUserState(displayName: "Updated Name")
-        let updateStates: ParticipantsListViewModelUpdateStates = { localUserState, remoteParticipantsState in
-            XCTAssertEqual(localUserState.displayName, localUserStateValue.displayName)
-            XCTAssertEqual(remoteParticipantsStateValue.participantInfoList,
-                           remoteParticipantsState.participantInfoList)
-            expectation.fulfill()
-        }
-
-        let participantsListViewModel = ParticipantsListViewModelMocking(
-                                                            compositeViewModelFactory: factoryMocking,
-                                                            localUserState: LocalUserState(),
-                                                            dispatchAction: storeFactory.store.dispatch,
-                                                            localizationProvider: localizationProvider)
-        participantsListViewModel.updateStates = updateStates
-        factoryMocking.participantsListViewModel = participantsListViewModel
-
-        let sut = makeSUT()
-        sut.update(localUserState: localUserStateValue,
-                   remoteParticipantsState: remoteParticipantsStateValue,
-                   callingState: CallingState(),
-                   visibilityState: VisibilityState(currentStatus: .visible))
-        wait(for: [expectation], timeout: 1)
-    }
-
-    func test_infoHeaderViewModel_when_displayParticipantsList_then_participantsListDisplayed() {
-        let sut = makeSUT()
-        sut.displayParticipantsList()
-
-        XCTAssertTrue(sut.isParticipantsListDisplayed)
     }
 
     func test_infoHeaderViewModel_toggleDisplayInfoHeader_when_isInfoHeaderDisplayedFalse_then_shouldBecomeTrueAndPublish() {
@@ -246,23 +237,6 @@ class InfoHeaderViewModelTests: XCTestCase {
         XCTAssertTrue(sut.isInfoHeaderDisplayed)
         cancel.cancel()
         wait(for: [expectation], timeout: 1)
-    }
-
-    func test_infoHeaderViewModel_toggleDisplayInfoHeader_when_isInfoHeaderDisplayedFalse_then_isTrueAndWaitForTimerToHide_shouldBecomeFalseAgainAndPublish() {
-        let sut = makeSUT()
-        let expectation = XCTestExpectation(description: "Should publish isInfoHeaderDisplayed true")
-        sut.$isInfoHeaderDisplayed
-            .dropFirst(3)
-            .sink(receiveValue: { isInfoHeaderDisplayed in
-                XCTAssertFalse(isInfoHeaderDisplayed)
-                expectation.fulfill()
-            }).store(in: cancellable)
-
-        sut.isInfoHeaderDisplayed = false
-        XCTAssertFalse(sut.isInfoHeaderDisplayed)
-        sut.toggleDisplayInfoHeaderIfNeeded()
-        XCTAssertTrue(sut.isInfoHeaderDisplayed)
-        wait(for: [expectation], timeout: 5)
     }
 
     func test_infoHeaderViewModel_toggleDisplayInfoHeader_when_isInfoHeaderDisplayedTrue_then_shouldBecomeFalseAndPublish() {
@@ -310,7 +284,7 @@ class InfoHeaderViewModelTests: XCTestCase {
         let sut = makeSUTLocalizationMocking()
         let expectation = XCTestExpectation(description: "Should not publish infoLabel")
         expectation.isInverted = true
-        sut.$infoLabel
+        sut.$title
             .dropFirst()
             .sink(receiveValue: { _ in
                 expectation.fulfill()
@@ -324,9 +298,12 @@ class InfoHeaderViewModelTests: XCTestCase {
         sut.update(localUserState: storeFactory.store.state.localUserState,
                    remoteParticipantsState: remoteParticipantsState,
                    callingState: CallingState(),
-                   visibilityState: VisibilityState(currentStatus: .visible))
+                   visibilityState: VisibilityState(currentStatus: .visible),
+                   callScreenInfoHeaderState: CallScreenInfoHeaderState(),
+                   buttonViewDataState: ButtonViewDataState()
+        )
         let expectedInfoHeaderlabel0ParticipantKey = "AzureCommunicationUICalling.CallingView.InfoHeader.WaitingForOthersToJoin"
-        XCTAssertEqual(sut.infoLabel, expectedInfoHeaderlabel0ParticipantKey)
+        XCTAssertEqual(sut.title, expectedInfoHeaderlabel0ParticipantKey)
         XCTAssertTrue(localizationProvider.isGetLocalizedStringCalled)
         wait(for: [expectation], timeout: 1)
     }
@@ -337,7 +314,7 @@ class InfoHeaderViewModelTests: XCTestCase {
         let expectedInfoHeaderlabel0ParticipantKey = "AzureCommunicationUICalling.CallingView.InfoHeader.WaitingForOthersToJoin"
         let expectedInfoHeaderlabelNParticipantKey = "AzureCommunicationUICalling.CallingView.InfoHeader.CallWithNPeople"
 
-        sut.$infoLabel
+        sut.$title
             .dropFirst()
             .sink(receiveValue: { infoLabel in
                 XCTAssertEqual(infoLabel, expectedInfoHeaderlabelNParticipantKey)
@@ -348,6 +325,7 @@ class InfoHeaderViewModelTests: XCTestCase {
         let firstParticipantInfoModel = ParticipantInfoModel(
             displayName: "Participant 1",
             isSpeaking: false,
+            isTypingRtt: false,
             isMuted: false,
             isRemoteUser: true,
             userIdentifier: "testUserIdentifier1",
@@ -359,6 +337,7 @@ class InfoHeaderViewModelTests: XCTestCase {
         let secondParticipantInfoModel = ParticipantInfoModel(
             displayName: "Participant 2",
             isSpeaking: false,
+            isTypingRtt: false,
             isMuted: false,
             isRemoteUser: true,
             userIdentifier: "testUserIdentifier1",
@@ -368,16 +347,48 @@ class InfoHeaderViewModelTests: XCTestCase {
         participantList.append(secondParticipantInfoModel)
 
         let remoteParticipantsState = RemoteParticipantsState(
-            participantInfoList: participantList, lastUpdateTimeStamp: Date())
+            participantInfoList: participantList, lastUpdateTimeStamp: Date(), totalParticipantCount: 2)
 
-        XCTAssertEqual(sut.infoLabel, expectedInfoHeaderlabel0ParticipantKey)
+        XCTAssertEqual(sut.title, expectedInfoHeaderlabel0ParticipantKey)
         XCTAssertTrue(localizationProvider.isGetLocalizedStringCalled)
         sut.update(localUserState: storeFactory.store.state.localUserState,
                    remoteParticipantsState: remoteParticipantsState,
                    callingState: CallingState(),
-                   visibilityState: VisibilityState(currentStatus: .visible))
-        XCTAssertEqual(sut.infoLabel, expectedInfoHeaderlabelNParticipantKey)
+                   visibilityState: VisibilityState(currentStatus: .visible),
+                   callScreenInfoHeaderState: CallScreenInfoHeaderState(),
+                   buttonViewDataState: ButtonViewDataState()
+        )
+        XCTAssertEqual(sut.title, expectedInfoHeaderlabelNParticipantKey)
         XCTAssertTrue(localizationProvider.isGetLocalizedStringWithArgsCalled)
+
+        wait(for: [expectation], timeout: 1)
+    }
+
+    func test_infoHeaderViewModel_display_infoHeader_customButtonsDisplayed() {
+        let sut = makeSUTLocalizationMocking()
+        let expectation = XCTestExpectation(description: "Should display custom button")
+
+        let customButton1 = CustomButtonState(id: "1", enabled: true, visible: true, image: UIImage(), title: "Button 1")
+
+        sut.$customButton1ViewModel
+            .dropFirst()
+            .sink(receiveValue: { iconButtonViewModel in
+                XCTAssertEqual(customButton1.image, iconButtonViewModel?.icon)
+                XCTAssertEqual(customButton1.title, iconButtonViewModel?.accessibilityLabel)
+                XCTAssertEqual(!customButton1.enabled, iconButtonViewModel?.isDisabled)
+                XCTAssertEqual(customButton1.visible, iconButtonViewModel?.isVisible)
+                expectation.fulfill()
+            }).store(in: cancellable)
+
+        let buttonState = ButtonViewDataState(callScreenHeaderCustomButtonsState: [customButton1])
+
+        sut.update(localUserState: storeFactory.store.state.localUserState,
+                   remoteParticipantsState: RemoteParticipantsState(),
+                   callingState: CallingState(),
+                   visibilityState: VisibilityState(currentStatus: .visible),
+                   callScreenInfoHeaderState: CallScreenInfoHeaderState(),
+                   buttonViewDataState: buttonState
+        )
 
         wait(for: [expectation], timeout: 1)
     }
@@ -394,7 +405,11 @@ extension InfoHeaderViewModelTests {
                                    accessibilityProvider: accessibilityProvider,
                                    dispatchAction: storeFactory.store.dispatch,
                                    enableMultitasking: true,
-                                   enableSystemPipWhenMultitasking: true)
+                                   enableSystemPipWhenMultitasking: true,
+                                   callScreenInfoHeaderState: CallScreenInfoHeaderState(),
+                                   buttonViewDataState: ButtonViewDataState(),
+                                   controlHeaderViewData: nil
+        )
     }
 
     func makeSUTLocalizationMocking() -> InfoHeaderViewModel {

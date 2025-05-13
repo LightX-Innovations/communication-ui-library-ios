@@ -7,7 +7,7 @@ import Foundation
 import Combine
 
 class ErrorInfoViewModel: ObservableObject {
-    @Published private(set) var isDisplayed: Bool = false
+    @Published private(set) var isDisplayed = false
     @Published private(set) var title: String
     @Published private(set) var subtitle: String
 
@@ -43,6 +43,11 @@ class ErrorInfoViewModel: ObservableObject {
     func update(errorState: ErrorState) {
         let errorType = errorState.internalError
 
+        if  errorType == .captionsNotActive ||
+                errorType == .captionsStartFailedCallNotConnected ||
+                errorType == .captionsStartFailedSpokenLanguageNotSupported {
+            return
+        }
         guard let errorType = errorType else {
             // if no error, hide banner
             isDisplayed = false

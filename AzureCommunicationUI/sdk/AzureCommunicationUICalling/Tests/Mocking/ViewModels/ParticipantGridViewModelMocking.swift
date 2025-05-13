@@ -14,15 +14,20 @@ class ParticipantGridViewModelMocking: ParticipantGridViewModel {
          localizationProvider: LocalizationProviderProtocol,
          accessibilityProvider: AccessibilityProviderProtocol,
          updateState: ((CallingState, RemoteParticipantsState,
-                        VisibilityState, LifeCycleState) -> Void)? = nil) {
+                        VisibilityState, LifeCycleState) -> Void)? = nil,
+         rendererViewManager: RendererViewManager) {
         self.updateState = updateState
         super.init(compositeViewModelFactory: compositeViewModelFactory,
                    localizationProvider: localizationProvider,
          		   accessibilityProvider: accessibilityProvider,
-                   isIpadInterface: false)
+                   isIpadInterface: false,
+                   callType: .groupCall,
+                   rendererViewManager: rendererViewManager)
     }
 
     override func update(callingState: CallingState,
+                         captionsState: CaptionsState,
+                         rttState: RttState,
                          remoteParticipantsState: RemoteParticipantsState,
                          visibilityState: VisibilityState,
                          lifeCycleState: LifeCycleState) {

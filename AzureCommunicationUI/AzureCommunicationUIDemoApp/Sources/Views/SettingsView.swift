@@ -41,6 +41,10 @@ struct SettingsView: View {
             }
         }
         .accessibilityElement(children: .contain)
+        .onAppear {
+            GlobalCompositeManager.callComposite?.dismiss()
+            GlobalCompositeManager.callComposite = nil
+        }
     }
 
     var dismissButton: some View {
@@ -51,9 +55,64 @@ struct SettingsView: View {
         .accessibilityIdentifier(AccessibilityId.settingsCloseButtonAccessibilityID.rawValue)
     }
 
+    var displayLeaveCallConfirmationSettings: some View {
+        Section(header: Text("Call screen settings")) {
+            Toggle("Display leave call confirmation", isOn: $envConfigSubject.displayLeaveCallConfirmation)
+                .onTapGesture {
+                    envConfigSubject.displayLeaveCallConfirmation = !envConfigSubject.displayLeaveCallConfirmation
+                }
+                .accessibilityIdentifier(AccessibilityId.leaveCallConfirmationDisplayAccessibilityID.rawValue)
+        }
+    }
+    var callScreenHeaderSettings: some View {
+        Section(header: Text("Call Screen Title and Subtitle API")) {
+            TextField("Call Screen Custom title", text: $envConfigSubject.callInformationTitle)
+                            .disableAutocorrection(true)
+                            .autocapitalization(.none)
+                            .textFieldStyle(.roundedBorder)
+            TextField("Apply Custom title on X number of remote participant join",
+                      value: $envConfigSubject.customTitleApplyOnRemoteJoin, formatter: NumberFormatter())
+                .keyboardType(.decimalPad)
+                .padding()
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+            TextField("Call Screen Custom subtitle", text: $envConfigSubject.callInformationSubtitle)
+                .disableAutocorrection(true)
+                .autocapitalization(.none)
+                .textFieldStyle(.roundedBorder)
+            TextField("Apply Custom subtitle on X number of remote participant join",
+                      value: $envConfigSubject.customSubtitleApplyOnRemoteJoin, formatter: NumberFormatter())
+                .keyboardType(.decimalPad)
+                .padding()
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+        }
+    }
+
+    var setupScreenSettings: some View {
+        Section(header: Text("Setup screen settings")) {
+            Toggle("Camera button enabled", isOn: $envConfigSubject.setupScreenOptionsCameraButtonEnabled)
+                .onTapGesture {
+                    envConfigSubject.setupScreenOptionsCameraButtonEnabled =
+                    !envConfigSubject.setupScreenOptionsCameraButtonEnabled
+                }
+                .accessibilityIdentifier(AccessibilityId.setupScreenCameraButtonEnabledAccessibilityID.rawValue)
+            Toggle("Mic button enabled", isOn: $envConfigSubject.setupScreenOptionsMicButtonEnabled)
+                .onTapGesture {
+                    envConfigSubject.setupScreenOptionsMicButtonEnabled =
+                    !envConfigSubject.setupScreenOptionsMicButtonEnabled
+                }
+                .accessibilityIdentifier(AccessibilityId.setupScreenMicButtonEnabledAccessibilityID.rawValue)
+        }
+    }
+
     var settingsForm: some View {
-        Form {
-            orientationOptions
+        List {
+            Group {
+                orientationOptions
+                captionsSettings
+                buttonSettins
+                multitaskingSettings
+                callScreenHeaderSettings
+            }
             Group {
                 localizationSettings
                 skipSetupScreenSettings
@@ -64,9 +123,13 @@ struct SettingsView: View {
                 navigationSettings
                 remoteParticipantsAvatarsSettings
                 themeSettings
-                multitaskingSettings
+                setupScreenSettings
             }
+            displayLeaveCallConfirmationSettings
             exitCompositeSettings
+            callKitSettings
+            pushNotificationsSettings
+            deprecatedAPIsSettings
         }
     }
 
@@ -133,14 +196,84 @@ struct SettingsView: View {
         }
     }
 
+    var callKitSettings: some View {
+        Section(header: Text("Callkit Settings")) {
+            enableCallKitToggle
+            enableRemoteHold
+            enableRemoteInfo
+            TextField(
+                "Remote info, default is Group/Teams call",
+                text: $envConfigSubject.callkitRemoteInfo
+            )
+            .keyboardType(.default)
+            .disableAutocorrection(true)
+            .autocapitalization(.none)
+            .textFieldStyle(.roundedBorder)
+        }
+    }
+
+    var enableCallKitToggle: some View {
+        Toggle("Enable Callkit",
+               isOn: $envConfigSubject.enableCallKit)
+        .accessibilityIdentifier(AccessibilityId.useEnableCalkitToggleToggleAccessibilityID.rawValue)
+    }
+
+    var enableRemoteHold: some View {
+        Toggle("Enable remote hold",
+               isOn: $envConfigSubject.enableRemoteHold)
+        .accessibilityIdentifier(AccessibilityId.useEnableRemoteHoldToggleToggleAccessibilityID.rawValue)
+    }
+
+    var enableRemoteInfo: some View {
+        Toggle("Enable remote info",
+               isOn: $envConfigSubject.enableRemoteInfo)
+        .accessibilityIdentifier(AccessibilityId.useEnableRemoteInfoToggleToggleAccessibilityID.rawValue)
+    }
+
     var localizationSettings: some View {
-        Section(header: Text("Localilzation")) {
+        Section(header: Text("Localization")) {
             LocalePicker(selection: $envConfigSubject.locale)
             Toggle("Is Right-to-Left", isOn: $envConfigSubject.isRightToLeft)
             TextField(
                 "Locale identifier (eg. zh-Hant, fr-CA)",
                 text: $envConfigSubject.localeIdentifier
             )
+            .keyboardType(.default)
+            .disableAutocorrection(true)
+            .autocapitalization(.none)
+            .textFieldStyle(.roundedBorder)
+        }
+    }
+
+    var captionsSettings: some View {
+        Section(header: Text("Captions")) {
+            CaptionsLocaleTextField(selection: $envConfigSubject.spokenLanguage)
+            Toggle("Start Captions", isOn: $envConfigSubject.captionsOn)
+        }
+    }
+
+    var buttonSettins: some View {
+        Section(header: Text("Custom Button")) {
+            Toggle("Add Custom Buttons", isOn: $envConfigSubject.addCustomButton)
+            Toggle("Hide All Buttons in More List", isOn: $envConfigSubject.hideAllButtons)
+        }
+    }
+
+    var pushNotificationsSettings: some View {
+        Section(header: Text("Push notification")) {
+            Toggle("Disable internal push for incoming call",
+                   isOn: $envConfigSubject.disableInternalPushForIncomingCall)
+            .keyboardType(.default)
+            .disableAutocorrection(true)
+            .autocapitalization(.none)
+            .textFieldStyle(.roundedBorder)
+        }
+    }
+
+    var deprecatedAPIsSettings: some View {
+        Section(header: Text("Deprecated APIs")) {
+            Toggle("Use deprecated launch",
+                   isOn: $envConfigSubject.useDeprecatedLaunch)
             .keyboardType(.default)
             .disableAutocorrection(true)
             .autocapitalization(.none)
@@ -264,6 +397,7 @@ struct SettingsView: View {
         Section(header: Text("Theme")) {
             Toggle("Use Custom Theme Colors", isOn: $envConfigSubject.useCustomColors)
             ColorPicker("Primary Color", selection: $envConfigSubject.primaryColor)
+            ColorPicker("OnPrimary Color", selection: $envConfigSubject.foregroundOnPrimaryColor)
             ColorPicker("Tint 10 Color", selection: $envConfigSubject.tint10)
             ColorPicker("Tint 20 Color", selection: $envConfigSubject.tint20)
             ColorPicker("Tint 30 Color", selection: $envConfigSubject.tint30)
@@ -297,5 +431,27 @@ struct LocalePicker: View {
                     }
                 }
             }
+    }
+}
+
+struct CaptionsLocaleTextField: View {
+    @Binding var selection: String
+    @State private var inputLanguage: String = ""
+
+    var body: some View {
+        VStack {
+            TextField("Enter Language Code (e.g., en-US)", text: $inputLanguage)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .padding()
+                .onChange(of: inputLanguage) { newValue in
+                    selection = newValue // Directly update the selection
+                }
+
+            Text("Current Selection: \(selection)")
+                .padding()
+        }
+        .onAppear {
+            inputLanguage = selection
+        }
     }
 }

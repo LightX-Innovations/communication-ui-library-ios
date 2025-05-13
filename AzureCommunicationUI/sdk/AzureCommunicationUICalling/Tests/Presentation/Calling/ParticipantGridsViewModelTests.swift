@@ -5,6 +5,7 @@
 
 import Foundation
 import XCTest
+import AzureCommunicationCommon
 @testable import AzureCommunicationUICalling
 
 class ParticipantGridViewModelTests: XCTestCase {
@@ -51,8 +52,12 @@ class ParticipantGridViewModelTests: XCTestCase {
                                             dominantSpeakers: [uuid7, uuid2],
                                             dominantSpeakersModifiedTimestamp: date1)
         let callingState = CallingState()
+        let captionsState = CaptionsState()
+        let rttState = RttState()
         let sut = makeSUT()
         sut.update(callingState: callingState,
+                   captionsState: captionsState,
+                   rttState: rttState,
                    remoteParticipantsState: state,
                    visibilityState: VisibilityState(currentStatus: .visible),
                    lifeCycleState: LifeCycleState(currentStatus: .foreground))
@@ -63,6 +68,8 @@ class ParticipantGridViewModelTests: XCTestCase {
                                              dominantSpeakers: [uuid7, uuid2],
                                              dominantSpeakersModifiedTimestamp: date2)
         sut.update(callingState: callingState,
+                   captionsState: captionsState,
+                   rttState: rttState,
                    remoteParticipantsState: state2,
                    visibilityState: VisibilityState(currentStatus: .visible),
                    lifeCycleState: LifeCycleState(currentStatus: .foreground))
@@ -108,6 +115,8 @@ class ParticipantGridViewModelTests: XCTestCase {
         let callingState = CallingState()
         let sut = makeSUT()
         sut.update(callingState: callingState,
+                   captionsState: CaptionsState(),
+                   rttState: RttState(),
                    remoteParticipantsState: state,
                    visibilityState: VisibilityState(currentStatus: .visible),
                    lifeCycleState: LifeCycleState(currentStatus: .foreground))
@@ -120,6 +129,8 @@ class ParticipantGridViewModelTests: XCTestCase {
                                              dominantSpeakers: [],
                                              dominantSpeakersModifiedTimestamp: date2)
         sut.update(callingState: callingState,
+                   captionsState: CaptionsState(),
+                   rttState: RttState(),
                    remoteParticipantsState: state2,
                    visibilityState: VisibilityState(currentStatus: .visible),
                    lifeCycleState: LifeCycleState(currentStatus: .foreground))
@@ -141,6 +152,8 @@ class ParticipantGridViewModelTests: XCTestCase {
                                             lastUpdateTimeStamp: Date())
         let sut = makeSUT()
         sut.update(callingState: CallingState(),
+                   captionsState: CaptionsState(),
+                   rttState: RttState(),
                    remoteParticipantsState: state,
                    visibilityState: VisibilityState(currentStatus: .visible),
                    lifeCycleState: LifeCycleState(currentStatus: .foreground))
@@ -162,6 +175,8 @@ class ParticipantGridViewModelTests: XCTestCase {
                                             lastUpdateTimeStamp: Date())
         let sut = makeSUT()
         sut.update(callingState: CallingState(),
+                   captionsState: CaptionsState(),
+                   rttState: RttState(),
                    remoteParticipantsState: state,
                    visibilityState: VisibilityState(currentStatus: .visible),
                    lifeCycleState: LifeCycleState())
@@ -181,17 +196,21 @@ class ParticipantGridViewModelTests: XCTestCase {
         expectation.assertForOverFulfill = true
         let expectedUpdatedInfoModel = ParticipantInfoModelBuilder.get(participantIdentifier: state.participantInfoList.first!.userIdentifier,
                                                                        isMuted: !state.participantInfoList.first!.isMuted)
-        let sut = makeSUT { infoModel, _ in
+        let sut = makeSUT { infoModel in
             XCTAssertEqual(expectedUpdatedInfoModel, infoModel)
             expectation.fulfill()
         }
         sut.update(callingState: callingState,
+                   captionsState: CaptionsState(),
+                   rttState: RttState(),
                    remoteParticipantsState: state,
                    visibilityState: VisibilityState(currentStatus: .visible),
                    lifeCycleState: LifeCycleState(currentStatus: .foreground))
         let updatedParticipantInfoList = [expectedUpdatedInfoModel]
         let updatedState = RemoteParticipantsState(participantInfoList: updatedParticipantInfoList)
         sut.update(callingState: callingState,
+                   captionsState: CaptionsState(),
+                   rttState: RttState(),
                    remoteParticipantsState: updatedState,
                    visibilityState: VisibilityState(currentStatus: .visible),
                    lifeCycleState: LifeCycleState(currentStatus: .foreground))
@@ -211,6 +230,8 @@ class ParticipantGridViewModelTests: XCTestCase {
                                                                        isMuted: !state.participantInfoList.first!.isMuted)
         let sut = makeSUT()
         sut.update(callingState: callingState,
+                   captionsState: CaptionsState(),
+                   rttState: RttState(),
                    remoteParticipantsState: state,
                    visibilityState: VisibilityState(currentStatus: .visible),
                    lifeCycleState: LifeCycleState(currentStatus: .foreground))
@@ -221,6 +242,8 @@ class ParticipantGridViewModelTests: XCTestCase {
         let updatedParticipantInfoList = [expectedUpdatedInfoModel]
         let updatedState = RemoteParticipantsState(participantInfoList: updatedParticipantInfoList)
         sut.update(callingState: callingState,
+                   captionsState: CaptionsState(),
+                   rttState: RttState(),
                    remoteParticipantsState: updatedState,
                    visibilityState: VisibilityState(currentStatus: .visible),
                    lifeCycleState: LifeCycleState(currentStatus: .foreground))
@@ -240,10 +263,12 @@ class ParticipantGridViewModelTests: XCTestCase {
         let callingState = CallingState()
         let expectation = XCTestExpectation(description: "Participants list updated expectation")
         expectation.assertForOverFulfill = true
-        let sut = makeSUT { _, _ in
+        let sut = makeSUT { _ in
             expectation.fulfill()
         }
         sut.update(callingState: callingState,
+                   captionsState: CaptionsState(),
+                   rttState: RttState(),
                    remoteParticipantsState: state,
                    visibilityState: VisibilityState(currentStatus: .visible),
                    lifeCycleState: LifeCycleState(currentStatus: .foreground))
@@ -256,6 +281,8 @@ class ParticipantGridViewModelTests: XCTestCase {
                                           newParticipantInfoModel]
         let updatedState = RemoteParticipantsState(participantInfoList: updatedParticipantInfoList)
         sut.update(callingState: callingState,
+                   captionsState: CaptionsState(),
+                   rttState: RttState(),
                    remoteParticipantsState: updatedState,
                    visibilityState: VisibilityState(currentStatus: .visible),
                    lifeCycleState: LifeCycleState(currentStatus: .foreground))
@@ -273,6 +300,8 @@ class ParticipantGridViewModelTests: XCTestCase {
         let callingState = CallingState()
         let sut = makeSUT()
         sut.update(callingState: callingState,
+                   captionsState: CaptionsState(),
+                   rttState: RttState(),
                    remoteParticipantsState: state,
                    visibilityState: VisibilityState(currentStatus: .visible),
                    lifeCycleState: LifeCycleState(currentStatus: .foreground))
@@ -285,6 +314,8 @@ class ParticipantGridViewModelTests: XCTestCase {
                                ParticipantInfoModelBuilder.get()]
         let updatedState = RemoteParticipantsState(participantInfoList: updatedInfoList)
         sut.update(callingState: callingState,
+                   captionsState: CaptionsState(),
+                   rttState: RttState(),
                    remoteParticipantsState: updatedState,
                    visibilityState: VisibilityState(currentStatus: .visible),
                    lifeCycleState: LifeCycleState(currentStatus: .foreground))
@@ -300,6 +331,8 @@ class ParticipantGridViewModelTests: XCTestCase {
         let callingState = CallingState()
         let sut = makeSUT()
         sut.update(callingState: callingState,
+                   captionsState: CaptionsState(),
+                   rttState: RttState(),
                    remoteParticipantsState: state,
                    visibilityState: VisibilityState(currentStatus: .visible),
                    lifeCycleState: LifeCycleState(currentStatus: .foreground))
@@ -307,6 +340,8 @@ class ParticipantGridViewModelTests: XCTestCase {
         updatedInfoList.removeFirst()
         let updatedState = RemoteParticipantsState(participantInfoList: updatedInfoList)
         sut.update(callingState: callingState,
+                   captionsState: CaptionsState(),
+                   rttState: RttState(),
                    remoteParticipantsState: updatedState,
                    visibilityState: VisibilityState(currentStatus: .visible),
                    lifeCycleState: LifeCycleState(currentStatus: .foreground))
@@ -329,10 +364,14 @@ class ParticipantGridViewModelTests: XCTestCase {
         let callingState = CallingState()
         let sut = makeSUT()
         sut.update(callingState: callingState,
+                   captionsState: CaptionsState(),
+                   rttState: RttState(),
                    remoteParticipantsState: firstState,
                    visibilityState: VisibilityState(currentStatus: .visible),
                    lifeCycleState: LifeCycleState(currentStatus: .foreground))
         sut.update(callingState: callingState,
+                   captionsState: CaptionsState(),
+                   rttState: RttState(),
                    remoteParticipantsState: currentState,
                    visibilityState: VisibilityState(currentStatus: .visible),
                    lifeCycleState: LifeCycleState(currentStatus: .foreground))
@@ -353,6 +392,54 @@ class ParticipantGridViewModelTests: XCTestCase {
         let sut = makeSUT(accessibilityProvider: accessibilityProvider,
                           localizationProvider: localizationProvider)
         sut.update(callingState: callingState,
+                   captionsState: CaptionsState(),
+                   rttState: RttState(),
+                   remoteParticipantsState: state,
+                   visibilityState: VisibilityState(currentStatus: .visible),
+                   lifeCycleState: LifeCycleState(currentStatus: .foreground))
+        wait(for: [expectation], timeout: 1)
+    }
+
+    func test_participantGridsViewModel_updateParticipantsState_when_newParticipantsRinging_then_participantsJoinedAnnouncementPosted() {
+        let expectation = XCTestExpectation(description: "Announcement expection")
+        let state = makeRemoteParticipantState(count: 2)
+        let callingState = CallingState(status: .ringing)
+        let expectedAnnouncement = "2 participants joined the meeting"
+        let accessibilityProvider = AccessibilityProviderMocking()
+        let localizationProvider = LocalizationProvider(logger: LoggerMocking())
+        accessibilityProvider.postQueuedAnnouncementBlock = { message in
+            XCTAssertEqual(message, expectedAnnouncement)
+            expectation.fulfill()
+        }
+        let sut = makeSUT(callType: CompositeCallType.oneToNOutgoing,
+                          accessibilityProvider: accessibilityProvider,
+                          localizationProvider: localizationProvider)
+        sut.update(callingState: callingState,
+                   captionsState: CaptionsState(),
+                   rttState: RttState(),
+                   remoteParticipantsState: state,
+                   visibilityState: VisibilityState(currentStatus: .visible),
+                   lifeCycleState: LifeCycleState(currentStatus: .foreground))
+        wait(for: [expectation], timeout: 1)
+    }
+
+    func test_participantGridsViewModel_updateParticipantsState_when_newParticipantsConnecting_then_participantsJoinedAnnouncementPosted() {
+        let expectation = XCTestExpectation(description: "Announcement expection")
+        let state = makeRemoteParticipantState(count: 2)
+        let callingState = CallingState(status: .connecting)
+        let expectedAnnouncement = "2 participants joined the meeting"
+        let accessibilityProvider = AccessibilityProviderMocking()
+        let localizationProvider = LocalizationProvider(logger: LoggerMocking())
+        accessibilityProvider.postQueuedAnnouncementBlock = { message in
+            XCTAssertEqual(message, expectedAnnouncement)
+            expectation.fulfill()
+        }
+        let sut = makeSUT(callType: CompositeCallType.oneToNOutgoing,
+                          accessibilityProvider: accessibilityProvider,
+                          localizationProvider: localizationProvider)
+        sut.update(callingState: callingState,
+                   captionsState: CaptionsState(),
+                   rttState: RttState(),
                    remoteParticipantsState: state,
                    visibilityState: VisibilityState(currentStatus: .visible),
                    lifeCycleState: LifeCycleState(currentStatus: .foreground))
@@ -373,10 +460,14 @@ class ParticipantGridViewModelTests: XCTestCase {
         let callingState = CallingState()
         let sut = makeSUT()
         sut.update(callingState: callingState,
+                   captionsState: CaptionsState(),
+                   rttState: RttState(),
                    remoteParticipantsState: firstState,
                    visibilityState: VisibilityState(currentStatus: .visible),
                    lifeCycleState: LifeCycleState(currentStatus: .foreground))
         sut.update(callingState: callingState,
+                   captionsState: CaptionsState(),
+                   rttState: RttState(),
                    remoteParticipantsState: currentState,
                    visibilityState: VisibilityState(currentStatus: .visible),
                    lifeCycleState: LifeCycleState(currentStatus: .foreground))
@@ -397,6 +488,8 @@ class ParticipantGridViewModelTests: XCTestCase {
         let sut = makeSUT(accessibilityProvider: accessibilityProvider,
                           localizationProvider: localizationProvider)
         sut.update(callingState: callingState,
+                   captionsState: CaptionsState(),
+                   rttState: RttState(),
                    remoteParticipantsState: state,
                    visibilityState: VisibilityState(currentStatus: .visible),
                    lifeCycleState: LifeCycleState(currentStatus: .foreground))
@@ -413,6 +506,8 @@ class ParticipantGridViewModelTests: XCTestCase {
         let sut = makeSUT(accessibilityProvider: accessibilityProvider,
                           localizationProvider: localizationProvider)
         sut.update(callingState: callingState,
+                   captionsState: CaptionsState(),
+                   rttState: RttState(),
                    remoteParticipantsState: state,
                    visibilityState: VisibilityState(currentStatus: .visible),
                    lifeCycleState: LifeCycleState(currentStatus: .foreground))
@@ -423,6 +518,8 @@ class ParticipantGridViewModelTests: XCTestCase {
         let updatedState = RemoteParticipantsState(participantInfoList: state.participantInfoList.dropLast(2),
                                                    lastUpdateTimeStamp: Date())
         sut.update(callingState: callingState,
+                   captionsState: CaptionsState(),
+                   rttState: RttState(),
                    remoteParticipantsState: updatedState,
                    visibilityState: VisibilityState(currentStatus: .visible),
                    lifeCycleState: LifeCycleState(currentStatus: .foreground))
@@ -440,6 +537,8 @@ class ParticipantGridViewModelTests: XCTestCase {
         let sut = makeSUT(accessibilityProvider: accessibilityProvider,
                           localizationProvider: localizationProvider)
         sut.update(callingState: callingState,
+                   captionsState: CaptionsState(),
+                   rttState: RttState(),
                    remoteParticipantsState: state,
                    visibilityState: VisibilityState(currentStatus: .visible),
                    lifeCycleState: LifeCycleState(currentStatus: .foreground))
@@ -450,6 +549,8 @@ class ParticipantGridViewModelTests: XCTestCase {
         let updatedState = RemoteParticipantsState(participantInfoList: state.participantInfoList.dropLast(2),
                                                    lastUpdateTimeStamp: Date())
         sut.update(callingState: callingState,
+                   captionsState: CaptionsState(),
+                   rttState: RttState(),
                    remoteParticipantsState: updatedState,
                    visibilityState: VisibilityState(currentStatus: .visible),
                    lifeCycleState: LifeCycleState(currentStatus: .foreground))
@@ -467,6 +568,8 @@ class ParticipantGridViewModelTests: XCTestCase {
         let sut = makeSUT(accessibilityProvider: accessibilityProvider,
                           localizationProvider: localizationProvider)
         sut.update(callingState: callingState,
+                   captionsState: CaptionsState(),
+                   rttState: RttState(),
                    remoteParticipantsState: state,
                    visibilityState: VisibilityState(currentStatus: .visible),
                    lifeCycleState: LifeCycleState(currentStatus: .foreground))
@@ -475,6 +578,8 @@ class ParticipantGridViewModelTests: XCTestCase {
         }
         let updatedState = makeRemoteParticipantState(count: 3)
         sut.update(callingState: callingState,
+                   captionsState: CaptionsState(),
+                   rttState: RttState(),
                    remoteParticipantsState: updatedState,
                    visibilityState: VisibilityState(currentStatus: .visible),
                    lifeCycleState: LifeCycleState(currentStatus: .foreground))
@@ -493,6 +598,8 @@ class ParticipantGridViewModelTests: XCTestCase {
                 expectation.fulfill()
             }.store(in: cancellable)
         sut.update(callingState: CallingState(),
+                   captionsState: CaptionsState(),
+                   rttState: RttState(),
                    remoteParticipantsState: RemoteParticipantsState(),
                    visibilityState: VisibilityState(currentStatus: .visible),
                    lifeCycleState: LifeCycleState(currentStatus: .foreground))
@@ -513,6 +620,8 @@ class ParticipantGridViewModelTests: XCTestCase {
                 expectation.fulfill()
             }.store(in: cancellable)
         sut.update(callingState: CallingState(),
+                   captionsState: CaptionsState(),
+                   rttState: RttState(),
                    remoteParticipantsState: makeRemoteParticipantState(count: expectedCount),
                    visibilityState: VisibilityState(currentStatus: .visible),
                    lifeCycleState: LifeCycleState(currentStatus: .foreground))
@@ -532,6 +641,8 @@ class ParticipantGridViewModelTests: XCTestCase {
                 expectation.fulfill()
             }.store(in: cancellable)
         sut.update(callingState: CallingState(),
+                   captionsState: CaptionsState(),
+                   rttState: RttState(),
                    remoteParticipantsState: makeRemoteParticipantState(count: expectedCount),
                    visibilityState: VisibilityState(currentStatus: .visible),
                    lifeCycleState: LifeCycleState(currentStatus: .foreground))
@@ -551,6 +662,8 @@ class ParticipantGridViewModelTests: XCTestCase {
                 expectation.fulfill()
             }.store(in: cancellable)
         sut.update(callingState: CallingState(),
+                   captionsState: CaptionsState(),
+                   rttState: RttState(),
                    remoteParticipantsState: makeRemoteParticipantState(count: expectedCount),
                    visibilityState: VisibilityState(currentStatus: .visible),
                    lifeCycleState: LifeCycleState(currentStatus: .foreground))
@@ -570,6 +683,8 @@ class ParticipantGridViewModelTests: XCTestCase {
                 expectation.fulfill()
             }.store(in: cancellable)
         sut.update(callingState: CallingState(),
+                   captionsState: CaptionsState(),
+                   rttState: RttState(),
                    remoteParticipantsState: makeRemoteParticipantState(count: expectedCount),
                    visibilityState: VisibilityState(currentStatus: .visible),
                    lifeCycleState: LifeCycleState(currentStatus: .foreground))
@@ -589,6 +704,8 @@ class ParticipantGridViewModelTests: XCTestCase {
                 expectation.fulfill()
             }.store(in: cancellable)
         sut.update(callingState: CallingState(),
+                   captionsState: CaptionsState(),
+                   rttState: RttState(),
                    remoteParticipantsState: makeRemoteParticipantState(count: expectedCount),
                    visibilityState: VisibilityState(currentStatus: .visible),
                    lifeCycleState: LifeCycleState(currentStatus: .foreground))
@@ -608,6 +725,8 @@ class ParticipantGridViewModelTests: XCTestCase {
                 expectation.fulfill()
             }.store(in: cancellable)
         sut.update(callingState: CallingState(),
+                   captionsState: CaptionsState(),
+                   rttState: RttState(),
                    remoteParticipantsState: makeRemoteParticipantState(count: expectedCount),
                    visibilityState: VisibilityState(currentStatus: .visible),
                    lifeCycleState: LifeCycleState(currentStatus: .foreground))
@@ -627,6 +746,8 @@ class ParticipantGridViewModelTests: XCTestCase {
                 expectation.fulfill()
             }.store(in: cancellable)
         sut.update(callingState: CallingState(),
+                   captionsState: CaptionsState(),
+                   rttState: RttState(),
                    remoteParticipantsState: makeRemoteParticipantState(count: 7),
                    visibilityState: VisibilityState(currentStatus: .visible),
                    lifeCycleState: LifeCycleState(currentStatus: .foreground))
@@ -635,12 +756,18 @@ class ParticipantGridViewModelTests: XCTestCase {
 }
 
 extension ParticipantGridViewModelTests {
-    func makeSUT(participantGridCellViewUpdateCompletion: ((ParticipantInfoModel, LifeCycleState) -> Void)? = nil) -> ParticipantGridViewModel {
+    func makeSUT(callType: CompositeCallType = .groupCall,
+                 participantGridCellViewUpdateCompletion: ((ParticipantInfoModel) -> Void)? = nil) -> ParticipantGridViewModel {
         let storeFactory = StoreFactoryMocking()
         let accessibilityProvider = AccessibilityProvider()
         var factoryMocking = CompositeViewModelFactoryMocking(logger: LoggerMocking(),
                                                               store: storeFactory.store,
-                                                              accessibilityProvider: accessibilityProvider)
+                                                              accessibilityProvider: accessibilityProvider,
+                                                              avatarManager: AvatarViewManagerMocking(
+                                                                store: storeFactory.store,
+                                                                localParticipantId: createCommunicationIdentifier(fromRawId: ""),
+                                                                localParticipantViewData: nil),
+                                                              updatableOptionsManager: UpdatableOptionsManager(store: storeFactory.store, setupScreenOptions: nil, callScreenOptions: nil))
         factoryMocking.createMockParticipantGridCellViewModel = { infoModel in
             if let completion = participantGridCellViewUpdateCompletion {
                 return ParticipantGridCellViewModelMocking(participantModel: infoModel,
@@ -651,19 +778,29 @@ extension ParticipantGridViewModelTests {
         return ParticipantGridViewModel(compositeViewModelFactory: factoryMocking,
         								localizationProvider: LocalizationProviderMocking(),
                                         accessibilityProvider: accessibilityProvider,
-                                        isIpadInterface: false)
+                                        isIpadInterface: false,
+                                        callType: callType,
+                                        rendererViewManager: VideoViewManagerMocking())
     }
 
-    func makeSUT(accessibilityProvider: AccessibilityProviderProtocol,
+    func makeSUT(callType: CompositeCallType = .groupCall,
+                 accessibilityProvider: AccessibilityProviderProtocol,
                  localizationProvider: LocalizationProviderProtocol) -> ParticipantGridViewModel {
         let storeFactory = StoreFactoryMocking()
         let factoryMocking = CompositeViewModelFactoryMocking(logger: LoggerMocking(),
                                                               store: storeFactory.store,
-                                                              accessibilityProvider: accessibilityProvider)
+                                                              accessibilityProvider: accessibilityProvider,
+                                                              avatarManager: AvatarViewManagerMocking(
+                                                                store: storeFactory.store,
+                                                                localParticipantId: createCommunicationIdentifier(fromRawId: ""),
+                                                                localParticipantViewData: nil),
+                                                              updatableOptionsManager: UpdatableOptionsManager(store: storeFactory.store, setupScreenOptions: nil, callScreenOptions: nil))
         return ParticipantGridViewModel(compositeViewModelFactory: factoryMocking,
                                         localizationProvider: localizationProvider,
                                         accessibilityProvider: accessibilityProvider,
-                                        isIpadInterface: false)
+                                        isIpadInterface: false,
+                                        callType: callType,
+                                        rendererViewManager: VideoViewManagerMocking())
     }
 
     func makeRemoteParticipantState(count: Int = 1,

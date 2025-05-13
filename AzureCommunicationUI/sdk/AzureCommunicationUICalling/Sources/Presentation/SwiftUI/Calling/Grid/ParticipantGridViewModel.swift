@@ -7,10 +7,12 @@ import Foundation
 import Combine
 
 class ParticipantGridViewModel: ObservableObject {
+    @Published var shouldUseVerticalStyleGrid = true
     private let compositeViewModelFactory: CompositeViewModelFactoryProtocol
     private let localizationProvider: LocalizationProviderProtocol
     private let accessibilityProvider: AccessibilityProviderProtocol
     private let isIpadInterface: Bool
+    private let callType: CompositeCallType
     private var maximumParticipantsDisplayed: Int {
         return  self.visibilityStatus == .pipModeEntered ? 1 : isIpadInterface ? 9 : 6
     }
@@ -24,27 +26,28 @@ class ParticipantGridViewModel: ObservableObject {
     @Published var gridsCount: Int = 0
     @Published var displayedParticipantInfoModelArr: [ParticipantInfoModel] = []
 
+    let rendererViewManager: RendererViewManager
+
     init(compositeViewModelFactory: CompositeViewModelFactoryProtocol,
          localizationProvider: LocalizationProviderProtocol,
          accessibilityProvider: AccessibilityProviderProtocol,
-         isIpadInterface: Bool) {
+         isIpadInterface: Bool,
+         callType: CompositeCallType,
+         rendererViewManager: RendererViewManager) {
         self.compositeViewModelFactory = compositeViewModelFactory
         self.localizationProvider = localizationProvider
         self.accessibilityProvider = accessibilityProvider
         self.isIpadInterface = isIpadInterface
+        self.callType = callType
+        self.rendererViewManager = rendererViewManager
     }
 
     func update(callingState: CallingState,
+                captionsState: CaptionsState,
+                rttState: RttState,
                 remoteParticipantsState: RemoteParticipantsState,
                 visibilityState: VisibilityState,
                 lifeCycleState: LifeCycleState) {
-
-        if visibilityState.currentStatus == .pipModeRequested {
-            // When enterin system PiP, need to remove video from rendering,
-            // so it will be rendered properly after view is placed in PiP
-            updateCellViewModel(for: [], lifeCycleState: lifeCycleState)
-            return
-        }
 
         guard lastUpdateTimeStamp != remoteParticipantsState.lastUpdateTimeStamp
                 || lastDominantSpeakersUpdatedTimestamp != remoteParticipantsState.dominantSpeakersModifiedTimestamp
@@ -63,7 +66,7 @@ class ParticipantGridViewModel: ObservableObject {
                 participanInfoModel.status != .inLobby && participanInfoModel.status != .disconnected
             }
         let dominantSpeakers = remoteParticipantsState.dominantSpeakers
-        var newDisplayedInfoModelArr = getDisplayedInfoViewModels(remoteParticipants, dominantSpeakers, visibilityState)
+        let newDisplayedInfoModelArr = getDisplayedInfoViewModels(remoteParticipants, dominantSpeakers, visibilityState)
         let removedModels = getRemovedInfoModels(for: newDisplayedInfoModelArr)
         let addedModels = getAddedInfoModels(for: newDisplayedInfoModelArr)
         let orderedInfoModelArr = sortDisplayedInfoModels(newDisplayedInfoModelArr,
@@ -72,15 +75,40 @@ class ParticipantGridViewModel: ObservableObject {
         updateCellViewModel(for: orderedInfoModelArr, lifeCycleState: lifeCycleState)
 
         displayedParticipantInfoModelArr = orderedInfoModelArr
-        if callingState.status == .connected {
+        if callingState.status == .connected
+            || callingState.status == .remoteHold
+            || (callType == .oneToNOutgoing
+        && ( callingState.status == .connecting || callingState.status == .ringing)) {
             // announce participants list changes only if the user is already connected to the call
             postParticipantsListUpdateAccessibilityAnnouncements(removedModels: removedModels,
                                                                  addedModels: addedModels)
         }
+
+        updateVideoViewManager(displayedRemoteInfoModelArr: displayedParticipantInfoModelArr)
+
         if gridsCount != displayedParticipantInfoModelArr.count {
             gridsCount = displayedParticipantInfoModelArr.count
         }
+
+        shouldUseVerticalStyleGrid =
+        ScreenSizeClassKey.defaultValue == .iphonePortraitScreenSize ||
+        captionsState.isCaptionsOn ||
+        rttState.isRttOn
     }
+
+    private func updateVideoViewManager(displayedRemoteInfoModelArr: [ParticipantInfoModel]) {
+           let videoCacheIds: [RemoteParticipantVideoViewId] = displayedRemoteInfoModelArr.compactMap {
+               let screenShareVideoStreamIdentifier = $0.screenShareVideoStreamModel?.videoStreamIdentifier
+               let cameraVideoStreamIdentifier = $0.cameraVideoStreamModel?.videoStreamIdentifier
+               guard let videoStreamIdentifier = screenShareVideoStreamIdentifier ?? cameraVideoStreamIdentifier else {
+                   return nil
+               }
+               return RemoteParticipantVideoViewId(userIdentifier: $0.userIdentifier,
+                                                   videoStreamIdentifier: videoStreamIdentifier)
+           }
+
+           rendererViewManager.updateDisplayedRemoteVideoStream(videoCacheIds)
+       }
 
     private func getDisplayedInfoViewModels(_ infoModels: [ParticipantInfoModel],
                                             _ dominantSpeakers: [String],
@@ -93,8 +121,8 @@ class ParticipantGridViewModel: ObservableObject {
             return infoModels
         }
         var dominantSpeakersOrder = [String: Int]()
-        for i in 0..<min(maximumParticipantsDisplayed, dominantSpeakers.count) {
-            dominantSpeakersOrder[dominantSpeakers[i]] = i
+        for idx in 0..<min(maximumParticipantsDisplayed, dominantSpeakers.count) {
+            dominantSpeakersOrder[dominantSpeakers[idx]] = idx
         }
         let sortedInfoList = infoModels.sorted(by: {
             if let order1 = dominantSpeakersOrder[$0.userIdentifier],
@@ -186,7 +214,7 @@ class ParticipantGridViewModel: ObservableObject {
         }
         for (index, infoModel) in displayedRemoteParticipants.enumerated() {
             let cellViewModel = participantsCellViewModelArr[index]
-            cellViewModel.update(participantModel: infoModel, lifeCycleState: lifeCycleState)
+            cellViewModel.update(participantModel: infoModel)
         }
     }
 
@@ -197,11 +225,11 @@ class ParticipantGridViewModel: ObservableObject {
             if let viewModel = participantsCellViewModelArr.first(where: {
                 $0.participantIdentifier == infoModel.userIdentifier
             }) {
-                viewModel.update(participantModel: infoModel, lifeCycleState: lifeCycleState)
+                viewModel.update(participantModel: infoModel)
                 newCellViewModelArr.append(viewModel)
             } else {
                 let cellViewModel = compositeViewModelFactory
-                    .makeParticipantCellViewModel(participantModel: infoModel, lifeCycleState: lifeCycleState)
+                    .makeParticipantCellViewModel(participantModel: infoModel)
                 newCellViewModelArr.append(cellViewModel)
             }
         }

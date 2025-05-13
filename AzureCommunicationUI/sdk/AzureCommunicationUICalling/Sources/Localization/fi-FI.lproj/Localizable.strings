@@ -10,21 +10,25 @@
 "AzureCommunicationUICalling.AudioDevice.DeviceDrawer.iPad"="iPad";
 "AzureCommunicationUICalling.AudioDevice.DeviceDrawer.Headphones"="Kuulokkeet";
 "AzureCommunicationUICalling.AudioDevice.DeviceDrawer.Bluetooth"="Bluetooth";
+"AzureCommunicationUICalling.AudioDevice.Drawer.Selected.AccessibilityLabel"= "%@ selected";
 
 /* SetupView */
 "AzureCommunicationUICalling.SetupView.Title"="Määritä";
 "AzureCommunicationUICalling.SetupView.Button.Dismiss.AccessibilityLabel"="Takaisin";
 "AzureCommunicationUICalling.SetupView.Button.JoinCall"="Liity puheluun";
+"AzureCommunicationUICalling.SetupView.Button.StartCall"="Start call";
 "AzureCommunicationUICalling.SetupView.Button.JoiningCall"="Liitytään puheluun...";
+"AzureCommunicationUICalling.SetupView.Button.StartingCall"="Starting call…";
 "AzureCommunicationUICalling.SetupView.Button.JoinCall.DisableState.AccessibilityLabel" = "Liity puheluun -toiminto on poistettu käytöstä";
+"AzureCommunicationUICalling.SetupView.Button.StartCall.DisableState.AccessibilityLabel" = "Start Call Disabled";
 "AzureCommunicationUICalling.SetupView.Button.VideoOff"="Videokuva ei käytössä";
-"AzureCommunicationUICalling.SetupView.Button.VideoOff.AccessibilityLabel"="Videokuva käytössä";
+"AzureCommunicationUICalling.SetupView.Button.VideoOff.AccessibilityLabel"="Videokuva ei käytössä";
 "AzureCommunicationUICalling.SetupView.Button.VideoOn"="Videokuva käytössä";
-"AzureCommunicationUICalling.SetupView.Button.VideoOn.AccessibilityLabel"="Videokuva ei käytössä";
+"AzureCommunicationUICalling.SetupView.Button.VideoOn.AccessibilityLabel"="Videokuva käytössä";
 "AzureCommunicationUICalling.SetupView.Button.MicOff"="Mikrofoni ei käytössä";
-"AzureCommunicationUICalling.SetupView.Button.MicOff.AccessibilityLabel"="Mikrofoni käytössä";
+"AzureCommunicationUICalling.SetupView.Button.MicOff.AccessibilityLabel"="Mikrofoni ei käytössä";
 "AzureCommunicationUICalling.SetupView.Button.MicOn"="Mikrofoni käytössä";
-"AzureCommunicationUICalling.SetupView.Button.MicOn.AccessibilityLabel"="Mikrofoni ei käytössä";
+"AzureCommunicationUICalling.SetupView.Button.MicOn.AccessibilityLabel"="Mikrofoni käytössä";
 "AzureCommunicationUICalling.SetupView.Button.Device"="Laite";
 "AzureCommunicationUICalling.SetupView.Button.Device.AccessibilityLabel"="Valitse äänilaite";
 "AzureCommunicationUICalling.SetupView.Button.GoToSettings"="Siirry asetuksiin";
@@ -66,6 +70,8 @@
 "AzureCommunicationUICalling.CallingView.ParticipantDrawer.IsUnmuted"="Ei mykistetty";
 "AzureCommunicationUICalling.CallingView.ParticipantDrawer.IsSpeaking"="Puhuu";
 "AzureCommunicationUICalling.CallingView.ParticipantDrawer.OnHold"="Pidossa";
+"AzureCommunicationUICalling.CallingView.ParticipantDrawer.OnHold.AccessibilityLabel"="%@ on pidossa";
+"AzureCommunicationUICalling.CallingView.ParticipantDrawer.Resume.AccessibilityLabel"="%@ jatkoi puhelua";
 "AzureCommunicationUICalling.CallingView.ParticipantDrawer.LobbyAction"="Hyväksy tai hylkää napauttamalla";
 
 "AzureCommunicationUICalling.CallingView.ParticipantDrawer.WaitingInLobby"="Odottaa odotustilassa (%d)";
@@ -75,6 +81,7 @@
 "AzureCommunicationUICalling.CallingView.ParticipantDrawer.Confirm.Title.AdmitParticipant"="Hyväksytäänkö %@?";
 "AzureCommunicationUICalling.CallingView.ParticipantDrawer.Confirm.Admit"="Hyväksy";
 "AzureCommunicationUICalling.CallingView.ParticipantDrawer.Confirm.Decline"="Hylkää";
+"AzureCommunicationUICalling.CallingView.ParticipantDrawer.PlusMore"="+ %@ muuta";
 
 "AzureCommunicationUICalling.CallingView.SwitchCamera.Front"="Vaihda takakameraan";
 "AzureCommunicationUICalling.CallingView.SwitchCamera.Back"="Vaihda etukameraan";
@@ -94,6 +101,8 @@
 
 "AzureCommunicationUICalling.CallingView.Button.More.AccessibilityLabel" = "Lisää";
 "AzureCommunicationUICalling.CallingView.MoreCallOptionsList.ShareDiagnosticsInfo" = "Jaa diagnostiikkatiedot";
+"AzureCommunicationUICalling.CallingView.GridView.Calling"="Calling...";
+
 
 /* ComplianceBanner title */
 "AzureCommunicationUICalling.CallingView.BannerTitle.RecordingAndTranscribingStarted"="Tallentaminen ja litterointi on aloitettu.";
@@ -122,7 +131,7 @@
 "AzureCommunicationUICalling.SnackBar.Button.Dismiss.AccessibilityLabel"="Hylkää banneri";
 "AzureCommunicationUICalling.SnackBar.Button.Dismiss.AccessibilityHint"="Hylkää tämän ilmoituksen";
 "AzureCommunicationUICalling.SnackBar.Text.ErrorCallJoin"="Puheluun liittyminen ei onnistu virheen vuoksi.";
-"AzureCommunicationUICalling.SnackBar.Text.ErrorCallEnd"="Sinut poistettiin puhelusta virheen vuoksi.";
+"AzureCommunicationUICalling.SnackBar.Text.ErrorCallEnd"="Sinut poistettiin puhelusta virheen tai katkennut yhteyden vuoksi. Yritä liittyä puheluun uudelleen.";
 "AzureCommunicationUICalling.SnackBar.Text.ErrorCallEvicted"="Sinut poistettiin puhelusta.";
 "AzureCommunicationUICalling.SnackBar.Text.Error"="Tapahtui virhe.";
 "AzureCommunicationUICalling.SnackBar.Text.ErrorResumeCallTitle"="Puhelua ei voi jatkaa";
@@ -158,3 +167,33 @@
 "AzureCommunicationUICalling.Attach.Screenshot"="Liitä näyttökuva";
 "AzureCommunicationUICalling.ReportAProblem.Text"="Ilmoita ongelmasta";
 "AzureCommunicationUICalling.SendFeedback.Text"="Lähetä";
+
+"AzureCommunicationUICalling.Captions.Text.LiveCaptions"="Tekstitykset";
+"AzureCommunicationUICalling.Captions.Text.LiveCaptionsAndRTT"="Tekstitykset ja RTT";
+"AzureCommunicationUICalling.Captions.Text.SpokenLanguage"="Puhuttu kieli";
+"AzureCommunicationUICalling.Captions.Text.CaptionLanguage"="Tekstityksen kieli";
+"AzureCommunicationUICalling.Captions.Text.StartingCaptions"="Aloitetaan tekstitystä...";
+"AzureCommunicationUICalling.Captions.ActionError.StartCaptions"="Tekstitystä ei voi aloittaa";
+"AzureCommunicationUICalling.Captions.ActionError.StopCaptions"="Tekstitystä ei voi lopettaa";
+"AzureCommunicationUICalling.Captions.ActionError.ChangeCaptionsLanguage"="Tekstityksen kieltä ei voi vaihtaa";
+"AzureCommunicationUICalling.Captions.ActionError.ChangeSpokenLanguage"="Puhuttua kieltä ei voi vaihtaa";
+
+"AzureCommunicationUICalling.RTT.Title.RTT"="Reaaliaikainen teksti";
+"AzureCommunicationUICalling.RTT.Alert.Title"="Otetaanko RTT käyttöön?";
+"AzureCommunicationUICalling.RTT.Alert.Message"="Reaaliaikainen kirjoitus (RTT) otetaan käyttöön kaikille puhelun osallistujille.";
+"AzureCommunicationUICalling.RTT.Alert.TurnOn"="Ota käyttöön";
+"AzureCommunicationUICalling.RTT.Alert.Dismiss"="Sulje";
+"AzureCommunicationUICalling.RTT.TurnOn.Text"="Ota reaaliaikainen kirjoitus käyttöön tässä puhelussa";
+"AzureCommunicationUICalling.RTT.WarningMessage.Text"="Reaaliaikainen teksti (RTT) on käytössä koko kokouksen keston ajan, ja kaikki osallistujat voivat nähdä sen.";
+"AzureCommunicationUICalling.RTT.WarningMessage.LearnMore"="Lue lisää";
+"AzureCommunicationUICalling.RTT.Text.RTTTyping"="RTT-kirjoitus";
+"AzureCommunicationUICalling.RTT.RTTLable"="Reaaliaikainen kirjoitus";
+"AzureCommunicationUICalling.RTT.TextBox.Hint"="Kirjoita viesti reaaliaikaisesti";
+
+"AzureCommunicationUICalling.CallingView.ParticipantMenu.Mute"="Mykistä";
+"AzureCommunicationUICalling.CallingView.ParticipantMenu.Mute.AccessibilityLabel"="Mykistä osallistuja -valikko.";
+"AzureCommunicationUICalling.CallingView.ParticipantMenu.Remove"="Poista puhelusta";
+"AzureCommunicationUICalling.CallingView.ParticipantMenu.Remove.AccessibilityLabel"="Poista osallistuja puheluvalikosta.";
+"AzureCommunicationUICalling.CallingView.Toast.FeaturesLost"="Puheluasetukset päivitettiin. Jotkin ominaisuudet eivät ehkä ole käytettävissäsi.";
+"AzureCommunicationUICalling.CallingView.Toast.FeaturesGained"="Puheluasetukset päivitettiin. Jotkin lisätoiminnot saattavat olla nyt käytettävissäsi.";
+

@@ -10,6 +10,8 @@ import AzureCommunicationCalling
 @testable import AzureCommunicationUICalling
 
 class UITestCallingSDKWrapper: NSObject, CallingSDKWrapperProtocol {
+
+    var callComposite: CallComposite?
     let callingEventsHandler: CallingSDKEventsHandling
 
     private let logger: Logger
@@ -45,8 +47,30 @@ class UITestCallingSDKWrapper: NSObject, CallingSDKWrapperProtocol {
         logger.debug("CallingSDKWrapper deallocated")
     }
 
+    func dispose() {
+    }
+
+    func hide() {
+        if callComposite != nil {
+            callComposite?.isHidden = true
+        }
+    }
+
     func setupCall() async throws {
         try await setupCallClientAndDeviceManager()
+    }
+    /* <CALL_START_TIME>
+    func callStartTime() -> Date? {
+        return nil
+    }
+    </CALL_START_TIME> */
+
+    func removeParticipant(_ participantId: String) async throws {
+        return
+    }
+
+    func getCapabilities() async throws -> Set<AzureCommunicationUICalling.ParticipantCapabilityType> {
+        throw CallCompositeInternalError.callJoinFailed
     }
 
     func startCall(isCameraPreferred: Bool, isAudioPreferred: Bool) async throws {
@@ -133,6 +157,19 @@ class UITestCallingSDKWrapper: NSObject, CallingSDKWrapperProtocol {
         return ""
     }
 
+    func startCaptions(_ language: String) async throws {
+    }
+
+    func stopCaptions() async throws {
+    }
+
+    func setCaptionsSpokenLanguage(_ language: String) async throws {
+    }
+
+    func setCaptionsCaptionLanguage(_ language: String) async throws {
+    }
+    func sendRttMessage(_ message: String, isFinal: Bool) async throws {
+    }
     func muteLocalMic() async throws {
         guard callMocking != nil else {
             return
@@ -294,7 +331,7 @@ class UITestCallingSDKWrapper: NSObject, CallingSDKWrapperProtocol {
         }
     }
 
-    func changeLocalParticipantRole(_ role: ParticipantRole) async throws {
+    func changeLocalParticipantRole(_ role: ParticipantRoleEnum) async throws {
         guard callMocking != nil else {
             return
         }

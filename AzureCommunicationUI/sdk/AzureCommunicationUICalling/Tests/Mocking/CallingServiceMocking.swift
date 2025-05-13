@@ -8,27 +8,41 @@ import Combine
 @testable import AzureCommunicationUICalling
 
 class CallingServiceMocking: CallingServiceProtocol {
+    var supportedSpokenLanguagesSubject = CurrentValueSubject<[String], Never>([])
+    var supportedCaptionLanguagesSubject = CurrentValueSubject<[String], Never>([])
+    var isCaptionsTranslationSupported = CurrentValueSubject<Bool, Never>(false)
+    var activeSpokenLanguageSubject = CurrentValueSubject<String, Never>("")
+    var activeCaptionLanguageSubject = CurrentValueSubject<String, Never>("")
+    var captionsEnabledChanged = CurrentValueSubject<Bool, Never>(false)
+    var captionsTypeSubject = CurrentValueSubject<CallCompositeCaptionsType, Never>(.none)
     var error: Error?
     var videoStreamId: String?
     var cameraDevice: CameraDevice = .front
-    var setupCallCalled: Bool = false
-    var startCallCalled: Bool = false
-    var endCallCalled: Bool = false
-    var holdCallCalled: Bool = false
-    var resumeCallCalled: Bool = false
+    var setupCallCalled = false
+    var startCallCalled = false
+    var endCallCalled = false
+    var holdCallCalled = false
+    var resumeCallCalled = false
 
     var localCameraStream: String = "MockCameraStream"
 
-    var startLocalVideoStreamCalled: Bool = false
-    var stopLocalVideoStreamCalled: Bool = false
-    var switchCameraCalled: Bool = false
+    var startLocalVideoStreamCalled = false
+    var stopLocalVideoStreamCalled = false
+    var switchCameraCalled = false
 
-    var muteLocalMicCalled: Bool = false
-    var unmuteLocalMicCalled: Bool = false
+    var muteLocalMicCalled = false
+    var unmuteLocalMicCalled = false
 
-    var admitAllLobbyParticipantsCalled: Bool = false
-    var admitLobbyParticipantCalled: Bool = false
-    var declineLobbyParticipantCalled: Bool = false
+    var admitAllLobbyParticipantsCalled = false
+    var admitLobbyParticipantCalled = false
+    var declineLobbyParticipantCalled = false
+    var remoteParticipantCalled = false
+
+    /* <CALL_START_TIME>
+    func callStartTime() -> Date? {
+        return nil
+    }
+    </CALL_START_TIME> */
 
     private func possibleErrorTask() throws -> Task<Void, Error> {
         Task<Void, Error> {
@@ -89,7 +103,12 @@ class CallingServiceMocking: CallingServiceProtocol {
 
     var isLocalUserMutedSubject = PassthroughSubject<Bool, Never>()
 
-    var participantRoleSubject = PassthroughSubject<ParticipantRole, Never>()
+    var participantRoleSubject = PassthroughSubject<ParticipantRoleEnum, Never>()
+    var capabilitiesChangedSubject = PassthroughSubject<AzureCommunicationUICalling.CapabilitiesChangedEvent, Never>()
+    var totalParticipantCountSubject = PassthroughSubject<Int, Never>()
+    /* <CALL_START_TIME>
+    var callStartTimeSubject = PassthroughSubject<Date, Never>()
+    </CALL_START_TIME> */
 
     func setupCall() async throws {
         setupCallCalled = true
@@ -140,5 +159,18 @@ class CallingServiceMocking: CallingServiceProtocol {
         declineLobbyParticipantCalled = true
         try await possibleErrorTask().value
     }
+    func startCaptions(_ language: String) async throws {}
+    func stopCaptions() async throws {}
+    func setCaptionsSpokenLanguage(_ language: String) async throws {}
+    func setCaptionsCaptionLanguage(_ language: String) async throws {}
+    func sendRttMessage(_ message: String, isFinal: Bool) async throws {}
 
+    func removeParticipant(_ participantId: String) async throws {
+        remoteParticipantCalled = true
+        try await possibleErrorTask().value
+    }
+
+    func getCapabilities() async throws -> Set<AzureCommunicationUICalling.ParticipantCapabilityType> {
+        return [.unmuteMicrophone, .turnVideoOn]
+    }
 }

@@ -6,6 +6,7 @@
 import SwiftUI
 
 // swiftlint:disable type_body_length
+// swiftlint:disable file_length
 struct CallingView: View {
     enum InfoHeaderViewConstants {
         static let horizontalPadding: CGFloat = 8.0
@@ -19,7 +20,7 @@ struct CallingView: View {
     }
 
     enum Constants {
-        static let topAlertAreaViewTopPaddin: CGFloat = 10.0
+        static let topAlertAreaViewTopPadding: CGFloat = 10.0
     }
 
     enum DiagnosticToastInfoConstants {
@@ -27,7 +28,12 @@ struct CallingView: View {
         static let bottomPaddingLandscape: CGFloat = 16
     }
 
+    enum CaptionsInfoConstants {
+        static let maxHeight: CGFloat = 115.0
+    }
+
     @ObservedObject var viewModel: CallingViewModel
+    @StateObject private var keyboard = KeyboardResponder()
     let avatarManager: AvatarViewManagerProtocol
     let viewManager: VideoViewManager
 
@@ -35,31 +41,44 @@ struct CallingView: View {
     @Environment(\.verticalSizeClass) var heightSizeClass: UserInterfaceSizeClass?
 
     @State private var orientation: UIDeviceOrientation = UIDevice.current.orientation
+    @State private var isAutoCommitted = false
 
     var safeAreaIgnoreArea: Edge.Set {
-        return getSizeClass() != .iphoneLandscapeScreenSize ? []: [.bottom]
+        return getSizeClass() != .iphoneLandscapeScreenSize ? [] : [/* .bottom */]
     }
 
+    var isIpad: Bool {
+        return getSizeClass() == .ipadScreenSize
+    }
     var body: some View {
-        GeometryReader { geometry in
-            ZStack {
-                if getSizeClass() != .iphoneLandscapeScreenSize {
-                    portraitCallingView
-                } else {
-                    landscapeCallingView
-                }
-                errorInfoView
+        ZStack {
+            GeometryReader { geometry in
+                ZStack {
+                    if getSizeClass() != .iphoneLandscapeScreenSize {
+                        portraitCallingView
+                    }
+                }.frame(width: geometry.size.width,
+                        height: geometry.size.height)
             }
-            .frame(width: geometry.size.width,
-                   height: geometry.size.height)
-            .modifier(PopupModalView(
-                isPresented: viewModel.showingSupportForm,
-                alignment: .bottom) {
-                    reportErrorView
-                        .accessibilityElement(children: .contain)
-                        .accessibilityAddTraits(.isModal)
-            })
+            .ignoresSafeArea(isIpad ? [] : .keyboard)
+            if getSizeClass() == .iphoneLandscapeScreenSize {
+                landscapeCallingView
+            }
+            errorInfoView
         }
+
+        .modifier(PopupModalView(isPresented: viewModel.loadingOverlayViewModel.isDisplayed &&
+                                 !viewModel.lobbyOverlayViewModel.isDisplayed) {
+            LoadingOverlayView(viewModel: viewModel.loadingOverlayViewModel)
+                .accessibilityElement(children: .contain)
+                .accessibilityHidden(!viewModel.loadingOverlayViewModel.isDisplayed)
+        })
+        .modifier(PopupModalView(isPresented: viewModel.onHoldOverlayViewModel.isDisplayed) {
+            OverlayView(viewModel: viewModel.onHoldOverlayViewModel)
+                .accessibilityElement(children: .contain)
+                .accessibilityHidden(!viewModel.onHoldOverlayViewModel.isDisplayed)
+        })
+        .overlay(bottomDrawer)
         .environment(\.screenSizeClass, getSizeClass())
         .environment(\.appPhase, viewModel.appState)
         .edgesIgnoringSafeArea(safeAreaIgnoreArea)
@@ -70,73 +89,226 @@ struct CallingView: View {
         }
     }
 
+    var bottomDrawer: some View {
+        ZStack {
+            BottomDrawer(isPresented: viewModel.supportFormViewModel.isDisplayed,
+                         hideDrawer: viewModel.supportFormViewModel.hideForm) {
+                reportErrorView
+                    .accessibilityElement(children: .contain)
+                    .accessibilityAddTraits(.isModal)
+            }
+            BottomDrawer(isPresented: viewModel.moreCallOptionsListViewModel.isDisplayed,
+                         hideDrawer: viewModel.dismissDrawer) {
+                MoreCallOptionsListView(viewModel: viewModel.moreCallOptionsListViewModel,
+                avatarManager: avatarManager)
+            }
+            BottomDrawer(isPresented: viewModel.audioDeviceListViewModel.isDisplayed,
+                         hideDrawer: viewModel.dismissDrawer) {
+                AudioDevicesListView(viewModel: viewModel.audioDeviceListViewModel,
+                avatarManager: avatarManager)
+            }
+            BottomDrawer(isPresented: viewModel.participantActionViewModel.isDisplayed,
+                         hideDrawer: viewModel.dismissDrawer) {
+                ParticipantMenuView(viewModel: viewModel.participantActionViewModel,
+                                    avatarManager: avatarManager)
+            }
+            BottomDrawer(isPresented: viewModel.participantListViewModel.isDisplayed,
+                         hideDrawer: viewModel.dismissDrawer) {
+                ParticipantsListView(viewModel: viewModel.participantListViewModel,
+                                     avatarManager: avatarManager)
+            }
+            BottomDrawer(isPresented: viewModel.captionsLanguageListViewModel.isDisplayed,
+                         hideDrawer: viewModel.dismissDrawer) {
+                CaptionsLanguageListView(viewModel: viewModel.captionsLanguageListViewModel,
+                                         avatarManager: avatarManager)
+            }
+            BottomDrawer(isPresented: viewModel.captionsRttListViewModel.isDisplayed,
+                         hideDrawer: viewModel.dismissDrawer,
+                         title: viewModel.captionsRttListViewModel.title,
+                         startIcon: CompositeIcon.leftArrow,
+                         startIconAction: viewModel.captionsRttListViewModel.backButtonAction) {
+                CaptionsRttListView(viewModel: viewModel.captionsRttListViewModel,
+                                 avatarManager: avatarManager)
+            }
+            BottomDrawer(isPresented: viewModel.leaveCallConfirmationViewModel.isDisplayed,
+                         hideDrawer: viewModel.dismissDrawer) {
+                LeaveCallConfirmationView(
+                    viewModel: viewModel.leaveCallConfirmationViewModel,
+                    avatarManager: avatarManager)
+            }
+        }
+    }
+
+    var captionsAndRttDrawer: some View {
+        return ExpandableDrawer(
+            isPresented: Binding(
+                get: {
+                    viewModel.captionsInfoViewModel.isDisplayed
+                },
+                set: { newValue in
+                    if !newValue {
+                        viewModel.dismissDrawer()
+                    }
+                }
+            ),
+            hideDrawer: viewModel.dismissDrawer,
+            title: viewModel.captionsInfoViewModel?.title,
+            endIcon: viewModel.captionsInfoViewModel?.endIcon,
+            endIconAction: viewModel.captionsInfoViewModel?.endIconAction,
+            endIconAccessibilityValue: viewModel.captionsInfoViewModel?.endIconAccessibilityValue,
+            showTextBox: viewModel.captionsInfoViewModel?.isRttAvailable ?? false,
+            shouldExpand: viewModel.captionsInfoViewModel?.shouldExpand ?? false,
+            expandIconAccessibilityValue: viewModel.captionsInfoViewModel?.expandIconAccessibilityValue,
+            collapseIconAccessibilityValue: viewModel.captionsInfoViewModel?.collapseIconAccessibilityValue,
+            textBoxHint: viewModel.captionsInfoViewModel?.textBoxHint,
+            isAutoCommitted: $isAutoCommitted,
+            commitAction: { message, isFinal in
+                viewModel.captionsInfoViewModel?.commitMessage(message, isFinal ?? false)
+            },
+            updateHeightAction: { shouldMaximize in
+                viewModel.captionsInfoViewModel.updateLayoutHelight(shouldMaximize)
+            },
+            content: {
+                CaptionsRttInfoView(
+                    viewModel: viewModel.captionsInfoViewModel!,
+                    avatarViewManager: avatarManager
+                )
+            }
+        ).onReceive(viewModel.captionsInfoViewModel.captionsManager.$isAutoCommit) { shouldClear in
+            if shouldClear {
+                isAutoCommitted = true
+            }
+        }
+    }
+
+    var captionsAndRttInfoViewPlaceholder: some View {
+        Spacer()
+            .frame(maxWidth: .infinity, maxHeight: DrawerConstants.collapsedHeight, alignment: .bottom)
+            .zIndex(1)
+    }
+
+    var captionsAndRttIpadView: some View {
+        return CaptionsAndRttLandscapeView(
+            title: viewModel.captionsInfoViewModel?.title,
+            endIcon: viewModel.captionsInfoViewModel?.endIcon,
+            endIconAction: viewModel.captionsInfoViewModel?.endIconAction,
+            showTextBox: viewModel.captionsInfoViewModel?.isRttAvailable ?? false,
+            textBoxHint: viewModel.captionsInfoViewModel?.textBoxHint,
+            isAutoCommitted: $isAutoCommitted,
+            commitAction: { message, isFinal in
+                viewModel.captionsInfoViewModel?.commitMessage(message, isFinal ?? false)
+            },
+            content: {
+                CaptionsRttInfoView(
+                    viewModel: viewModel.captionsInfoViewModel!,
+                    avatarViewManager: avatarManager
+                )
+            }
+        ).onReceive(viewModel.captionsInfoViewModel.captionsManager.$isAutoCommit) { shouldClear in
+            if shouldClear {
+                isAutoCommitted = true
+            }
+        }
+    }
+
     var portraitCallingView: some View {
         VStack(alignment: .center, spacing: 0) {
-            containerView
-            ControlBarView(viewModel: viewModel.controlBarViewModel)
+            if isIpad {
+                HStack {
+                    containerView
+                    ZStack {
+                        if !viewModel.isInPip && viewModel.captionsInfoViewModel.isDisplayed {
+                            captionsAndRttIpadView
+                        }
+                        bottomToastDiagnosticsView
+                            .accessibilityElement(children: .contain)
+                        captionsErrorView.accessibilityElement(children: .contain)
+                    }
+                }
+                if keyboard.keyboardHeight == 0 {
+                    ControlBarView(viewModel: viewModel.controlBarViewModel)
+                }
+            } else {
+                ZStack {
+                    containerView.padding(2)
+                    if !viewModel.isInPip {
+                        captionsAndRttDrawer
+                    }
+                    bottomToastDiagnosticsView
+                        .accessibilityElement(children: .contain)
+                    captionsErrorView.accessibilityElement(children: .contain)
+                }
+                ControlBarView(viewModel: viewModel.controlBarViewModel)
+
+            }
         }
     }
 
     var landscapeCallingView: some View {
-        HStack(alignment: .center, spacing: 0) {
-            containerView
-            ControlBarView(viewModel: viewModel.controlBarViewModel)
+        ZStack {
+            HStack(alignment: .center, spacing: 0) {
+                containerView
+                if !viewModel.isInPip && viewModel.captionsInfoViewModel.isDisplayed {
+                    captionsAndRttIpadView.padding(.leading, 2)
+                }
+                if keyboard.keyboardHeight == 0 {
+                    ControlBarView(viewModel: viewModel.controlBarViewModel)
+                }
+            }
         }
     }
 
     var containerView: some View {
         Group {
-            GeometryReader { geometry in
-                ZStack(alignment: .bottomTrailing) {
-                    videoGridView
-                        .accessibilityHidden(!viewModel.isVideoGridViewAccessibilityAvailable)
-                    if viewModel.isParticipantGridDisplayed && !viewModel.isInPip && viewModel.allowLocalCameraPreview {
-                        Group {
-                            DraggableLocalVideoView(containerBounds:
-                                                        geometry.frame(in: .local),
-                                                    viewModel: viewModel,
-                                                    avatarManager: avatarManager,
-                                                    viewManager: viewManager,
-                                                    orientation: $orientation,
-                                                    screenSize: getSizeClass())
-                        }
-                        .accessibilityElement(children: .contain)
-                        .accessibilityIdentifier(AccessibilityIdentifier.draggablePipViewAccessibilityID.rawValue)
+            ZStack(alignment: .bottomTrailing) {
+                VStack(alignment: .leading) {
+                    GeometryReader { geometry in
+                        ZStack {
+                            videoGridView
+                                .accessibilityHidden(!viewModel.isVideoGridViewAccessibilityAvailable)
+                            if viewModel.isParticipantGridDisplayed &&
+                                viewModel.allowLocalCameraPreview {
+                                Group {
+                                    DraggableLocalVideoView(containerBounds:
+                                                                geometry.frame(in: .local),
+                                                            viewModel: viewModel,
+                                                            avatarManager: avatarManager,
+                                                            viewManager: viewManager,
+                                                            orientation: $orientation,
+                                                            screenSize: getSizeClass())
+                                }
+                                .accessibilityElement(children: .contain)
+                                .accessibilityIdentifier(
+                                    AccessibilityIdentifier.draggablePipViewAccessibilityID.rawValue)
+                            }
+                        }.zIndex(2)
+                            .ignoresSafeArea(isIpad ? [] : .keyboard)
                     }
-
-                    topAlertAreaView
-                        .accessibilityElement(children: .contain)
-                        .accessibilitySortPriority(1)
-                        .accessibilityHidden(viewModel.lobbyOverlayViewModel.isDisplayed
-                                             || viewModel.onHoldOverlayViewModel.isDisplayed
-                                             || viewModel.loadingOverlayViewModel.isDisplayed)
-
-                    bottomToastDiagnosticsView
-                        .accessibilityElement(children: .contain)
+                    if (viewModel.captionsInfoViewModel.isRttDisplayed ||
+                        viewModel.captionsInfoViewModel.isCaptionsDisplayed) &&
+                        !viewModel.isInPip && !isIpad && getSizeClass() != .iphoneLandscapeScreenSize {
+                        captionsAndRttInfoViewPlaceholder
+                    }
                 }
-                .contentShape(Rectangle())
-                .animation(.linear(duration: 0.167))
-                .onTapGesture(perform: {
-                    viewModel.infoHeaderViewModel.toggleDisplayInfoHeaderIfNeeded()
-                })
-                .modifier(PopupModalView(isPresented: viewModel.lobbyOverlayViewModel.isDisplayed) {
-                    OverlayView(viewModel: viewModel.lobbyOverlayViewModel)
-                        .accessibilityElement(children: .contain)
-                        .accessibilityHidden(!viewModel.lobbyOverlayViewModel.isDisplayed)
-                })
-                .modifier(PopupModalView(isPresented: viewModel.loadingOverlayViewModel.isDisplayed &&
-                                         !viewModel.lobbyOverlayViewModel.isDisplayed) {
-                    LoadingOverlayView(viewModel: viewModel.loadingOverlayViewModel)
-                        .accessibilityElement(children: .contain)
-                        .accessibilityHidden(!viewModel.loadingOverlayViewModel.isDisplayed)
-                })
-                .modifier(PopupModalView(isPresented: viewModel.onHoldOverlayViewModel.isDisplayed) {
-                    OverlayView(viewModel: viewModel.onHoldOverlayViewModel)
-                        .accessibilityElement(children: .contain)
-                        .accessibilityHidden(!viewModel.onHoldOverlayViewModel.isDisplayed)
-                })
-                .accessibilityElement(children: .contain)
+                topAlertAreaView
+                    .accessibilityElement(children: .contain)
+                    .accessibilitySortPriority(1)
+                    .accessibilityHidden(viewModel.lobbyOverlayViewModel.isDisplayed
+                                         || viewModel.onHoldOverlayViewModel.isDisplayed
+                                         || viewModel.loadingOverlayViewModel.isDisplayed)
+
             }
+            .contentShape(Rectangle())
+            .animation(.linear(duration: 0.167), value: true)
+            .onTapGesture(perform: {
+                viewModel.infoHeaderViewModel.toggleDisplayInfoHeaderIfNeeded()
+            })
+            .accessibilityElement(children: .contain)
+            .modifier(PopupModalView(isPresented: viewModel.lobbyOverlayViewModel.isDisplayed) {
+                OverlayView(viewModel: viewModel.lobbyOverlayViewModel)
+                    .accessibilityElement(children: .contain)
+                    .accessibilityHidden(!viewModel.lobbyOverlayViewModel.isDisplayed)
+            })
         }
     }
 
@@ -194,7 +366,7 @@ struct CallingView: View {
                     Spacer()
                 }
             }
-            .padding(.top, Constants.topAlertAreaViewTopPaddin)
+            .padding(.top, Constants.topAlertAreaViewTopPadding)
             .accessibilityElement(children: .contain)
         }
     }
@@ -221,7 +393,6 @@ struct CallingView: View {
     var participantGridsView: some View {
         ParticipantGridView(viewModel: viewModel.participantGridsViewModel,
                             avatarViewManager: avatarManager,
-                            videoViewManager: viewManager,
                             screenSize: getSizeClass())
             .edgesIgnoringSafeArea(safeAreaIgnoreArea)
     }
@@ -246,7 +417,6 @@ struct CallingView: View {
             }
         }
     }
-
     var errorInfoView: some View {
         return VStack {
             Spacer()
@@ -264,20 +434,36 @@ struct CallingView: View {
     var bottomToastDiagnosticsView: some View {
         VStack {
             Spacer()
-            if let currentBottomToastViewModel = viewModel.currentBottomToastDiagnostic {
-                BottomToastDiagnosticView(viewModel: currentBottomToastViewModel)
-                    .padding(
-                        EdgeInsets(top: 0,
-                                   leading: 0,
-                                   bottom:
-                                     getSizeClass() == .iphoneLandscapeScreenSize
-                                        ? DiagnosticToastInfoConstants.bottomPaddingLandscape
-                                        : DiagnosticToastInfoConstants.bottomPaddingPortrait,
-                                   trailing: 0)
-                    )
-                    .accessibilityElement(children: .contain)
-                    .accessibilityAddTraits(.isStaticText)
-            }
+            BottomToastView(viewModel: viewModel.bottomToastViewModel)
+                .padding(
+                    EdgeInsets(top: 0,
+                               leading: 0,
+                               bottom:
+                                 getSizeClass() == .iphoneLandscapeScreenSize
+                                    ? DiagnosticToastInfoConstants.bottomPaddingLandscape
+                                    : DiagnosticToastInfoConstants.bottomPaddingPortrait,
+                               trailing: 0)
+                )
+                .accessibilityElement(children: .contain)
+                .accessibilityAddTraits(.isStaticText)
+        }.frame(maxWidth: .infinity, alignment: .center)
+    }
+
+    var captionsErrorView: some View {
+        VStack {
+            Spacer()
+            CaptionsErrorView(viewModel: viewModel.captionsErrorViewModel)
+                .padding(
+                    EdgeInsets(top: 0,
+                               leading: 0,
+                               bottom:
+                                 getSizeClass() == .iphoneLandscapeScreenSize
+                                    ? DiagnosticToastInfoConstants.bottomPaddingLandscape
+                                    : DiagnosticToastInfoConstants.bottomPaddingPortrait,
+                               trailing: 0)
+                )
+                .accessibilityElement(children: .contain)
+                .accessibilityAddTraits(.isStaticText)
         }.frame(maxWidth: .infinity, alignment: .center)
     }
 
@@ -296,8 +482,8 @@ struct CallingView: View {
             SupportFormView(viewModel: viewModel.supportFormViewModel)
         }
     }
-
 }
+// swiftlint:enable type_body_length
 
 extension CallingView {
     private func getSizeClass() -> ScreenSizeClassType {
@@ -313,13 +499,6 @@ extension CallingView {
     }
 
     private func updateChildViewIfNeededWith(newOrientation: UIDeviceOrientation) {
-        guard !viewModel.controlBarViewModel.isAudioDeviceSelectionDisplayed,
-              !viewModel.controlBarViewModel.isConfirmLeaveListDisplayed,
-              !viewModel.infoHeaderViewModel.isParticipantsListDisplayed,
-              !viewModel.controlBarViewModel.isMoreCallOptionsListDisplayed,
-              !viewModel.controlBarViewModel.isShareActivityDisplayed else {
-                return
-            }
         let areAllOrientationsSupported = SupportedOrientationsPreferenceKey.defaultValue == .all
         if newOrientation != orientation
             && newOrientation != .unknown
@@ -339,3 +518,4 @@ extension CallingView {
         UIViewController.attemptRotationToDeviceOrientation()
     }
 }
+// swiftlint:enable file_length

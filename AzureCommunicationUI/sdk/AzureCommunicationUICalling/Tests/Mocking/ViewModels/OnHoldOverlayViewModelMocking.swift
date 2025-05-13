@@ -18,14 +18,15 @@ class OnHoldOverlayViewModelMocking: OnHoldOverlayViewModel {
          logger: Logger,
          accessibilityProvider: AccessibilityProviderProtocol,
          audioSessionManager: AudioSessionManagerProtocol,
-         resumeAction:  @escaping (() -> Void),
+         resumeAction: @escaping (() -> Void),
          updateState: ((CallingStatus) -> Void)? = nil) {
         self.resumeAction = resumeAction
         self.updateState = updateState
         self.actionButtonViewModelMocking = PrimaryButtonViewModel(buttonStyle: .primaryFilled,
                                                             buttonLabel: localizationProvider.getLocalizedString(.resume),
                                                             iconName: nil,
-                                                            isDisabled: false) {
+                                                            isDisabled: false,
+                                                            themeOptions: MockThemeOptions()) {
             resumeAction()
         }
         super.init(localizationProvider: localizationProvider,

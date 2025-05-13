@@ -29,10 +29,18 @@ extension Middleware {
                             handleAudioSessionAction(audioAction, actionHandler, getState, dispatch)
                         case .remoteParticipantsAction(let action):
                             handleRemoteParticipantAction(action, actionHandler, getState, dispatch)
-                        case .errorAction(_),
+                        case .captionsAction(let action):
+                            handleCaptionsAction(action, actionHandler, getState, dispatch)
+                        case .rttAction(let action):
+                            handleRttActions(action, actionHandler, getState, dispatch)
+                        case .errorAction,
                                 .compositeExitAction,
                                 .callingViewLaunched:
                             break
+                        case .callDiagnosticAction(let action):
+                            handleCallDiagnisticAction(action, actionHandler, getState, dispatch)
+                        case .toastNotificationAction(let action):
+                            handleToastNotificationAction(action, actionHandler, getState, dispatch)
                         default:
                             break
                         }
@@ -59,6 +67,14 @@ private func handleCallingAction(_ action: CallingAction,
         actionHandler.holdCall(state: getState(), dispatch: dispatch)
     case .resumeRequested:
         actionHandler.resumeCall(state: getState(), dispatch: dispatch)
+    case .recordingStateUpdated(let isRecordingActive):
+        actionHandler.recordingStateUpdated(state: getState(),
+                                            dispatch: dispatch,
+                                            isRecordingActive: isRecordingActive)
+    case .transcriptionStateUpdated(let isTranscriptionActive):
+        actionHandler.transcriptionStateUpdated(state: getState(),
+                                                dispatch: dispatch,
+                                                isTranscriptionActive: isTranscriptionActive)
     default:
         break
     }
@@ -81,24 +97,27 @@ private func handleLocalUserAction(_ action: LocalUserAction,
         actionHandler.requestMicrophoneMute(state: getState(), dispatch: dispatch)
     case .microphoneOnTriggered:
         actionHandler.requestMicrophoneUnmute(state: getState(), dispatch: dispatch)
-
-    case .cameraOnSucceeded(videoStreamIdentifier: _),
-            .cameraOnFailed(error: _),
+    case .setCapabilities(let capabilities):
+        actionHandler.setCapabilities(capabilities: capabilities, state: getState(), dispatch: dispatch)
+    case .onCapabilitiesChanged(let event):
+        actionHandler.onCapabilitiesChanged(event: event, state: getState(), dispatch: dispatch)
+    case .cameraOnSucceeded,
+            .cameraOnFailed,
             .cameraOffSucceeded,
-            .cameraOffFailed(error: _),
+            .cameraOffFailed,
             .cameraPausedSucceeded,
-            .cameraPausedFailed(error: _),
-            .cameraSwitchSucceeded(cameraDevice: _),
-            .cameraSwitchFailed(previousCamera: _, error: _),
-            .microphoneOnFailed(error: _),
-            .microphoneOffFailed(error: _),
-            .microphoneMuteStateUpdated(isMuted: _),
+            .cameraPausedFailed,
+            .cameraSwitchSucceeded,
+            .cameraSwitchFailed,
+            .microphoneOnFailed,
+            .microphoneOffFailed,
+            .microphoneMuteStateUpdated,
             .microphonePreviewOn,
             .microphonePreviewOff,
-            .audioDeviceChangeRequested(device: _),
-            .audioDeviceChangeSucceeded(device: _),
-            .audioDeviceChangeFailed(error: _),
-            .participantRoleChanged(participantRole: _):
+            .audioDeviceChangeRequested,
+            .audioDeviceChangeSucceeded,
+            .audioDeviceChangeFailed,
+            .participantRoleChanged:
         break
     }
 }
@@ -110,9 +129,9 @@ private func handlePermissionAction(_ action: PermissionAction,
     switch action {
     case .cameraPermissionGranted:
         actionHandler.onCameraPermissionIsSet(state: getState(), dispatch: dispatch)
-
+    case .audioPermissionGranted:
+        actionHandler.onMicPermissionIsGranted(state: getState(), dispatch: dispatch)
     case .audioPermissionRequested,
-            .audioPermissionGranted,
             .audioPermissionDenied,
             .audioPermissionNotAsked,
             .cameraPermissionRequested,
@@ -164,6 +183,68 @@ private func handleRemoteParticipantAction(_ action: RemoteParticipantsAction,
         actionHandler.admitLobbyParticipant(state: getState(), dispatch: dispatch, participantId: participantId)
     case .decline(participantId: let participantId):
         actionHandler.declineLobbyParticipant(state: getState(), dispatch: dispatch, participantId: participantId)
+    case .remove(participantId: let participantId):
+        actionHandler.removeParticipant(state: getState(), dispatch: dispatch, participantId: participantId)
+    default:
+        break
+    }
+}
+
+private func handleCallDiagnisticAction(_ action: DiagnosticsAction,
+                                        _ actionHandler: CallingMiddlewareHandling,
+                                        _ getState: () -> AppState,
+                                        _ dispatch: @escaping ActionDispatch) {
+    switch action {
+    case .networkQuality(diagnostic: let diagnostic):
+        actionHandler.onNetworkQualityCallDiagnosticsUpdated(
+            state: getState(), dispatch: dispatch, diagnisticModel: diagnostic)
+    case .network(diagnostic: let diagnostic):
+        actionHandler.onNetworkCallDiagnosticsUpdated(
+            state: getState(), dispatch: dispatch, diagnisticModel: diagnostic)
+    case .media(diagnostic: let diagnostic):
+        actionHandler.onMediaCallDiagnosticsUpdated(state: getState(), dispatch: dispatch, diagnisticModel: diagnostic)
+    default:
+        break
+    }
+}
+
+private func handleToastNotificationAction(_ action: ToastNotificationAction,
+                                           _ actionHandler: CallingMiddlewareHandling,
+                                           _ getState: () -> AppState,
+                                           _ dispatch: @escaping ActionDispatch) {
+    switch action {
+    case .dismissNotification:
+        actionHandler.dismissNotification(state: getState(), dispatch: dispatch)
+    default:
+        break
+    }
+}
+
+private func handleCaptionsAction(_ action: CaptionsAction,
+                                  _ actionHandler: CallingMiddlewareHandling,
+                                  _ getState: () -> AppState,
+                                  _ dispatch: @escaping ActionDispatch) {
+    switch action {
+    case .turnOnCaptions(language: let language):
+        actionHandler.startCaptions(state: getState(), dispatch: dispatch, language: language)
+    case .turnOffCaptions:
+        actionHandler.stopCaptions(state: getState(), dispatch: dispatch)
+    case .setSpokenLanguageRequested(language: let language):
+        actionHandler.setCaptionsSpokenLanguage(state: getState(), dispatch: dispatch, language: language)
+    case .setCaptionLanguageRequested(language: let language):
+        actionHandler.setCaptionsLanguage(state: getState(), dispatch: dispatch, language: language)
+    default:
+        break
+    }
+}
+
+private func handleRttActions(_ action: RttAction,
+                              _ actionHandler: CallingMiddlewareHandling,
+                              _ getState: () -> AppState,
+                              _ dispatch: @escaping ActionDispatch) {
+    switch action {
+    case .sendRtt(message: let message, isFinal: let isFinal):
+        actionHandler.sendRttMessage(message: message, isFinal: isFinal)
     default:
         break
     }

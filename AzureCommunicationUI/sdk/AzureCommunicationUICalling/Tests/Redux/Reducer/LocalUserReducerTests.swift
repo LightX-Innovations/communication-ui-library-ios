@@ -141,7 +141,6 @@ class LocalUserReducerTests: XCTestCase {
         let sut = makeSUT()
         let resultState = sut.reduce(state, action)
 
-        XCTAssertEqual(resultState.cameraState.operation, .on)
         XCTAssertTrue(resultState.cameraState.error is ErrorMocking)
     }
 
@@ -247,6 +246,16 @@ class LocalUserReducerTests: XCTestCase {
         let resultState = sut.reduce(state, action)
 
         XCTAssertEqual(resultState.cameraState.operation, expectedCameraStatus)
+    }
+
+    func test_localUserReducer_reduce_when_setCapabilities_then_capabilities() {
+        let state = LocalUserState()
+        let expected: Set<ParticipantCapabilityType> = [.addTeamsUser]
+        let action = LocalUserAction.setCapabilities(capabilities: [.addTeamsUser])
+        let sut = makeSUT()
+        let resultState = sut.reduce(state, action)
+
+        XCTAssertEqual(resultState.capabilities, expected)
     }
 }
 

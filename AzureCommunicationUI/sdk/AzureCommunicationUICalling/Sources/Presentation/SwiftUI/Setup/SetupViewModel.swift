@@ -10,7 +10,7 @@ class SetupViewModel: ObservableObject {
     private let logger: Logger
     private let store: Store<AppState, Action>
     private let localizationProvider: LocalizationProviderProtocol
-
+    private let callType: CompositeCallType
     private var callingStatus: CallingStatus = .none
 
     let isRightToLeft: Bool
@@ -26,8 +26,9 @@ class SetupViewModel: ObservableObject {
     var setupControlBarViewModel: SetupControlBarViewModel!
     var joiningCallActivityViewModel: JoiningCallActivityViewModel!
     var cancellables = Set<AnyCancellable>()
+    var audioDeviceListViewModel: AudioDevicesListViewModel!
 
-    @Published var isJoinRequested: Bool = false
+    @Published var isJoinRequested = false
 
     init(compositeViewModelFactory: CompositeViewModelFactoryProtocol,
          logger: Logger,
@@ -35,7 +36,9 @@ class SetupViewModel: ObservableObject {
          networkManager: NetworkManager,
          audioSessionManager: AudioSessionManagerProtocol,
          localizationProvider: LocalizationProviderProtocol,
-         setupScreenViewData: SetupScreenViewData? = nil) {
+         setupScreenViewData: SetupScreenViewData? = nil,
+         callType: CompositeCallType) {
+        let actionDispatch: ActionDispatch = store.dispatch
         self.store = store
         self.networkManager = networkManager
         self.networkManager.startMonitor()
@@ -43,6 +46,7 @@ class SetupViewModel: ObservableObject {
         self.localizationProvider = localizationProvider
         self.isRightToLeft = localizationProvider.isRightToLeft
         self.logger = logger
+        self.callType = callType
 
         if let title = setupScreenViewData?.title, !title.isEmpty {
             // if title is not nil/empty, use given title and optional subtitle
@@ -55,16 +59,28 @@ class SetupViewModel: ObservableObject {
         }
 
         previewAreaViewModel = compositeViewModelFactory.makePreviewAreaViewModel(dispatchAction: store.dispatch)
-
-        joiningCallActivityViewModel = compositeViewModelFactory.makeJoiningCallActivityViewModel()
-
+        var joiningButtonLocalization = LocalizationKey.joiningCall
+        if self.callType == .oneToNOutgoing {
+            joiningButtonLocalization = LocalizationKey.startingCall
+        }
+        joiningCallActivityViewModel = compositeViewModelFactory.makeJoiningCallActivityViewModel(
+            title: self.localizationProvider.getLocalizedString(joiningButtonLocalization))
         errorInfoViewModel = compositeViewModelFactory.makeErrorInfoViewModel(title: "",
                                                                               subtitle: "")
+
+        audioDeviceListViewModel = compositeViewModelFactory.makeAudioDevicesListViewModel(
+            dispatchAction: actionDispatch,
+            localUserState: store.state.localUserState)
+
+        var callButtonLocalization = LocalizationKey.joinCall
+        if self.callType == .oneToNOutgoing {
+            callButtonLocalization = LocalizationKey.startCall
+        }
 
         joinCallButtonViewModel = compositeViewModelFactory.makePrimaryButtonViewModel(
             buttonStyle: .primaryFilled,
             buttonLabel: self.localizationProvider
-                .getLocalizedString(.joinCall),
+                .getLocalizedString(callButtonLocalization),
             iconName: .meetNow,
             isDisabled: false) { [weak self] in
                 guard let self = self else {
@@ -72,6 +88,7 @@ class SetupViewModel: ObservableObject {
                 }
                 self.joinCallButtonTapped()
         }
+
         updateAccessibilityLabel()
         dismissButtonViewModel = compositeViewModelFactory.makeIconButtonViewModel(
             iconName: .leftArrow,
@@ -87,7 +104,8 @@ class SetupViewModel: ObservableObject {
 
         setupControlBarViewModel = compositeViewModelFactory
             .makeSetupControlBarViewModel(dispatchAction: store.dispatch,
-                                          localUserState: store.state.localUserState)
+                                          localUserState: store.state.localUserState,
+                                          buttonViewDataState: store.state.buttonViewDataState)
 
         store.$state
             .receive(on: DispatchQueue.main)
@@ -103,11 +121,19 @@ class SetupViewModel: ObservableObject {
     func updateAccessibilityLabel() {
         if joinCallButtonViewModel.isDisabled {
             // Update the accessibility label for the disabled state
+            var key = LocalizationKey.joinCallDiableStateAccessibilityLabel
+            if callType == .oneToNOutgoing {
+                key = LocalizationKey.startCallDiableStateAccessibilityLabel
+            }
             joinCallButtonViewModel.update(accessibilityLabel:
-            self.localizationProvider.getLocalizedString(.joinCallDiableStateAccessibilityLabel))
+            self.localizationProvider.getLocalizedString(key))
         } else {
             // Update the accessibility label for the normal state
-            joinCallButtonViewModel.update(accessibilityLabel: self.localizationProvider.getLocalizedString(.joinCall))
+            var key = LocalizationKey.joinCall
+            if callType == .oneToNOutgoing {
+                key = LocalizationKey.startCall
+            }
+            joinCallButtonViewModel.update(accessibilityLabel: self.localizationProvider.getLocalizedString(key))
         }
     }
 
@@ -150,10 +176,20 @@ class SetupViewModel: ObservableObject {
                                     visibilityState: state.visibilityState)
         setupControlBarViewModel.update(localUserState: localUserState,
                                         permissionState: permissionState,
-                                        callingState: callingState)
+                                        callingState: callingState,
+                                        buttonViewDataState: state.buttonViewDataState)
         joinCallButtonViewModel.update(isDisabled: permissionState.audioPermission == .denied)
+        // Disable the dismiss button for now to avoid crash
+        /// Todo remove after calling native SDK fix
+        dismissButtonViewModel.update(isDisabled: newCallingStatus == .connecting)
         updateAccessibilityLabel()
         errorInfoViewModel.update(errorState: state.errorState)
+        audioDeviceListViewModel.update(
+            audioDeviceStatus: state.localUserState.audioState.device,
+            navigationState: state.navigationState,
+            visibilityState: state.visibilityState
+        )
+        objectWillChange.send()
     }
 
     func shouldShowSetupControlBarView() -> Bool {
@@ -161,9 +197,14 @@ class SetupViewModel: ObservableObject {
         return cameraStatus == .off || !isJoinRequested
     }
 
+    func dismissAudioDevicesDrawer() {
+        store.dispatch(action: .hideDrawer)
+    }
+
     private func handleOffline() {
-        store.dispatch(action: .errorAction(.statusErrorAndCallReset(internalError: .callJoinConnectionFailed,
-                                                                     error: nil)))
+        store.dispatch(
+            action: .errorAction(
+                .statusErrorAndCallReset(internalError: .callJoinConnectionFailed, error: nil)))
         // only show banner again when user taps on button explicitly
         // banner would not reappear when other events^1 send identical error state again
         // 1: camera on/off, audio on/off, switch to background/foreground, etc.

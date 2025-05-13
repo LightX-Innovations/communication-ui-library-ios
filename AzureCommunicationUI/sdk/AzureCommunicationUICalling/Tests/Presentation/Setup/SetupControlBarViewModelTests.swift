@@ -5,6 +5,7 @@
 
 import Foundation
 import XCTest
+import AzureCommunicationCommon
 @testable import AzureCommunicationUICalling
 
 class SetupControlBarViewModelTests: XCTestCase {
@@ -23,7 +24,11 @@ class SetupControlBarViewModelTests: XCTestCase {
         logger = LoggerMocking()
         localizationProvider = LocalizationProviderMocking()
         factoryMocking = CompositeViewModelFactoryMocking(logger: logger,
-                                                          store: storeFactory.store)
+                                                          store: storeFactory.store,
+                                                          avatarManager: AvatarViewManagerMocking(store: storeFactory.store,
+                                                                                                  localParticipantId: createCommunicationIdentifier(fromRawId: ""),
+                                                                                                  localParticipantViewData: nil),
+                                                          updatableOptionsManager: UpdatableOptionsManager(store: storeFactory.store, setupScreenOptions: nil, callScreenOptions: nil))
     }
 
     override func tearDown() {
@@ -45,7 +50,8 @@ class SetupControlBarViewModelTests: XCTestCase {
                                             localUserState: LocalUserState(cameraState: cameraState))
         sut.update(localUserState: storeFactory.store.state.localUserState,
                                         permissionState: storeFactory.store.state.permissionState,
-                                        callingState: CallingState())
+                                        callingState: CallingState(),
+                   buttonViewDataState: storeFactory.store.state.buttonViewDataState)
 
         storeFactory.store.$state
             .dropFirst()
@@ -71,7 +77,8 @@ class SetupControlBarViewModelTests: XCTestCase {
                                             localUserState: LocalUserState(cameraState: cameraState))
         sut.update(localUserState: storeFactory.store.state.localUserState,
                    permissionState: storeFactory.store.state.permissionState,
-                   callingState: CallingState())
+                   callingState: CallingState(),
+                   buttonViewDataState: storeFactory.store.state.buttonViewDataState)
 
         storeFactory.store.$state
             .dropFirst()
@@ -96,7 +103,8 @@ class SetupControlBarViewModelTests: XCTestCase {
                                             localUserState: LocalUserState(audioState: audioState))
         sut.update(localUserState: storeFactory.store.state.localUserState,
                    permissionState: storeFactory.store.state.permissionState,
-                   callingState: CallingState.init())
+                   callingState: CallingState.init(),
+                   buttonViewDataState: storeFactory.store.state.buttonViewDataState)
 
         storeFactory.store.$state
             .dropFirst()
@@ -121,7 +129,8 @@ class SetupControlBarViewModelTests: XCTestCase {
                                             localUserState: LocalUserState(audioState: audioState))
         sut.update(localUserState: storeFactory.store.state.localUserState,
                    permissionState: storeFactory.store.state.permissionState,
-                   callingState: CallingState())
+                   callingState: CallingState(),
+                   buttonViewDataState: storeFactory.store.state.buttonViewDataState)
 
         storeFactory.store.$state
             .dropFirst()
@@ -137,13 +146,6 @@ class SetupControlBarViewModelTests: XCTestCase {
         wait(for: [expectation], timeout: timeout)
     }
 
-    func test_setupControlBarViewModel_when_selectAudioDeviceButtonTapped_then_audioDeviceSelectionDisplayed() {
-        let sut = makeSUT()
-        sut.selectAudioDeviceButtonTapped()
-
-        XCTAssertTrue(sut.isAudioDeviceSelectionDisplayed)
-    }
-
     func test_setupControlBarViewModel_when_audioPermissionDenied_then_hideSetupControlBar() {
         let cameraState = LocalUserState.CameraState(operation: .off,
                                                      device: .front,
@@ -154,7 +156,8 @@ class SetupControlBarViewModelTests: XCTestCase {
                                             localUserState: LocalUserState(cameraState: cameraState))
         sut.update(localUserState: storeFactory.store.state.localUserState,
                    permissionState: storeFactory.store.state.permissionState,
-                   callingState: CallingState())
+                   callingState: CallingState(),
+                   buttonViewDataState: storeFactory.store.state.buttonViewDataState)
 
         XCTAssertTrue(sut.isControlBarHidden())
     }
@@ -169,9 +172,10 @@ class SetupControlBarViewModelTests: XCTestCase {
                                             localUserState: LocalUserState(cameraState: cameraState))
         sut.update(localUserState: storeFactory.store.state.localUserState,
                    permissionState: storeFactory.store.state.permissionState,
-                   callingState: CallingState())
+                   callingState: CallingState(),
+                   buttonViewDataState: storeFactory.store.state.buttonViewDataState)
 
-        XCTAssertFalse(sut.isAudioDisabled())
+        XCTAssertFalse(sut.isMicButtonDisabled())
         XCTAssertTrue(sut.isCameraDisabled())
     }
 
@@ -211,7 +215,7 @@ class SetupControlBarViewModelTests: XCTestCase {
         sut.update(isJoinRequested: true)
 
         XCTAssertTrue(sut.isCameraDisabled())
-        XCTAssertTrue(sut.isAudioDisabled())
+        XCTAssertTrue(sut.isMicButtonDisabled())
     }
 
     func test_setupControlBarViewModel_when_updateJoinRequestedFalse_AudioAndVideoAreDenied_then_audioAndVideoAreDisabled() {
@@ -219,11 +223,12 @@ class SetupControlBarViewModelTests: XCTestCase {
         sut.update(localUserState: LocalUserState(),
                    permissionState: PermissionState(audioPermission: .denied,
                                                     cameraPermission: .denied),
-                   callingState: CallingState())
+                   callingState: CallingState(),
+                   buttonViewDataState: ButtonViewDataState())
         sut.update(isJoinRequested: false)
 
         XCTAssertTrue(sut.isCameraDisabled())
-        XCTAssertTrue(sut.isAudioDisabled())
+        XCTAssertTrue(sut.isMicButtonDisabled())
     }
 
     func test_setupControlBarViewModel_when_updateJoinRequestedFalse_AudioAndVideoAreGranted_then_audioAndVideoAreDisabled() {
@@ -231,11 +236,12 @@ class SetupControlBarViewModelTests: XCTestCase {
         sut.update(localUserState: LocalUserState(),
                    permissionState: PermissionState(audioPermission: .granted,
                                                     cameraPermission: .granted),
-                   callingState: CallingState())
+                   callingState: CallingState(),
+                   buttonViewDataState: storeFactory.store.state.buttonViewDataState)
         sut.update(isJoinRequested: false)
 
         XCTAssertFalse(sut.isCameraDisabled())
-        XCTAssertFalse(sut.isAudioDisabled())
+        XCTAssertFalse(sut.isMicButtonDisabled())
     }
 
     func test_setupControlBarViewModel_when_microphoneDefaultState_then_defaultToOff() {
@@ -244,7 +250,8 @@ class SetupControlBarViewModelTests: XCTestCase {
                                             localUserState: LocalUserState())
         sut.update(localUserState: storeFactory.store.state.localUserState,
                    permissionState: storeFactory.store.state.permissionState,
-                   callingState: CallingState())
+                   callingState: CallingState(),
+                   buttonViewDataState: storeFactory.store.state.buttonViewDataState)
 
         XCTAssertEqual(sut.micStatus, .off)
     }
@@ -273,7 +280,8 @@ class SetupControlBarViewModelTests: XCTestCase {
         let sut = makeSUT()
         sut.update(localUserState: localUserState,
                    permissionState: PermissionState(),
-                   callingState: CallingState())
+                   callingState: CallingState(),
+                   buttonViewDataState: storeFactory.store.state.buttonViewDataState)
         wait(for: [expectation], timeout: timeout)
     }
 
@@ -298,7 +306,8 @@ class SetupControlBarViewModelTests: XCTestCase {
         let sut = makeSUT()
         sut.update(localUserState: LocalUserState(),
                    permissionState: permissionState,
-                   callingState: CallingState())
+                   callingState: CallingState(),
+                   buttonViewDataState: storeFactory.store.state.buttonViewDataState)
         wait(for: [expectation], timeout: timeout)
     }
 
@@ -325,7 +334,8 @@ class SetupControlBarViewModelTests: XCTestCase {
         let sut = makeSUT()
         sut.update(localUserState: localUserState,
                    permissionState: PermissionState(),
-                   callingState: CallingState())
+                   callingState: CallingState(),
+                   buttonViewDataState: storeFactory.store.state.buttonViewDataState)
         wait(for: [expectation], timeout: timeout)
     }
 
@@ -351,38 +361,19 @@ class SetupControlBarViewModelTests: XCTestCase {
         let sut = makeSUT()
         sut.update(localUserState: localUserState,
                    permissionState: PermissionState(),
-                   callingState: CallingState())
+                   callingState: CallingState(),
+                   buttonViewDataState: storeFactory.store.state.buttonViewDataState)
         wait(for: [expectation], timeout: timeout)
     }
 
     func test_SetupControlBarViewModel_audioVideoModeAudioOnlyHidesCameraButton() {
         let sut = makeSUT(audioVideoMode: .audioOnly)
-        XCTAssertFalse(sut.isCameraDisplayed)
+        XCTAssertFalse(sut.isCameraButtonVisible)
     }
 
     func test_SetupControlBarViewModel_audioVideoModeNormalShowsCameraButton() {
         let sut = makeSUT(audioVideoMode: .audioAndVideo)
-        XCTAssertTrue(sut.isCameraDisplayed)
-    }
-
-    func test_setupControlBarViewModel_updateStates_when_stateUpdated_then_audioDeviceListViewModelUpdated() {
-        let expectation = XCTestExpectation(description: "AudioDevicesListViewModel is updated")
-        let localUserState = LocalUserState(audioState: LocalUserState.AudioState(operation: .on, device: .speakerSelected))
-        let audioDevicesListViewModel = AudioDevicesListViewModelMocking(compositeViewModelFactory: factoryMocking,
-                                                                         dispatchAction: storeFactory.store.dispatch,
-                                                                         localUserState: localUserState,
-                                                                         localizationProvider: localizationProvider)
-
-        audioDevicesListViewModel.updateState = { status in
-            XCTAssertEqual(status, localUserState.audioState.device)
-            expectation.fulfill()
-        }
-        factoryMocking.audioDevicesListViewModel = audioDevicesListViewModel
-        let sut = makeSUT()
-        sut.update(localUserState: localUserState,
-                   permissionState: PermissionState(),
-                   callingState: CallingState())
-        wait(for: [expectation], timeout: timeout)
+        XCTAssertTrue(sut.isCameraButtonVisible)
     }
 
     func test_setupControlBarViewModel_display_videoButtonLabel__from_LocalizationMocking() {
@@ -409,7 +400,8 @@ class SetupControlBarViewModelTests: XCTestCase {
         let sut = makeSUTLocalizationMocking()
         sut.update(localUserState: localUserState,
                    permissionState: PermissionState(),
-                   callingState: CallingState())
+                   callingState: CallingState(),
+                   buttonViewDataState: storeFactory.store.state.buttonViewDataState)
         wait(for: [expectation], timeout: timeout)
     }
 }
@@ -420,9 +412,12 @@ extension SetupControlBarViewModelTests {
         return SetupControlBarViewModel(compositeViewModelFactory: factoryMocking,
                                         logger: logger,
                                         dispatchAction: storeFactory.store.dispatch,
+                                        updatableOptionsManager: UpdatableOptionsManager(store: storeFactory.store, setupScreenOptions: nil, callScreenOptions: nil),
                                         localUserState: LocalUserState(),
                                         localizationProvider: localizationProvider ?? LocalizationProvider(logger: logger),
-                                        audioVideoMode: audioVideoMode)
+                                        audioVideoMode: audioVideoMode,
+                                        setupScreenOptions: nil,
+                                        buttonViewDataState: storeFactory.store.state.buttonViewDataState)
     }
 
     func makeSUTLocalizationMocking() -> SetupControlBarViewModel {

@@ -13,6 +13,10 @@ public struct LocalOptions {
 
     /// Configuration for the call setup screen, including titles and subtitles.
     let setupScreenViewData: SetupScreenViewData?
+    /// Configuration for captions
+    let captionsOptions: CaptionsOptions?
+
+    ///  The CameraOn is used when we skip the setup screen
 
     /// Determines if the microphone is enabled upon joining the call, bypassing the setup screen.
     let microphoneOn: Bool?
@@ -22,6 +26,8 @@ public struct LocalOptions {
 
     /// Specifies the audio/video mode for the call, affecting available functionalities.
     let audioVideoMode: CallCompositeAudioVideoMode
+    let setupScreenOptions: SetupScreenOptions?
+    let callScreenOptions: CallScreenOptions?
 
     /// Internal storage for the camera state, not directly exposed to the initializer.
     private let cameraOnInternal: Bool?
@@ -35,18 +41,27 @@ public struct LocalOptions {
     ///   - microphoneOn: Determines if the microphone is enabled by default.
     ///   - skipSetupScreen: Indicates whether to bypass the setup screen.
     ///   - audioVideoMode: The desired audio/video mode for the call.
+    ///   - captionsOptions: Configuration for captions
+    ///   - setupScreenOptions: Configuration for setup screen
+    ///   - callScreenOptions: Configuration for calling screen
     public init(participantViewData: ParticipantViewData? = nil,
                 setupScreenViewData: SetupScreenViewData? = nil,
                 cameraOn: Bool? = false,
                 microphoneOn: Bool? = false,
                 skipSetupScreen: Bool? = false,
-                audioVideoMode: CallCompositeAudioVideoMode = .audioAndVideo) {
+                audioVideoMode: CallCompositeAudioVideoMode = .audioAndVideo,
+                captionsOptions: CaptionsOptions? = nil,
+                setupScreenOptions: SetupScreenOptions? = nil,
+                callScreenOptions: CallScreenOptions? = nil) {
         self.participantViewData = participantViewData
         self.setupScreenViewData = setupScreenViewData
         self.cameraOnInternal = cameraOn
         self.microphoneOn = microphoneOn
         self.skipSetupScreen = skipSetupScreen
         self.audioVideoMode = audioVideoMode
+        self.captionsOptions = captionsOptions
+        self.setupScreenOptions = setupScreenOptions
+        self.callScreenOptions = callScreenOptions
     }
 
     /// Determines the actual state of the camera

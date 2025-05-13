@@ -5,28 +5,32 @@
 
 import Combine
 import Foundation
+import SwiftUI
 
 class InfoHeaderViewModel: ObservableObject {
-    @Published var accessibilityLabel: String
-    @Published var infoLabel: String
-    @Published var isInfoHeaderDisplayed: Bool = true
-    @Published var isParticipantsListDisplayed: Bool = false
-    @Published var isVoiceOverEnabled: Bool = false
+    @Published var accessibilityLabelTitle: String
+    @Published var isInfoHeaderDisplayed = true
+    @Published var isVoiceOverEnabled = false
+    @Published var accessibilityLabelSubtitle: String
+    @Published var title = ""
+    @Published var subtitle: String? = ""
+    @Published var customButton1ViewModel: IconButtonViewModel?
+    @Published var customButton2ViewModel: IconButtonViewModel?
+    private let compositeViewModelFactory: CompositeViewModelFactoryProtocol
     private let logger: Logger
     private let dispatch: ActionDispatch
     private let accessibilityProvider: AccessibilityProviderProtocol
     private let localizationProvider: LocalizationProviderProtocol
-    private var infoHeaderDismissTimer: Timer?
     private var participantsCount: Int = 0
     private var callingStatus: CallingStatus = .none
-    let enableMultitasking: Bool
     private let enableSystemPipWhenMultitasking: Bool
-
-    let participantsListViewModel: ParticipantsListViewModel
+    let enableMultitasking: Bool
     var participantListButtonViewModel: IconButtonViewModel!
     var dismissButtonViewModel: IconButtonViewModel!
+    private var cancellables = Set<AnyCancellable>()
+    private let controlHeaderViewData: CallScreenHeaderViewData?
 
-    var isPad: Bool = false
+    var isPad = false
 
     init(compositeViewModelFactory: CompositeViewModelFactoryProtocol,
          logger: Logger,
@@ -35,18 +39,24 @@ class InfoHeaderViewModel: ObservableObject {
          accessibilityProvider: AccessibilityProviderProtocol,
          dispatchAction: @escaping ActionDispatch,
          enableMultitasking: Bool,
-         enableSystemPipWhenMultitasking: Bool) {
+         enableSystemPipWhenMultitasking: Bool,
+         callScreenInfoHeaderState: CallScreenInfoHeaderState,
+         buttonViewDataState: ButtonViewDataState,
+         controlHeaderViewData: CallScreenHeaderViewData?
+    ) {
+        self.compositeViewModelFactory = compositeViewModelFactory
+        self.controlHeaderViewData = controlHeaderViewData
+        let infoLabel = localizationProvider.getLocalizedString(.callWith0Person)
+        self.title = callScreenInfoHeaderState.title ?? infoLabel
+        self.subtitle = callScreenInfoHeaderState.subtitle ?? ""
+        self.accessibilityLabelTitle = callScreenInfoHeaderState.title ?? infoLabel
+        self.accessibilityLabelSubtitle = callScreenInfoHeaderState.subtitle ?? ""
         self.dispatch = dispatchAction
         self.logger = logger
         self.accessibilityProvider = accessibilityProvider
         self.localizationProvider = localizationProvider
-        let title = localizationProvider.getLocalizedString(.callWith0Person)
-        self.infoLabel = title
-        self.accessibilityLabel = title
         self.enableMultitasking = enableMultitasking
         self.enableSystemPipWhenMultitasking = enableSystemPipWhenMultitasking
-        self.participantsListViewModel = compositeViewModelFactory.makeParticipantsListViewModel(
-            localUserState: localUserState, dispatchAction: dispatchAction)
         self.participantListButtonViewModel = compositeViewModelFactory.makeIconButtonViewModel(
             iconName: .showParticipant,
             buttonType: .infoButton,
@@ -56,6 +66,7 @@ class InfoHeaderViewModel: ObservableObject {
                 }
                 self.showParticipantListButtonTapped()
         }
+
         self.participantListButtonViewModel.accessibilityLabel = self.localizationProvider.getLocalizedString(
             .participantListAccessibilityLabel)
 
@@ -74,31 +85,52 @@ class InfoHeaderViewModel: ObservableObject {
         self.accessibilityProvider.subscribeToVoiceOverStatusDidChangeNotification(self)
         self.accessibilityProvider.subscribeToUIFocusDidUpdateNotification(self)
         updateInfoHeaderAvailability()
+        updateCustomButtons(buttonViewDataState)
+    }
+    func formatTimeInterval(_ interval: TimeInterval) -> String {
+        let formatter = DateComponentsFormatter()
+        formatter.unitsStyle = .positional
+        formatter.zeroFormattingBehavior = .pad
+        if interval >= 3600 {
+            // If the interval is 1 hour or more, show hours, minutes, and seconds
+            formatter.allowedUnits = [.hour, .minute, .second]
+        } else if interval >= 60 {
+            // If the interval is 1 minute or more, show minutes and seconds
+            formatter.allowedUnits = [.minute, .second]
+        } else {
+            // If the interval is less than 1 minute, show seconds only
+            formatter.allowedUnits = [.second]
+        }
+        return formatter.string(from: interval) ?? "00:00:00"
     }
 
     func showParticipantListButtonTapped() {
         logger.debug("Show participant list button tapped")
-        if isPad {
-            self.infoHeaderDismissTimer?.invalidate()
-        }
         self.displayParticipantsList()
     }
 
     func displayParticipantsList() {
-        self.isParticipantsListDisplayed = true
+        dispatch(.showParticipants)
     }
 
     func toggleDisplayInfoHeaderIfNeeded() {
         guard !isVoiceOverEnabled else {
             return
         }
-        self.isInfoHeaderDisplayed ? hideInfoHeader() : displayWithTimer()
+        if self.isInfoHeaderDisplayed {
+            hideInfoHeader()
+        } else {
+            displayWithTimer()
+        }
     }
 
     func update(localUserState: LocalUserState,
                 remoteParticipantsState: RemoteParticipantsState,
                 callingState: CallingState,
-                visibilityState: VisibilityState) {
+                visibilityState: VisibilityState,
+                callScreenInfoHeaderState: CallScreenInfoHeaderState,
+                buttonViewDataState: ButtonViewDataState
+    ) {
         isHoldingCall(callingState: callingState)
         let shouldDisplayInfoHeaderValue = shouldDisplayInfoHeader(for: callingStatus)
         let newDisplayInfoHeaderValue = shouldDisplayInfoHeader(for: callingState.status)
@@ -107,26 +139,41 @@ class InfoHeaderViewModel: ObservableObject {
             updateInfoHeaderAvailability()
         }
 
-        let updatedRemoteparticipantCount = remoteParticipantsState.participantInfoList
+        let updatedRemoteparticipantCount = getParticipantCount(remoteParticipantsState)
+
+        if participantsCount != updatedRemoteparticipantCount
+            && callScreenInfoHeaderState.title == nil {
+            participantsCount = updatedRemoteparticipantCount
+            updateInfoLabel()
+        }
+
+        if visibilityState.currentStatus == .pipModeEntered {
+            hideInfoHeader()
+        }
+        if callScreenInfoHeaderState.title != nil
+            && callScreenInfoHeaderState.title != self.title {
+            self.title = (callScreenInfoHeaderState.title)!
+            self.accessibilityLabelTitle = self.title
+        }
+        if callScreenInfoHeaderState.subtitle != nil
+            && callScreenInfoHeaderState.subtitle != self.subtitle {
+            self.subtitle = callScreenInfoHeaderState.subtitle
+            self.accessibilityLabelSubtitle = self.subtitle ?? ""
+        }
+        updateCustomButtons(buttonViewDataState)
+    }
+
+    private func getParticipantCount(_ remoteParticipantsState: RemoteParticipantsState) -> Int {
+        let remoteParticipantCountForGridView = remoteParticipantsState.participantInfoList
             .filter({ participantInfoModel in
                 participantInfoModel.status != .inLobby && participantInfoModel.status != .disconnected
             })
             .count
 
-        if participantsCount != updatedRemoteparticipantCount {
-            participantsCount = updatedRemoteparticipantCount
-            updateInfoLabel()
-        }
-        participantsListViewModel.update(localUserState: localUserState,
-                                         remoteParticipantsState: remoteParticipantsState)
+        let filteredOutRemoteParticipantsCount =
+        remoteParticipantsState.participantInfoList.count - remoteParticipantCountForGridView
 
-        if visibilityState.currentStatus == .pipModeEntered {
-            hideInfoHeader()
-        }
-
-        if visibilityState.currentStatus != .visible {
-            isParticipantsListDisplayed = false
-        }
+        return remoteParticipantsState.totalParticipantCount - filteredOutRemoteParticipantsCount
     }
 
     private func isHoldingCall(callingState: CallingState) {
@@ -136,9 +183,6 @@ class InfoHeaderViewModel: ObservableObject {
         }
         if isInfoHeaderDisplayed {
             isInfoHeaderDisplayed = false
-        }
-        if isParticipantsListDisplayed {
-            isParticipantsListDisplayed = false
         }
     }
 
@@ -152,32 +196,21 @@ class InfoHeaderViewModel: ObservableObject {
         default:
             content = localizationProvider.getLocalizedString(.callWithNPerson, participantsCount)
         }
-        infoLabel = content
-        accessibilityLabel = content
+        title = content
+        accessibilityLabelTitle = content
     }
 
     private func displayWithTimer() {
         self.isInfoHeaderDisplayed = true
-        resetTimer()
     }
 
     @objc private func hideInfoHeader() {
         self.isInfoHeaderDisplayed = false
-        self.infoHeaderDismissTimer?.invalidate()
-    }
-
-    private func resetTimer() {
-        self.infoHeaderDismissTimer = Timer.scheduledTimer(withTimeInterval: 3.0,
-                             repeats: false) { [weak self] _ in
-            self?.hideInfoHeader()
-        }
     }
 
     private func updateInfoHeaderAvailability() {
         let shouldDisplayInfoHeader = shouldDisplayInfoHeader(for: callingStatus)
         isVoiceOverEnabled = accessibilityProvider.isVoiceOverEnabled
-        // invalidating timer is required for setting the next timer and when VoiceOver is enabled
-        infoHeaderDismissTimer?.invalidate()
         if self.isVoiceOverEnabled {
             isInfoHeaderDisplayed = shouldDisplayInfoHeader
         } else if shouldDisplayInfoHeader {
@@ -195,6 +228,34 @@ class InfoHeaderViewModel: ObservableObject {
         } else if self.enableMultitasking {
             dispatch(.visibilityAction(.hideRequested))
         }
+    }
+    private func updateCustomButtons(_ buttonViewDataState: ButtonViewDataState) {
+        self.customButton1ViewModel = createCustomButtonViewModel(
+            buttonViewDataState.callScreenHeaderCustomButtonsState.first)
+
+        if buttonViewDataState.callScreenHeaderCustomButtonsState.count >= 2 {
+            self.customButton2ViewModel = createCustomButtonViewModel(
+                buttonViewDataState.callScreenHeaderCustomButtonsState[1])
+        }
+    }
+    private func createCustomButtonViewModel(_ customButton: CustomButtonState?) -> IconButtonViewModel? {
+        guard let customButton else {
+            return nil
+        }
+        var buttonViewModel = compositeViewModelFactory.makeIconButtonViewModel(icon: customButton.image,
+                                                          buttonType: .infoButton,
+                                                          isDisabled: !customButton.enabled,
+                                                          isVisible: customButton.visible) { [weak self] in
+            guard let optionsButton = self?.controlHeaderViewData?.customButtons.first(where: { optionsButton in
+                optionsButton.id == customButton.id
+            }) else {
+                return
+            }
+            optionsButton.onClick(optionsButton)
+        }
+
+        buttonViewModel.accessibilityLabel = customButton.title
+        return buttonViewModel
     }
 }
 

@@ -13,15 +13,18 @@ class LoadingOverlayViewModel: OverlayViewModelProtocol {
     private var callingStatus: CallingStatus = .none
     private var operationStatus: OperationStatus = .skipSetupRequested
     private var audioPermission: AppPermission.Status = .unknown
+    private var callType: CompositeCallType
+    let themeOptions: ThemeOptions
     var cancellables = Set<AnyCancellable>()
     var networkManager: NetworkManager
     var audioSessionManager: AudioSessionManagerProtocol
-
     init(localizationProvider: LocalizationProviderProtocol,
          accessibilityProvider: AccessibilityProviderProtocol,
          networkManager: NetworkManager,
          audioSessionManager: AudioSessionManagerProtocol,
-         store: Store<AppState, Action>
+         themeOptions: ThemeOptions,
+         store: Store<AppState, Action>,
+         callType: CompositeCallType
     ) {
         self.localizationProvider = localizationProvider
         self.accessibilityProvider = accessibilityProvider
@@ -30,6 +33,8 @@ class LoadingOverlayViewModel: OverlayViewModelProtocol {
         self.audioSessionManager = audioSessionManager
         self.store = store
         self.audioPermission = store.state.permissionState.audioPermission
+        self.callType = callType
+        self.themeOptions = themeOptions
         store.$state
             .receive(on: DispatchQueue.main)
             .sink { [weak self] state in
@@ -47,22 +52,22 @@ class LoadingOverlayViewModel: OverlayViewModelProtocol {
 
     var subtitle: String = ""
 
-    @Published var isDisplayed: Bool = false
+    @Published var isDisplayed = false
 
     func receive(_ state: AppState) {
         let permissionState = state.permissionState
         let callingState = state.callingState
         callingStatus = callingState.status
         operationStatus = callingState.operationStatus
-        let shouldDisplay = operationStatus == .skipSetupRequested && callingStatus != .connected &&
-        callingState.status != .inLobby
+        let shouldDisplay = operationStatus == .skipSetupRequested &&
+        ((callingStatus == .connecting || callingStatus == .none) && callType != .oneToNOutgoing)
 
         if shouldDisplay != isDisplayed {
             isDisplayed = shouldDisplay
             accessibilityProvider.moveFocusToFirstElement()
         }
 
-        if isDisplayed && permissionState.audioPermission == .denied {
+        if permissionState.audioPermission == .denied {
             store.dispatch(action: .errorAction(.fatalErrorUpdated(
                 internalError: .callJoinFailedByMicPermission, error: nil)))
         }

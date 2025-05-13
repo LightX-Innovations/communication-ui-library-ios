@@ -20,41 +20,55 @@ class ParticipantGridCellViewModel: ObservableObject, Identifiable {
     @Published var videoViewModel: ParticipantVideoViewInfoModel?
     @Published var accessibilityLabel: String = ""
     @Published var displayName: String?
+    @Published var avatarDisplayName: String?
     @Published var isSpeaking: Bool
+    @Published var isTypingRtt: Bool
     @Published var isMuted: Bool
     @Published var isHold: Bool
     @Published var participantIdentifier: String
-    @Published var isInBackground: Bool
+    @Published var displayData = [CaptionsRttRecord]()
 
-    private var isScreenSharing: Bool = false
+    private var isScreenSharing = false
     private var participantName: String
     private var renderDisplayName: String?
     private var isCameraEnabled: Bool
+    private var participantStatus: ParticipantStatus?
+    private var callType: CompositeCallType
+    private var subscriptions = Set<AnyCancellable>()
 
     init(localizationProvider: LocalizationProviderProtocol,
          accessibilityProvider: AccessibilityProviderProtocol,
          participantModel: ParticipantInfoModel,
-         lifeCycleState: LifeCycleState,
-         isCameraEnabled: Bool) {
+         isCameraEnabled: Bool,
+         callType: CompositeCallType) {
         self.localizationProvider = localizationProvider
         self.accessibilityProvider = accessibilityProvider
-        self.participantName = participantModel.displayName
-        self.displayName = participantModel.displayName
+        self.participantStatus = participantModel.status
+        self.callType = callType
+        let isDisplayConnecting = ParticipantGridCellViewModel.isOutgoingCallDialingInProgress(
+            callType: callType,
+            participantStatus: participantModel.status)
+        if isDisplayConnecting {
+            self.participantName = localizationProvider.getLocalizedString(LocalizationKey.callingCallMessage)
+            self.displayName = self.participantName
+        } else {
+            self.participantName = participantModel.displayName
+            self.displayName = participantModel.displayName
+        }
+        self.avatarDisplayName = participantModel.displayName
         self.isSpeaking = participantModel.isSpeaking
+        self.isTypingRtt = participantModel.isTypingRtt
         self.isHold = participantModel.status == .hold
         self.participantIdentifier = participantModel.userIdentifier
-        self.isMuted = participantModel.isMuted
-        self.isInBackground = lifeCycleState.currentStatus == .background
+        self.isMuted = participantModel.isMuted && participantModel.status == .connected
         self.isCameraEnabled = isCameraEnabled
         self.videoViewModel = getDisplayingVideoStreamModel(participantModel)
         self.accessibilityLabel = getAccessibilityLabel(participantModel: participantModel)
     }
 
-    func update(participantModel: ParticipantInfoModel,
-                lifeCycleState: LifeCycleState) {
+    func update(participantModel: ParticipantInfoModel) {
         self.participantIdentifier = participantModel.userIdentifier
         let videoViewModel = getDisplayingVideoStreamModel(participantModel)
-
         if self.videoViewModel?.videoStreamId != videoViewModel.videoStreamId ||
             self.videoViewModel?.videoStreamType != videoViewModel.videoStreamType {
             let newIsScreenSharing = videoViewModel.videoStreamType == .screenSharing
@@ -78,6 +92,11 @@ class ParticipantGridCellViewModel: ObservableObject, Identifiable {
             self.accessibilityLabel = getAccessibilityLabel(participantModel: participantModel)
         }
 
+        if self.participantStatus != participantModel.status {
+            self.participantStatus = participantModel.status
+            updateParticipantNameIfNeeded(with: renderDisplayName)
+            self.isMuted = participantModel.isMuted && participantModel.status == .connected
+        }
         if self.participantName != participantModel.displayName {
             self.participantName = participantModel.displayName
             updateParticipantNameIfNeeded(with: renderDisplayName)
@@ -87,20 +106,33 @@ class ParticipantGridCellViewModel: ObservableObject, Identifiable {
             self.isSpeaking = participantModel.isSpeaking
         }
 
+        if self.isTypingRtt != participantModel.isTypingRtt {
+            self.isTypingRtt = participantModel.isTypingRtt
+        }
+
         if self.isMuted != participantModel.isMuted {
-            self.isMuted = participantModel.isMuted
+            self.isMuted = participantModel.isMuted && participantModel.status == .connected
         }
 
         let isOnHold = participantModel.status == .hold
 
         if self.isHold != isOnHold {
             self.isHold = isOnHold
+            postParticipantStatusAccessibilityAnnouncements(isHold: self.isHold, participantModel: participantModel)
         }
-
-        self.isInBackground = lifeCycleState.currentStatus == .background
     }
 
     func updateParticipantNameIfNeeded(with renderDisplayName: String?) {
+        let isDisplayConnecting = ParticipantGridCellViewModel.isOutgoingCallDialingInProgress(
+            callType: callType,
+            participantStatus: participantStatus)
+        if isDisplayConnecting {
+            self.participantName = localizationProvider.getLocalizedString(LocalizationKey.callingCallMessage)
+            self.displayName = self.participantName
+            self.renderDisplayName = renderDisplayName
+            self.avatarDisplayName = renderDisplayName
+            return
+        }
         self.renderDisplayName = renderDisplayName
         guard renderDisplayName != displayName else {
             return
@@ -113,7 +145,8 @@ class ParticipantGridCellViewModel: ObservableObject, Identifiable {
         } else {
             name = participantName
         }
-        displayName = name
+        self.displayName = name
+        self.avatarDisplayName = displayName
     }
 
     func getOnHoldString() -> String {
@@ -126,7 +159,7 @@ class ParticipantGridCellViewModel: ObservableObject, Identifiable {
                                                     participantModel.isMuted ? .muted : .unmuted)
 
         let videoStatus = (videoViewModel?.videoStreamId?.isEmpty ?? true) ?
-        localizationProvider.getLocalizedString(.videoOff):
+        localizationProvider.getLocalizedString(.videoOff) :
         localizationProvider.getLocalizedString(.videoOn)
         return localizationProvider.getLocalizedString(.participantInformationAccessibilityLable,
                                                        participantModel.displayName, status, videoStatus)
@@ -146,5 +179,18 @@ class ParticipantGridCellViewModel: ObservableObject, Identifiable {
                                       videoStreamId: screenShareVideoStreamIdentifier) :
         ParticipantVideoViewInfoModel(videoStreamType: cameraVideoStreamType,
                                       videoStreamId: cameraVideoStreamIdentifier)
+    }
+
+    private static func isOutgoingCallDialingInProgress(callType: CompositeCallType,
+                                                        participantStatus: ParticipantStatus?) -> Bool {
+        return callType == .oneToNOutgoing &&
+               (participantStatus == nil || participantStatus == .connecting || participantStatus == .ringing)
+    }
+
+    private func postParticipantStatusAccessibilityAnnouncements(isHold: Bool, participantModel: ParticipantInfoModel) {
+        let holdResumeAccessibilityAnnouncement = isHold ?
+            localizationProvider.getLocalizedString(.onHoldAccessibilityLabel, participantModel.displayName) :
+            localizationProvider.getLocalizedString(.participantResumeAccessibilityLabel, participantModel.displayName)
+        accessibilityProvider.postQueuedAnnouncement(holdResumeAccessibilityAnnouncement)
     }
 }

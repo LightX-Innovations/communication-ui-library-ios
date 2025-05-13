@@ -5,6 +5,7 @@
 
 import Foundation
 import XCTest
+import AzureCommunicationCommon
 @testable import AzureCommunicationUICalling
 
 class OnHoldOverlayViewModelTests: XCTestCase {
@@ -55,14 +56,22 @@ extension OnHoldOverlayViewModelTests {
     func makeSUT(localizationProvider: LocalizationProviderProtocol? = nil) -> OnHoldOverlayViewModel {
         let logger = LoggerMocking()
         let storeFactory = StoreFactoryMocking()
-        let factoryMocking = CompositeViewModelFactoryMocking(logger: logger, store: storeFactory.store)
+        let factoryMocking = CompositeViewModelFactoryMocking(logger: logger,
+                                                              store: storeFactory.store,
+                                                              avatarManager: AvatarViewManagerMocking(
+                                                                store: storeFactory.store,
+                                                                localParticipantId: createCommunicationIdentifier(fromRawId: ""),
+                                                                localParticipantViewData: nil),
+                                                              updatableOptionsManager: UpdatableOptionsManager(store: storeFactory.store, setupScreenOptions: nil, callScreenOptions: nil))
         let accessibilityProvider = AccessibilityProviderMocking()
         return OnHoldOverlayViewModel(
                                       localizationProvider: localizationProvider ?? LocalizationProvider(logger: logger),
                                       compositeViewModelFactory: factoryMocking,
                                       logger: logger,
                                       accessibilityProvider: accessibilityProvider,
-                                      audioSessionManager: AudioSessionManager(store: storeFactory.store, logger: logger),
+                                      audioSessionManager: AudioSessionManager(store: storeFactory.store,
+                                                                               logger: logger,
+                                                                               isCallKitEnabled: false),
                                       resumeAction: {})
     }
 
@@ -73,13 +82,21 @@ extension OnHoldOverlayViewModelTests {
     func makeSUT(withAction action: @escaping (() -> Void)) -> OnHoldOverlayViewModelMocking {
         let logger = LoggerMocking()
         let storeFactory = StoreFactoryMocking()
-        let factoryMocking = CompositeViewModelFactoryMocking(logger: logger, store: storeFactory.store)
+        let factoryMocking = CompositeViewModelFactoryMocking(logger: logger,
+                                                              store: storeFactory.store,
+                                                              avatarManager: AvatarViewManagerMocking(
+                                                                store: storeFactory.store,
+                                                                localParticipantId: createCommunicationIdentifier(fromRawId: ""),
+                                                                localParticipantViewData: nil),
+                                                              updatableOptionsManager: UpdatableOptionsManager(store: storeFactory.store, setupScreenOptions: nil, callScreenOptions: nil))
         let accessibilityProvider = AccessibilityProviderMocking()
         return OnHoldOverlayViewModelMocking(localizationProvider: LocalizationProvider(logger: logger),
                                                   compositeViewModelFactory: factoryMocking,
                                                   logger: logger,
                                                   accessibilityProvider: accessibilityProvider,
-                                             audioSessionManager: AudioSessionManager(store: storeFactory.store, logger: logger),
+                                             audioSessionManager: AudioSessionManager(store: storeFactory.store,
+                                                                                      logger: logger,
+                                                                                      isCallKitEnabled: false),
                                                   resumeAction: action)
     }
 }

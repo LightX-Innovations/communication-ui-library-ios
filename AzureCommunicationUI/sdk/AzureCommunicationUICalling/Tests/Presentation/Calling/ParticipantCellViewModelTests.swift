@@ -40,6 +40,51 @@ class ParticipantCellViewModelTests: XCTestCase {
         XCTAssertEqual(sut.participantIdentifier, expectedParticipantIdentifier)
     }
 
+    func test_participantCellViewModel_init_then_getCorrectRendererViewModel_for_outgoingCallRinging() {
+        let expectedParticipantIdentifier = "expectedParticipantIdentifier"
+        let expectedVideoStreamId = "expectedVideoStreamId"
+        let expectedDisplayName = "expectedDisplayName"
+        let expectedIsSpeaking = false
+        let sut = makeSUT(participantIdentifier: expectedParticipantIdentifier,
+                          videoStreamId: expectedVideoStreamId,
+                          displayName: expectedDisplayName,
+                          isSpeaking: expectedIsSpeaking,
+                          isMuted: false,
+                          status: .connecting,
+                          callType: .oneToNOutgoing)
+
+        XCTAssertEqual(sut.displayName, LocalizationKey.callingCallMessage.rawValue)
+        XCTAssertEqual(sut.avatarDisplayName, expectedDisplayName)
+        XCTAssertEqual(sut.videoViewModel?.videoStreamId, expectedVideoStreamId)
+        XCTAssertEqual(sut.isSpeaking, expectedIsSpeaking)
+        XCTAssertEqual(sut.isMuted, false)
+
+        XCTAssertEqual(sut.participantIdentifier, expectedParticipantIdentifier)
+    }
+
+    func test_participantCellViewModel_init_then_getCorrectRendererViewModel_for_outgoingCallConnecting() {
+        let expectedParticipantIdentifier = "expectedParticipantIdentifier"
+        let expectedVideoStreamId = "expectedVideoStreamId"
+        let expectedDisplayName = "expectedDisplayName"
+        let expectedIsSpeaking = false
+        let expectedIsMuted = false
+        let sut = makeSUT(participantIdentifier: expectedParticipantIdentifier,
+                          videoStreamId: expectedVideoStreamId,
+                          displayName: expectedDisplayName,
+                          isSpeaking: expectedIsSpeaking,
+                          isMuted: expectedIsMuted,
+                          status: .ringing,
+                          callType: .oneToNOutgoing)
+
+        XCTAssertEqual(sut.displayName, LocalizationKey.callingCallMessage.rawValue)
+        XCTAssertEqual(sut.avatarDisplayName, expectedDisplayName)
+        XCTAssertEqual(sut.videoViewModel?.videoStreamId, expectedVideoStreamId)
+        XCTAssertEqual(sut.isSpeaking, expectedIsSpeaking)
+        XCTAssertEqual(sut.isMuted, false)
+
+        XCTAssertEqual(sut.participantIdentifier, expectedParticipantIdentifier)
+    }
+
     func test_participantCellViewModel_update_then_updateRendererViewModel() {
         let expectedParticipantIdentifier = "expectedParticipantIdentifier"
         let expectedVideoStreamId = "expectedVideoStreamId"
@@ -50,13 +95,34 @@ class ParticipantCellViewModelTests: XCTestCase {
                                                         videoStreamId: expectedVideoStreamId,
                                                         displayName: expectedDisplayName,
                                                         isSpeaking: expectedIsSpeaking)
-        sut.update(participantModel: infoModel, lifeCycleState: LifeCycleState())
+        sut.update(participantModel: infoModel)
 
         XCTAssertEqual(sut.displayName, expectedDisplayName)
         XCTAssertEqual(sut.videoViewModel?.videoStreamId, expectedVideoStreamId)
         XCTAssertEqual(sut.isSpeaking, expectedIsSpeaking)
         XCTAssertEqual(sut.participantIdentifier, expectedParticipantIdentifier)
 
+    }
+
+    func test_participantCellViewModel_update_then_updateRendererViewModel_for_outGoingCall() {
+        let expectedParticipantIdentifier = "expectedParticipantIdentifier"
+        let expectedVideoStreamId = "expectedVideoStreamId"
+        let expectedDisplayName = "expectedDisplayName"
+        let expectedIsSpeaking = false
+        let sut = makeSUT(callType: .oneToNOutgoing)
+        let infoModel = ParticipantInfoModelBuilder.get(participantIdentifier: expectedParticipantIdentifier,
+                                                        videoStreamId: expectedVideoStreamId,
+                                                        displayName: expectedDisplayName,
+                                                        isSpeaking: expectedIsSpeaking,
+                                                        isMuted: true,
+                                                        status: .ringing)
+        sut.update(participantModel: infoModel)
+
+        XCTAssertEqual(sut.displayName, LocalizationKey.callingCallMessage.rawValue)
+        XCTAssertEqual(sut.videoViewModel?.videoStreamId, expectedVideoStreamId)
+        XCTAssertEqual(sut.isSpeaking, expectedIsSpeaking)
+        XCTAssertEqual(sut.isMuted, false)
+        XCTAssertEqual(sut.participantIdentifier, expectedParticipantIdentifier)
     }
 
     // Marks: update videoStreamId
@@ -74,7 +140,7 @@ class ParticipantCellViewModelTests: XCTestCase {
             }.store(in: cancellable)
 
         let infoModel = ParticipantInfoModelBuilder.get(videoStreamId: videoStreamId)
-        sut.update(participantModel: infoModel, lifeCycleState: LifeCycleState())
+        sut.update(participantModel: infoModel)
 
         wait(for: [expectation], timeout: 1)
     }
@@ -94,7 +160,7 @@ class ParticipantCellViewModelTests: XCTestCase {
             }.store(in: cancellable)
 
         let infoModel = ParticipantInfoModelBuilder.get(videoStreamId: diffVideoStreamId)
-        sut.update(participantModel: infoModel, lifeCycleState: LifeCycleState())
+        sut.update(participantModel: infoModel)
 
         wait(for: [expectation], timeout: 1)
     }
@@ -114,7 +180,7 @@ class ParticipantCellViewModelTests: XCTestCase {
             }.store(in: cancellable)
 
         let infoModel = ParticipantInfoModelBuilder.get(displayName: sameDisplayName)
-        sut.update(participantModel: infoModel, lifeCycleState: LifeCycleState())
+        sut.update(participantModel: infoModel)
 
         wait(for: [expectation], timeout: 1)
     }
@@ -132,27 +198,7 @@ class ParticipantCellViewModelTests: XCTestCase {
             }.store(in: cancellable)
 
         let infoModel = ParticipantInfoModelBuilder.get(displayName: diffDisplayName)
-        sut.update(participantModel: infoModel, lifeCycleState: LifeCycleState())
-
-        wait(for: [expectation], timeout: 1)
-    }
-
-    // Marks: update isSpeaking
-    func test_participantCellViewModel_update_when_isSpeakingSame_then_shouldNotBePublished() {
-        let expectation = XCTestExpectation(description: "Speaking Is Same Then Should Not Be Published")
-        expectation.isInverted = true
-        let isSpeaking = false
-        let sut = makeSUT(isSpeaking: isSpeaking)
-
-        sut.$isSpeaking
-            .dropFirst()
-            .sink { _ in
-                XCTFail("Failed with videoStreamId publish")
-                expectation.fulfill()
-            }.store(in: cancellable)
-
-        let infoModel = ParticipantInfoModelBuilder.get(isSpeaking: isSpeaking)
-        sut.update(participantModel: infoModel, lifeCycleState: LifeCycleState())
+        sut.update(participantModel: infoModel)
 
         wait(for: [expectation], timeout: 1)
     }
@@ -170,7 +216,7 @@ class ParticipantCellViewModelTests: XCTestCase {
             }.store(in: cancellable)
 
         let infoModel = ParticipantInfoModelBuilder.get(isSpeaking: isSpeaking)
-        sut.update(participantModel: infoModel, lifeCycleState: LifeCycleState())
+        sut.update(participantModel: infoModel)
 
         wait(for: [expectation], timeout: 1)
     }
@@ -190,7 +236,7 @@ class ParticipantCellViewModelTests: XCTestCase {
             }.store(in: cancellable)
 
         let infoModel = ParticipantInfoModelBuilder.get(isMuted: isMuted)
-        sut.update(participantModel: infoModel, lifeCycleState: LifeCycleState())
+        sut.update(participantModel: infoModel)
 
         wait(for: [expectation], timeout: 1)
     }
@@ -208,7 +254,7 @@ class ParticipantCellViewModelTests: XCTestCase {
             }.store(in: cancellable)
 
         let infoModel = ParticipantInfoModelBuilder.get(isMuted: isMuted)
-        sut.update(participantModel: infoModel, lifeCycleState: LifeCycleState())
+        sut.update(participantModel: infoModel)
 
         wait(for: [expectation], timeout: 1)
     }
@@ -227,7 +273,7 @@ class ParticipantCellViewModelTests: XCTestCase {
 
         let infoModel = ParticipantInfoModelBuilder.get(videoStreamId: nil,
                                                         screenShareStreamId: expectedVideoStream)
-        sut.update(participantModel: infoModel, lifeCycleState: LifeCycleState())
+        sut.update(participantModel: infoModel)
 
         wait(for: [expectation], timeout: 1)
     }
@@ -245,7 +291,7 @@ class ParticipantCellViewModelTests: XCTestCase {
 
         let infoModel = ParticipantInfoModelBuilder.get(videoStreamId: "cameraVideoStreamId",
                                                         screenShareStreamId: expectedVideoStream)
-        sut.update(participantModel: infoModel, lifeCycleState: LifeCycleState())
+        sut.update(participantModel: infoModel)
 
         wait(for: [expectation], timeout: 1)
     }
@@ -263,7 +309,7 @@ class ParticipantCellViewModelTests: XCTestCase {
 
         let infoModel = ParticipantInfoModelBuilder.get(videoStreamId: expectedVideoStream,
                                                         screenShareStreamId: nil)
-        sut.update(participantModel: infoModel, lifeCycleState: LifeCycleState())
+        sut.update(participantModel: infoModel)
 
         wait(for: [expectation], timeout: 1)
     }
@@ -276,18 +322,20 @@ extension ParticipantCellViewModelTests {
                  screenShareStreamId: String? = nil,
                  displayName: String = "displayName",
                  isSpeaking: Bool = false,
-                 isMuted: Bool = true) -> ParticipantGridCellViewModel {
+                 isMuted: Bool = true,
+                 status: ParticipantStatus = .connected,
+                 callType: CompositeCallType = .groupCall) -> ParticipantGridCellViewModel {
         let infoModel = ParticipantInfoModelBuilder.get(participantIdentifier: participantIdentifier,
                                                         videoStreamId: videoStreamId,
                                                         screenShareStreamId: screenShareStreamId,
                                                         displayName: displayName,
                                                         isSpeaking: isSpeaking,
-                                                        isMuted: isMuted)
+                                                        isMuted: isMuted,
+                                                        status: status)
         return ParticipantGridCellViewModel(localizationProvider: LocalizationProviderMocking(),
                                             accessibilityProvider: AccessibilityProvider(),
                                             participantModel: infoModel,
-                                            lifeCycleState: LifeCycleState(),
-                                            isCameraEnabled: true)
+                                            isCameraEnabled: true,
+                                            callType: callType)
     }
-
 }

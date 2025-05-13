@@ -11,6 +11,14 @@ enum AccessibilityId: String {
             "AzureCommunicationUICalling.DemoView.StartExperience.AccessibilityID"
     case showExperienceAccessibilityID =
             "AzureCommunicationUICalling.DemoView.ShowExperience.AccessibilityID"
+    case registerPushAccessibilityID =
+            "AzureCommunicationUICalling.DemoView.RegisterPush.AccessibilityID"
+    case unregisterPushAccessibilityID =
+            "AzureCommunicationUICalling.DemoView.UnregisterPush.AccessibilityID"
+    case acceptCallAccessibilityID =
+            "AzureCommunicationUICalling.DemoView.AcceptCall.AccessibilityID"
+    case declineCallAccessibilityID =
+            "AzureCommunicationUICalling.DemoView.DeclineCall.AccessibilityID"
     case clearTokenTextFieldAccessibilityID =
             "AzureCommunicationUICalling.DemoView.ClearTokenTextField.AccessibilityID"
     case settingsButtonAccessibilityID =
@@ -34,4 +42,19 @@ enum AccessibilityId: String {
             "AzureCommunicationUICalling.SettingsView.useRelaunchOnDismissed.AccessibilityID"
     case toggleAudioOnlyModeAccessibilityID = "AzureCommunicationUICalling.SettingsView.AudioOnly.AccessibilityID"
     case userReportedIssueAccessibilityID = "AzureCommunicationUICalling.Launcher.UserFeedback"
+    case leaveCallConfirmationDisplayAccessibilityID =
+            "AzureCommunicationUICalling.SettingsView.leaveCallConfirmationDisplay.AccessibilityID"
+    case useEnableCalkitToggleToggleAccessibilityID =
+            "AzureCommunicationUICalling.SettingsView.enableCalkitToggle.AccessibilityID"
+    case useEnableRemoteHoldToggleToggleAccessibilityID =
+            "AzureCommunicationUICalling.SettingsView.enableRemoteHoldToggle.AccessibilityID"
+    case useEnableRemoteInfoToggleToggleAccessibilityID =
+            "AzureCommunicationUICalling.SettingsView.enableRemoteInfoToggle.AccessibilityID"
+
+    case setupScreenCameraButtonEnabledAccessibilityID =
+            "AzureCommunicationUICalling.SettingsView.setupScreenCameraButtonEnabled.AccessibilityID"
+
+    case setupScreenMicButtonEnabledAccessibilityID =
+            "AzureCommunicationUICalling.SettingsView.setupScreenMicButtonEnabled.AccessibilityID"
+
 }

@@ -5,6 +5,7 @@
 
 import Foundation
 import XCTest
+import AzureCommunicationCommon
 @testable import AzureCommunicationUICalling
 
 class LocalVideoViewModelTests: XCTestCase {
@@ -66,7 +67,11 @@ extension LocalVideoViewModelTests {
             storeFactory.store.dispatch(action: action)
         }
         let logger = LoggerMocking()
-        let factoryMocking = CompositeViewModelFactoryMocking(logger: logger, store: storeFactory.store)
+        let factoryMocking = CompositeViewModelFactoryMocking(logger: logger, store: storeFactory.store,
+                                                              avatarManager: AvatarViewManagerMocking(store: storeFactory.store,
+                                                                                                      localParticipantId: createCommunicationIdentifier(fromRawId: ""),
+                                                                                                      localParticipantViewData: nil),
+                                                              updatableOptionsManager: UpdatableOptionsManager(store: storeFactory.store, setupScreenOptions: nil, callScreenOptions: nil))
 
         return LocalVideoViewModel(compositeViewModelFactory: factoryMocking,
                                                   logger: logger,

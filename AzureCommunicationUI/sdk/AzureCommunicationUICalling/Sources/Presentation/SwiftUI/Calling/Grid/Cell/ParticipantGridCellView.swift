@@ -13,14 +13,13 @@ struct ParticipantGridCellView: View {
     let avatarViewManager: AvatarViewManagerProtocol
     @State var avatarImage: UIImage?
     @State var displayedVideoStreamId: String?
-    @State var isVideoChanging: Bool = false
+    @State var isVideoChanging = false
     let avatarSize: CGFloat = 56
 
     var body: some View {
         Group {
             GeometryReader { geometry in
-                if !viewModel.isInBackground,
-                   let videoStreamId = displayedVideoStreamId,
+                if let videoStreamId = displayedVideoStreamId,
                    let rendererViewInfo = getRendererViewInfo(for: videoStreamId) {
                     let zoomable = viewModel.videoViewModel?.videoStreamType == .screenSharing
                     ParticipantGridCellVideoView(videoRendererViewInfo: rendererViewInfo,
@@ -28,7 +27,8 @@ struct ParticipantGridCellView: View {
                                                  zoomable: zoomable,
                                                  isSpeaking: $viewModel.isSpeaking,
                                                  displayName: $viewModel.displayName,
-                                                 isMuted: $viewModel.isMuted)
+                                                 isMuted: $viewModel.isMuted,
+                                                 isTypingRtt: $viewModel.isTypingRtt)
                 } else {
                     avatarView
                         .frame(width: geometry.size.width,
@@ -82,18 +82,16 @@ struct ParticipantGridCellView: View {
 
     var avatarView: some View {
         return VStack(alignment: .center, spacing: 5) {
-            CompositeAvatar(displayName: $viewModel.displayName,
+            CompositeAvatar(displayName: $viewModel.avatarDisplayName,
                             avatarImage: $avatarImage,
-                            isSpeaking: viewModel.isSpeaking && !viewModel.isMuted)
+                            isSpeaking: (viewModel.isSpeaking && !viewModel.isMuted) || viewModel.isTypingRtt)
             .frame(width: avatarSize, height: avatarSize)
-            .opacity(viewModel.isHold ? 0.6 : 1)
             Spacer().frame(height: 10)
             ParticipantTitleView(displayName: $viewModel.displayName,
                                  isMuted: $viewModel.isMuted,
                                  isHold: $viewModel.isHold,
                                  titleFont: Fonts.caption1.font,
                                  mutedIconSize: 16)
-            .opacity(viewModel.isHold ? 0.6 : 1)
             if viewModel.isHold {
                 Text(viewModel.getOnHoldString())
                     .font(Fonts.caption1.font)
@@ -111,6 +109,7 @@ struct ParticipantTitleView: View {
     @Binding var isMuted: Bool
     @Binding var isHold: Bool
     @Environment(\.sizeCategory) var sizeCategory: ContentSizeCategory
+    @AccessibilityFocusState private var isFocused: Bool // Add focus state
     let titleFont: Font
     let mutedIconSize: CGFloat
     private var isEmpty: Bool {
@@ -148,6 +147,12 @@ struct ParticipantTitleView: View {
             }
         })
         .padding(.horizontal, isEmpty ? 0 : 4)
-        .animation(.default)
+        .animation(.default, value: true)
+        .accessibilityFocused($isFocused) // Apply accessibility focus
+        .onChange(of: isHold) { newValue in
+            if newValue {
+                isFocused = true // Request focus when put on hold
+            }
+        }
     }
 }

@@ -10,21 +10,25 @@
 "AzureCommunicationUICalling.AudioDevice.DeviceDrawer.iPad"="iPad";
 "AzureCommunicationUICalling.AudioDevice.DeviceDrawer.Headphones"="ヘッドフォン";
 "AzureCommunicationUICalling.AudioDevice.DeviceDrawer.Bluetooth"="Bluetooth";
+"AzureCommunicationUICalling.AudioDevice.Drawer.Selected.AccessibilityLabel"= "%@ selected";
 
 /* SetupView */
 "AzureCommunicationUICalling.SetupView.Title"="セットアップ";
 "AzureCommunicationUICalling.SetupView.Button.Dismiss.AccessibilityLabel"="戻る";
 "AzureCommunicationUICalling.SetupView.Button.JoinCall"="通話に参加";
+"AzureCommunicationUICalling.SetupView.Button.StartCall"="Start call";
 "AzureCommunicationUICalling.SetupView.Button.JoiningCall"="通話に参加しています...";
+"AzureCommunicationUICalling.SetupView.Button.StartingCall"="Starting call…";
 "AzureCommunicationUICalling.SetupView.Button.JoinCall.DisableState.AccessibilityLabel" = "通話の参加が無効です";
+"AzureCommunicationUICalling.SetupView.Button.StartCall.DisableState.AccessibilityLabel" = "Start Call Disabled";
 "AzureCommunicationUICalling.SetupView.Button.VideoOff"="ビデオ オフ";
-"AzureCommunicationUICalling.SetupView.Button.VideoOff.AccessibilityLabel"="ビデオ オン";
+"AzureCommunicationUICalling.SetupView.Button.VideoOff.AccessibilityLabel"="ビデオ オフ";
 "AzureCommunicationUICalling.SetupView.Button.VideoOn"="ビデオ オン";
-"AzureCommunicationUICalling.SetupView.Button.VideoOn.AccessibilityLabel"="ビデオ オフ";
+"AzureCommunicationUICalling.SetupView.Button.VideoOn.AccessibilityLabel"="ビデオ オン";
 "AzureCommunicationUICalling.SetupView.Button.MicOff"="マイク オフ";
-"AzureCommunicationUICalling.SetupView.Button.MicOff.AccessibilityLabel"="マイク オン";
+"AzureCommunicationUICalling.SetupView.Button.MicOff.AccessibilityLabel"="マイク オフ";
 "AzureCommunicationUICalling.SetupView.Button.MicOn"="マイク オン";
-"AzureCommunicationUICalling.SetupView.Button.MicOn.AccessibilityLabel"="マイク オフ";
+"AzureCommunicationUICalling.SetupView.Button.MicOn.AccessibilityLabel"="マイク オン";
 "AzureCommunicationUICalling.SetupView.Button.Device"="デバイス";
 "AzureCommunicationUICalling.SetupView.Button.Device.AccessibilityLabel"="オーディオ デバイスを選択";
 "AzureCommunicationUICalling.SetupView.Button.GoToSettings"="設定に移動";
@@ -66,6 +70,8 @@
 "AzureCommunicationUICalling.CallingView.ParticipantDrawer.IsUnmuted"="ミュート解除";
 "AzureCommunicationUICalling.CallingView.ParticipantDrawer.IsSpeaking"="話し中";
 "AzureCommunicationUICalling.CallingView.ParticipantDrawer.OnHold"="保留中";
+"AzureCommunicationUICalling.CallingView.ParticipantDrawer.OnHold.AccessibilityLabel"="%@ が保留中です";
+"AzureCommunicationUICalling.CallingView.ParticipantDrawer.Resume.AccessibilityLabel"="%@ が通話を再開しました";
 "AzureCommunicationUICalling.CallingView.ParticipantDrawer.LobbyAction"="タップして許可または拒否";
 
 "AzureCommunicationUICalling.CallingView.ParticipantDrawer.WaitingInLobby"="ロビーで待機中 (%d)";
@@ -75,6 +81,7 @@
 "AzureCommunicationUICalling.CallingView.ParticipantDrawer.Confirm.Title.AdmitParticipant"="%@ を許可しますか?";
 "AzureCommunicationUICalling.CallingView.ParticipantDrawer.Confirm.Admit"="参加許可";
 "AzureCommunicationUICalling.CallingView.ParticipantDrawer.Confirm.Decline"="拒否";
+"AzureCommunicationUICalling.CallingView.ParticipantDrawer.PlusMore"="その他 %@ 件";
 
 "AzureCommunicationUICalling.CallingView.SwitchCamera.Front"="バック カメラに切り替える";
 "AzureCommunicationUICalling.CallingView.SwitchCamera.Back"="フロント カメラに切り替える";
@@ -94,6 +101,8 @@
 
 "AzureCommunicationUICalling.CallingView.Button.More.AccessibilityLabel" = "その他";
 "AzureCommunicationUICalling.CallingView.MoreCallOptionsList.ShareDiagnosticsInfo" = "診断情報を共有する";
+"AzureCommunicationUICalling.CallingView.GridView.Calling"="Calling...";
+
 
 /* ComplianceBanner title */
 "AzureCommunicationUICalling.CallingView.BannerTitle.RecordingAndTranscribingStarted"="レコーディングとトランスクリプトが開始されました。";
@@ -122,7 +131,7 @@
 "AzureCommunicationUICalling.SnackBar.Button.Dismiss.AccessibilityLabel"="バナーを閉じる";
 "AzureCommunicationUICalling.SnackBar.Button.Dismiss.AccessibilityHint"="この通知を閉じます";
 "AzureCommunicationUICalling.SnackBar.Text.ErrorCallJoin"="エラーが発生したため、通話に参加できません。";
-"AzureCommunicationUICalling.SnackBar.Text.ErrorCallEnd"="エラーが発生したため、通話から削除されました。";
+"AzureCommunicationUICalling.SnackBar.Text.ErrorCallEnd"="エラーが発生したか、接続が失われたため、通話から削除されました。もう一度通話に参加してみてください。";
 "AzureCommunicationUICalling.SnackBar.Text.ErrorCallEvicted"="通話から削除されました。";
 "AzureCommunicationUICalling.SnackBar.Text.Error"="エラーが発生しました。";
 "AzureCommunicationUICalling.SnackBar.Text.ErrorResumeCallTitle"="通話を再開できません";
@@ -158,3 +167,33 @@
 "AzureCommunicationUICalling.Attach.Screenshot"="スクリーンショットを添付する";
 "AzureCommunicationUICalling.ReportAProblem.Text"="問題の報告";
 "AzureCommunicationUICalling.SendFeedback.Text"="送信";
+
+"AzureCommunicationUICalling.Captions.Text.LiveCaptions"="キャプション";
+"AzureCommunicationUICalling.Captions.Text.LiveCaptionsAndRTT"="キャプションと RTT";
+"AzureCommunicationUICalling.Captions.Text.SpokenLanguage"="音声言語";
+"AzureCommunicationUICalling.Captions.Text.CaptionLanguage"="キャプション言語";
+"AzureCommunicationUICalling.Captions.Text.StartingCaptions"="キャプションを開始しています...";
+"AzureCommunicationUICalling.Captions.ActionError.StartCaptions"="キャプションを開始できません";
+"AzureCommunicationUICalling.Captions.ActionError.StopCaptions"="キャプションを停止できません";
+"AzureCommunicationUICalling.Captions.ActionError.ChangeCaptionsLanguage"="キャプションの言語を変更できません";
+"AzureCommunicationUICalling.Captions.ActionError.ChangeSpokenLanguage"="話し言葉を変更できません";
+
+"AzureCommunicationUICalling.RTT.Title.RTT"="リアルタイム テキスト";
+"AzureCommunicationUICalling.RTT.Alert.Title"="RTT を有効にしますか?";
+"AzureCommunicationUICalling.RTT.Alert.Message"="リアルタイム テキスト (RTT) は、通話のすべてのユーザーに対してオンになります。";
+"AzureCommunicationUICalling.RTT.Alert.TurnOn"="有効にする";
+"AzureCommunicationUICalling.RTT.Alert.Dismiss"="閉じる";
+"AzureCommunicationUICalling.RTT.TurnOn.Text"="この呼び出しの RTT を有効にする";
+"AzureCommunicationUICalling.RTT.WarningMessage.Text"="リアルタイム テキスト (RTT) は、この会議の全期間で有効になっており、すべての参加者に表示されます。";
+"AzureCommunicationUICalling.RTT.WarningMessage.LearnMore"="詳細情報";
+"AzureCommunicationUICalling.RTT.Text.RTTTyping"="RTT 入力";
+"AzureCommunicationUICalling.RTT.RTTLable"="RTT";
+"AzureCommunicationUICalling.RTT.TextBox.Hint"="リアルタイムにメッセージを入力";
+
+"AzureCommunicationUICalling.CallingView.ParticipantMenu.Mute"="ミュート";
+"AzureCommunicationUICalling.CallingView.ParticipantMenu.Mute.AccessibilityLabel"="参加者メニューをミュートにします。";
+"AzureCommunicationUICalling.CallingView.ParticipantMenu.Remove"="通話から削除";
+"AzureCommunicationUICalling.CallingView.ParticipantMenu.Remove.AccessibilityLabel"="通話メニューから参加者を削除します。";
+"AzureCommunicationUICalling.CallingView.Toast.FeaturesLost"="通話の設定が更新されました。一部の機能は利用できない可能性があります。";
+"AzureCommunicationUICalling.CallingView.Toast.FeaturesGained"="通話の設定が更新されました。一部の追加アクションが利用できる可能性があります。";
+

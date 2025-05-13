@@ -43,6 +43,7 @@ class AvatarManagerTests: XCTestCase {
         let participant = ParticipantInfoModel(
             displayName: "Participant 1",
             isSpeaking: false,
+            isTypingRtt: false,
             isMuted: false,
             isRemoteUser: true,
             userIdentifier: "testUserIdentifier1",
@@ -93,12 +94,14 @@ extension AvatarManagerTests {
         let mockParticipantViewData = ParticipantViewData(avatar: image, displayName: "")
         let mockLocalOptions = LocalOptions(participantViewData: mockParticipantViewData)
         return AvatarViewManager(store: mockStoreFactory.store,
+                                 localParticipantId: createCommunicationIdentifier(fromRawId: ""),
                                  localParticipantViewData: mockLocalOptions.participantViewData)
 
     }
 
     private func makeSUT() -> AvatarViewManager {
-        return AvatarViewManager(store: mockStoreFactory.store,
+       return AvatarViewManager(store: mockStoreFactory.store,
+                                 localParticipantId: createCommunicationIdentifier(fromRawId: ""),
                                  localParticipantViewData: nil)
     }
 }

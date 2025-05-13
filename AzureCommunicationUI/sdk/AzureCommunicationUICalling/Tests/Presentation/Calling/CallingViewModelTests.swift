@@ -5,6 +5,8 @@
 
 import Foundation
 import XCTest
+import AzureCommunicationCommon
+
 @testable import AzureCommunicationUICalling
 
 class CallingViewModelTests: XCTestCase {
@@ -14,6 +16,8 @@ class CallingViewModelTests: XCTestCase {
     var logger: LoggerMocking!
     var localizationProvider: LocalizationProviderMocking!
     var accessibilityProvider: AccessibilityProviderMocking!
+    var capabilitiesManager: CapabilitiesManager!
+    var rendererViewManager: RendererViewManager!
 
     private let timeout: TimeInterval = 10.0
 
@@ -28,7 +32,14 @@ class CallingViewModelTests: XCTestCase {
         factoryMocking = CompositeViewModelFactoryMocking(logger: logger,
                                                           store: storeFactory.store,
                                                           accessibilityProvider: accessibilityProvider,
-                                                          localizationProvider: localizationProvider)
+                                                          localizationProvider: localizationProvider,
+                                                          avatarManager: AvatarViewManagerMocking(
+                                                            store: storeFactory.store,
+                                                            localParticipantId: createCommunicationIdentifier(fromRawId: ""),
+                                                          localParticipantViewData: nil),
+                                                          updatableOptionsManager: UpdatableOptionsManager(store: storeFactory.store, setupScreenOptions: nil, callScreenOptions: nil))
+        capabilitiesManager = CapabilitiesManager(callType: .groupCall)
+        rendererViewManager = VideoViewManager(callingSDKWrapper: CallingSDKWrapperMocking(), logger: logger)
     }
 
     override func tearDown() {
@@ -39,23 +50,7 @@ class CallingViewModelTests: XCTestCase {
         accessibilityProvider = nil
         logger = nil
         factoryMocking = nil
-    }
-
-    func test_callingViewModel_endCall_when_confirmLeaveOverlayIsDisplayed_shouldEndCall() {
-        let sut = makeSUT()
-        let expectation = XCTestExpectation(description: "Verify Call End is Requested")
-        storeFactory.store.$state
-            .dropFirst(1)
-            .sink { [weak storeFactory] _ in
-                XCTAssertEqual(storeFactory?.actions.count, 3)
-                XCTAssertTrue(storeFactory?.actions.first != Action.callingAction(.callEndRequested))
-
-                expectation.fulfill()
-            }.store(in: cancellable)
-        sut.isConfirmLeaveListDisplayed = true
-        sut.endCall()
-        XCTAssertFalse(sut.isConfirmLeaveListDisplayed)
-        wait(for: [expectation], timeout: timeout)
+        rendererViewManager = nil
     }
 
     func test_callingViewModel_update_when_callStatusIsInLobby_then_isLobbyOverlayDisplayed_shouldBecomeTrue() {
@@ -76,7 +71,7 @@ class CallingViewModelTests: XCTestCase {
         let sut = makeSUT()
         let originalState = sut.lobbyOverlayViewModel.isDisplayed
         let appState = AppState(callingState: CallingState(status: .inLobby),
-                                lifeCycleState: LifeCycleState(currentStatus: .background))
+                                visibilityState: VisibilityState(currentStatus: .hidden))
         sut.receive(appState)
         XCTAssertEqual(sut.lobbyOverlayViewModel.isDisplayed, originalState)
     }
@@ -87,6 +82,28 @@ class CallingViewModelTests: XCTestCase {
         let remoteParticipantState = RemoteParticipantsState(participantInfoList: [mockingParticipantInfoModel],
                                                              lastUpdateTimeStamp: Date())
         let appState = AppState(callingState: CallingState(status: .connected),
+                                remoteParticipantsState: remoteParticipantState)
+        sut.receive(appState)
+        XCTAssertEqual(sut.isParticipantGridDisplayed, true)
+    }
+
+    func test_callingViewModel_update_when_callStatusIsRinging_remoteParticipantNotEmpty_then_isParticipantGridDisplayed_shouldBecomeTrue() {
+        let sut = makeSUT(callType: .oneToNOutgoing)
+        let mockingParticipantInfoModel = ParticipantInfoModelBuilder.get()
+        let remoteParticipantState = RemoteParticipantsState(participantInfoList: [mockingParticipantInfoModel],
+                                                             lastUpdateTimeStamp: Date())
+        let appState = AppState(callingState: CallingState(status: .ringing),
+                                remoteParticipantsState: remoteParticipantState)
+        sut.receive(appState)
+        XCTAssertEqual(sut.isParticipantGridDisplayed, true)
+    }
+
+    func test_callingViewModel_update_when_callStatusIsConnecting_remoteParticipantNotEmpty_then_isParticipantGridDisplayed_shouldBecomeTrue() {
+        let sut = makeSUT(callType: .oneToNOutgoing)
+        let mockingParticipantInfoModel = ParticipantInfoModelBuilder.get()
+        let remoteParticipantState = RemoteParticipantsState(participantInfoList: [mockingParticipantInfoModel],
+                                                             lastUpdateTimeStamp: Date())
+        let appState = AppState(callingState: CallingState(status: .connecting),
                                 remoteParticipantsState: remoteParticipantState)
         sut.receive(appState)
         XCTAssertEqual(sut.isParticipantGridDisplayed, true)
@@ -117,7 +134,7 @@ class CallingViewModelTests: XCTestCase {
         let expectation = XCTestExpectation(description: "ControlBarViewModel is updated")
         let appState = AppState(permissionState: PermissionState(audioPermission: .granted),
                                 localUserState: LocalUserState(displayName: "DisplayName"))
-        let updateControlBarViewModel: (LocalUserState, PermissionState, VisibilityState) -> Void = { userState, permissionState, _ in
+        let updateControlBarViewModel: (LocalUserState, PermissionState, VisibilityState, ButtonViewDataState) -> Void = { userState, permissionState, _, _ in
             XCTAssertEqual(appState.localUserState.displayName, userState.displayName)
             XCTAssertEqual(appState.permissionState.audioPermission, permissionState.audioPermission)
             expectation.fulfill()
@@ -126,9 +143,12 @@ class CallingViewModelTests: XCTestCase {
                                                                         logger: logger,
                                                                         localizationProvider: localizationProvider,
                                                                         dispatchAction: storeFactory.store.dispatch,
-                                                                        endCallConfirm: {},
+                                                                        onEndCallTapped: {},
                                                                         localUserState: storeFactory.store.state.localUserState,
-                                                                        updateState: updateControlBarViewModel)
+                                                                        updateState: updateControlBarViewModel,
+                                                                        capabilitiesManager: capabilitiesManager,
+                                                                        accessibilityProvider: accessibilityProvider,
+                                                                        buttonViewDataState: storeFactory.store.state.buttonViewDataState)
         let sut = makeSUT()
         sut.receive(appState)
         wait(for: [expectation], timeout: timeout)
@@ -193,7 +213,8 @@ class CallingViewModelTests: XCTestCase {
                                                                                   compositeViewModelFactory: factoryMocking,
                                                                                   localizationProvider: localizationProvider,
                                                                                   accessibilityProvider: accessibilityProvider,
-                                                                                  updateState: updateParticipantGridViewModel)
+                                                                                  updateState: updateParticipantGridViewModel,
+                                                                                  rendererViewManager: rendererViewManager)
 
         let sut = makeSUT()
         sut.receive(appState)
@@ -203,11 +224,12 @@ class CallingViewModelTests: XCTestCase {
     func test_callingViewModel_receive_when_statusUpdated_then_bannerViewModelUpdated() {
         let expectation = XCTestExpectation(description: "BannerViewModel is updated")
         let appState = AppState(callingState: CallingState(status: .connected))
-        let updateBannerViewModel: (CallingState) -> Void = { callingState in
+        let updateBannerViewModel: (CallingState, VisibilityState) -> Void = { callingState, _ in
             XCTAssertEqual(appState.callingState.status, callingState.status)
             expectation.fulfill()
         }
         factoryMocking.bannerViewModel = BannerViewModelMocking(compositeViewModelFactory: factoryMocking,
+                                                                dispatchAction: storeFactory.store.dispatch,
                                                                 updateState: updateBannerViewModel)
         let sut = makeSUT()
         sut.receive(appState)
@@ -252,7 +274,8 @@ class CallingViewModelTests: XCTestCase {
                                                                               compositeViewModelFactory: factoryMocking,
                                                                               logger: logger,
                                                                               accessibilityProvider: accessibilityProvider,
-                                                                              audioSessionManager: AudioSessionManager(store: storeFactory.store, logger: logger),
+                                                                              audioSessionManager: AudioSessionManager(store: storeFactory.store, logger: logger,
+                                                                                                                       isCallKitEnabled: false),
                                                                               resumeAction: {},
                                                                               updateState: updateOnHoldOverlayViewModel)
 
@@ -279,13 +302,17 @@ class CallingViewModelTests: XCTestCase {
 }
 
 extension CallingViewModelTests {
-    func makeSUT() -> CallingViewModel {
+    func makeSUT(callType: CompositeCallType = .groupCall) -> CallingViewModel {
         return CallingViewModel(compositeViewModelFactory: factoryMocking,
-                                logger: logger,
                                 store: storeFactory.store,
                                 localizationProvider: LocalizationProvider(logger: logger),
                                 accessibilityProvider: accessibilityProvider,
                                 isIpadInterface: false,
-                                allowLocalCameraPreview: true)
+                                allowLocalCameraPreview: true,
+                                callType: callType,
+                                captionsOptions: CaptionsOptions(),
+                                capabilitiesManager: capabilitiesManager,
+                                callScreenOptions: CallScreenOptions(),
+                                rendererViewManager: rendererViewManager)
     }
 }

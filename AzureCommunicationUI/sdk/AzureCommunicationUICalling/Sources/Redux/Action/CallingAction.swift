@@ -9,7 +9,9 @@ enum CallingAction: Equatable {
     case callStartRequested
     case callEndRequested
     case callEnded
-    case stateUpdated(status: CallingStatus)
+    case stateUpdated(status: CallingStatus,
+                      callEndReasonCode: Int?,
+                      callEndReasonSubCode: Int?)
 
     case callIdUpdated(callId: String)
 
@@ -18,9 +20,16 @@ enum CallingAction: Equatable {
 
     case transcriptionStateUpdated(isTranscriptionActive: Bool)
 
+    case recordingUpdated(recordingStatus: RecordingStatus)
+    case transcriptionUpdated(transcriptionStatus: RecordingStatus)
+    case dismissRecordingTranscriptionBannedUpdated(isDismissed: Bool)
+
     case resumeRequested
     case holdRequested
     case requestFailed
+    /* <CALL_START_TIME>
+    case callStartTimeUpdated(startTime: Date)
+    </CALL_START_TIME> */
 }
 
 enum ErrorAction: Equatable {
