@@ -1,0 +1,16 @@
+{
+  "indentation": {
+    "spaces": 4
+  },
+  "lineLength": 120,
+  "rules": {
+    "wrapArguments": {
+      "beforeFirstArgument": false,
+      "lineBreakBeforeEachArgument": false
+    },
+    "wrapCollections": {
+      "beforeFirstElement": false,
+      "lineBreakBeforeEachElement": false
+    }
+  }
+}

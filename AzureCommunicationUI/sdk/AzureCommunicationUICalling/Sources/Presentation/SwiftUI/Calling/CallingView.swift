@@ -8,25 +8,84 @@ import SwiftUI
 // swiftlint:disable type_body_length
 // swiftlint:disable file_length
 struct CallingView: View {
-    enum InfoHeaderViewConstants {
-        static let horizontalPadding: CGFloat = 8.0
-        static let maxWidth: CGFloat = 380.0
-        static let height: CGFloat = 46.0
-    }
+  enum InfoHeaderViewConstants {
+    static let horizontalPadding: CGFloat = 8.0
+    static let maxWidth: CGFloat = 380.0
+    static let height: CGFloat = 46.0
+  }
 
-    enum ErrorInfoConstants {
-        static let controlBarHeight: CGFloat = 92
-        static let horizontalPadding: CGFloat = 8
+  enum ErrorInfoConstants {
+    static let controlBarHeight: CGFloat = 92
+    static let horizontalPadding: CGFloat = 8
+  }
+
+  enum Constants {
+    static let topAlertAreaViewTopPaddin: CGFloat = 10.0
+  }
+
+  enum DiagnosticToastInfoConstants {
+    static let bottomPaddingPortrait: CGFloat = 5
+    static let bottomPaddingLandscape: CGFloat = 16
+  }
+
+  @ObservedObject var viewModel: CallingViewModel
+  let avatarManager: AvatarViewManagerProtocol
+  let viewManager: VideoViewManager
+
+  @Environment(\.horizontalSizeClass) var widthSizeClass: UserInterfaceSizeClass?
+  @Environment(\.verticalSizeClass) var heightSizeClass: UserInterfaceSizeClass?
+
+  @State private var orientation: UIDeviceOrientation = UIDevice.current.orientation
+
+  var safeAreaIgnoreArea: Edge.Set {
+    return getSizeClass() != .iphoneLandscapeScreenSize ? [] : [.bottom]
+  }
+
+  var body: some View {
+    GeometryReader { geometry in
+      ZStack {
+        if getSizeClass() != .iphoneLandscapeScreenSize {
+          portraitCallingView
+        } else {
+          landscapeCallingView
+        }
+        errorInfoView
+      }
+      .frame(
+        width: geometry.size.width,
+        height: geometry.size.height
+      )
+      .modifier(
+        PopupModalView(
+          isPresented: viewModel.showingSupportForm,
+          alignment: .bottom
+        ) {
+          reportErrorView
+            .accessibilityElement(children: .contain)
+            .accessibilityAddTraits(.isModal)
+        })
     }
+    .environment(\.screenSizeClass, getSizeClass())
+    .environment(\.appPhase, viewModel.appState)
+    .edgesIgnoringSafeArea(safeAreaIgnoreArea)
+    .onRotate { newOrientation in
+      updateChildViewIfNeededWith(newOrientation: newOrientation)
+    }.onAppear {
+      resetOrientation()
+    }
+  }
 
     enum Constants {
         static let topAlertAreaViewTopPadding: CGFloat = 10.0
     }
+  }
 
-    enum DiagnosticToastInfoConstants {
-        static let bottomPaddingPortrait: CGFloat = 5
-        static let bottomPaddingLandscape: CGFloat = 16
+  var landscapeCallingView: some View {
+    HStack(alignment: .center, spacing: 0) {
+      containerView
+      ControlBarView(viewModel: viewModel.controlBarViewModel)
     }
+  }
 
     enum CaptionsInfoConstants {
         static let maxHeight: CGFloat = 115.0
@@ -369,7 +428,39 @@ struct CallingView: View {
             .padding(.top, Constants.topAlertAreaViewTopPadding)
             .accessibilityElement(children: .contain)
         }
+        .contentShape(Rectangle())
+        .animation(.linear(duration: 0.167))
+        .onTapGesture(perform: {
+          viewModel.infoHeaderViewModel.toggleDisplayInfoHeaderIfNeeded()
+        })
+        .modifier(
+          PopupModalView(isPresented: viewModel.lobbyOverlayViewModel.isDisplayed) {
+            OverlayView(viewModel: viewModel.lobbyOverlayViewModel)
+              .accessibilityElement(children: .contain)
+              .accessibilityHidden(!viewModel.lobbyOverlayViewModel.isDisplayed)
+          }
+        )
+        .modifier(
+          PopupModalView(
+            isPresented: viewModel.loadingOverlayViewModel.isDisplayed
+              && !viewModel.lobbyOverlayViewModel.isDisplayed
+          ) {
+            LoadingOverlayView(viewModel: viewModel.loadingOverlayViewModel)
+              .accessibilityElement(children: .contain)
+              .accessibilityHidden(!viewModel.loadingOverlayViewModel.isDisplayed)
+          }
+        )
+        .modifier(
+          PopupModalView(isPresented: viewModel.onHoldOverlayViewModel.isDisplayed) {
+            OverlayView(viewModel: viewModel.onHoldOverlayViewModel)
+              .accessibilityElement(children: .contain)
+              .accessibilityHidden(!viewModel.onHoldOverlayViewModel.isDisplayed)
+          }
+        )
+        .accessibilityElement(children: .contain)
+      }
     }
+  }
 
     var infoHeaderView: some View {
         InfoHeaderView(viewModel: viewModel.infoHeaderViewModel,
@@ -420,19 +511,16 @@ struct CallingView: View {
     var errorInfoView: some View {
         return VStack {
             Spacer()
-            ErrorInfoView(viewModel: viewModel.errorInfoViewModel)
-                .padding(EdgeInsets(top: 0,
-                                    leading: ErrorInfoConstants.horizontalPadding,
-                                    bottom: ErrorInfoConstants.controlBarHeight,
-                                    trailing: ErrorInfoConstants.horizontalPadding)
-                )
-                .accessibilityElement(children: .contain)
-                .accessibilityAddTraits(.isModal)
-        }
-    }
-
-    var bottomToastDiagnosticsView: some View {
-        VStack {
+          } else {
+            EmptyView()
+          }
+          infoHeaderView
+            .frame(width: infoHeaderViewWidth, alignment: .leading)
+            .padding(.leading, InfoHeaderViewConstants.horizontalPadding)
+          Spacer()
+        }.accessibilityElement(children: .contain)
+        HStack {
+          if isIpad {
             Spacer()
             BottomToastView(viewModel: viewModel.bottomToastViewModel)
                 .padding(
@@ -475,28 +563,44 @@ struct CallingView: View {
                     .accessibilityAddTraits(.isStaticText)
             }
             Spacer()
+          } else {
+            EmptyView()
+          }
+          lobbyActionErrorView
+            .frame(width: infoHeaderViewWidth, alignment: .leading)
+            .padding(.leading, InfoHeaderViewConstants.horizontalPadding)
+          Spacer()
         }
-    }
-    var reportErrorView: some View {
-        return Group {
-            SupportFormView(viewModel: viewModel.supportFormViewModel)
+        HStack {
+          if isIpad {
+            Spacer()
+          } else {
+            EmptyView()
+          }
+          topMessageBarDiagnosticsView
+            .frame(width: infoHeaderViewWidth, alignment: .leading)
+            .padding(.leading, InfoHeaderViewConstants.horizontalPadding)
+          Spacer()
         }
+      }
+      .padding(.top, Constants.topAlertAreaViewTopPaddin)
+      .accessibilityElement(children: .contain)
     }
 }
 // swiftlint:enable type_body_length
 
 extension CallingView {
-    private func getSizeClass() -> ScreenSizeClassType {
-        switch (widthSizeClass, heightSizeClass) {
-        case (.compact, .regular):
-            return .iphonePortraitScreenSize
-        case (.compact, .compact),
-             (.regular, .compact):
-            return .iphoneLandscapeScreenSize
-        default:
-            return .ipadScreenSize
-        }
+  private func getSizeClass() -> ScreenSizeClassType {
+    switch (widthSizeClass, heightSizeClass) {
+    case (.compact, .regular):
+      return .iphonePortraitScreenSize
+    case (.compact, .compact),
+      (.regular, .compact):
+      return .iphoneLandscapeScreenSize
+    default:
+      return .ipadScreenSize
     }
+  }
 
     private func updateChildViewIfNeededWith(newOrientation: UIDeviceOrientation) {
         let areAllOrientationsSupported = SupportedOrientationsPreferenceKey.defaultValue == .all
@@ -512,10 +616,25 @@ extension CallingView {
             }
         }
     }
-
-    private func resetOrientation() {
-        UIDevice.current.setValue(UIDevice.current.orientation.rawValue, forKey: "orientation")
+    let areAllOrientationsSupported = SupportedOrientationsPreferenceKey.defaultValue == .all
+    if newOrientation != orientation
+      && newOrientation != .unknown
+      && newOrientation != .faceDown
+      && newOrientation != .faceUp
+      && (areAllOrientationsSupported
+        || (!areAllOrientationsSupported
+          && newOrientation != .portraitUpsideDown))
+    {
+      orientation = newOrientation
+      if UIDevice.current.userInterfaceIdiom == .phone {
         UIViewController.attemptRotationToDeviceOrientation()
+      }
     }
+  }
+
+  private func resetOrientation() {
+    UIDevice.current.setValue(UIDevice.current.orientation.rawValue, forKey: "orientation")
+    UIViewController.attemptRotationToDeviceOrientation()
+  }
 }
 // swiftlint:enable file_length

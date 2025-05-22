@@ -323,19 +323,65 @@ internal class CallingViewModel: ObservableObject {
         bottomToastViewModel.update(toastNotificationState: state.toastNotificationState)
     }
 
-    private static func hasRemoteParticipants(_ participants: [ParticipantInfoModel]) -> Bool {
-        return participants.filter({ participant in
-            participant.status != .inLobby && participant.status != .disconnected
-        }).count > 0
+    guard
+      state.lifeCycleState.currentStatus == .foreground
+        || state.visibilityState.currentStatus != .visible
+    else {
+      return
+    }
+    showingSupportForm =
+      store.state.navigationState.supportFormVisible
+      && store.state.visibilityState.currentStatus == .visible
+
+    controlBarViewModel.update(
+      localUserState: state.localUserState,
+      permissionState: state.permissionState,
+      callingState: state.callingState,
+      visibilityState: state.visibilityState)
+    infoHeaderViewModel.update(
+      localUserState: state.localUserState,
+      remoteParticipantsState: state.remoteParticipantsState,
+      callingState: state.callingState,
+      visibilityState: state.visibilityState)
+    localVideoViewModel.update(
+      localUserState: state.localUserState,
+      visibilityState: state.visibilityState)
+    lobbyWaitingHeaderViewModel.update(
+      localUserState: state.localUserState,
+      remoteParticipantsState: state.remoteParticipantsState,
+      callingState: state.callingState,
+      visibilityState: state.visibilityState)
+    lobbyActionErrorViewModel.update(
+      localUserState: state.localUserState,
+      remoteParticipantsState: state.remoteParticipantsState,
+      callingState: state.callingState)
+    participantGridsViewModel.update(
+      callingState: state.callingState,
+      remoteParticipantsState: state.remoteParticipantsState,
+      visibilityState: state.visibilityState, lifeCycleState: state.lifeCycleState)
+    bannerViewModel.update(callingState: state.callingState)
+    lobbyOverlayViewModel.update(callingStatus: state.callingState.status)
+    onHoldOverlayViewModel.update(
+      callingStatus: state.callingState.status,
+      audioSessionStatus: state.audioSessionState.status)
+
+    let newIsCallConnected = state.callingState.status == .connected
+    let shouldParticipantGridDisplayed =
+      newIsCallConnected
+      && CallingViewModel.hasRemoteParticipants(state.remoteParticipantsState.participantInfoList)
+    if shouldParticipantGridDisplayed != isParticipantGridDisplayed {
+      isParticipantGridDisplayed = shouldParticipantGridDisplayed
     }
 
-    private func updateIsLocalCameraOn(with state: AppState) {
-        let isLocalCameraOn = state.localUserState.cameraState.operation == .on
-        let displayName = state.localUserState.displayName ?? ""
-        let isLocalUserInfoNotEmpty = isLocalCameraOn || !displayName.isEmpty
-        isVideoGridViewAccessibilityAvailable = !lobbyOverlayViewModel.isDisplayed
-        && !onHoldOverlayViewModel.isDisplayed
-        && (isLocalUserInfoNotEmpty || isParticipantGridDisplayed)
+    if callHasConnected != newIsCallConnected && newIsCallConnected {
+      DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { [weak self] in
+        guard let self = self else {
+          return
+        }
+        self.accessibilityProvider.postQueuedAnnouncement(
+          self.localizationProvider.getLocalizedString(.joinedCallAccessibilityLabel))
+      }
+      callHasConnected = newIsCallConnected
     }
 
     private static func isOutgoingCallDialingInProgress(callType: CompositeCallType,

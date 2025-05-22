@@ -25,14 +25,15 @@ extension Store where State == AppState, Action == AzureCommunicationUICalling.A
         let cameraState = startWithCameraOn
         ?? false ? DefaultUserState.CameraState.on : DefaultUserState.CameraState.off
 
-        let audioState = startWithMicrophoneOn
+    let audioState =
+      startWithMicrophoneOn
         ?? false ? DefaultUserState.AudioState.on : DefaultUserState.AudioState.off
 
-        let defaultUserState = DefaultUserState(
-            cameraState: cameraState,
-            audioState: audioState)
+    let defaultUserState = DefaultUserState(
+      cameraState: cameraState,
+      audioState: audioState)
 
-        let localUserState = LocalUserState(displayName: displayName)
+    let localUserState = LocalUserState(displayName: displayName)
 
         let callingState = skipSetupScreen ?? false ?
                 CallingState(operationStatus: .skipSetupRequested) : CallingState()
@@ -82,5 +83,12 @@ extension Store where State == AppState, Action == AzureCommunicationUICalling.A
                             defaultUserState: defaultUserState,
                             buttonViewDataState: buttonViewDataState)
         )
-    }
+      ],
+      state: AppState(
+        callingState: callingState,
+        localUserState: localUserState,
+        navigationState: navigationState,
+        defaultUserState: defaultUserState)
+    )
+  }
 }

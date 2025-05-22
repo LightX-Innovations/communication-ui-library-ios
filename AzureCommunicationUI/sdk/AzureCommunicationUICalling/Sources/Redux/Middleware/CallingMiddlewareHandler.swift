@@ -147,7 +147,6 @@ class CallingMiddlewareHandler: CallingMiddlewareHandling {
                 handle(error: error, errorType: .callJoinFailed, dispatch: dispatch)
             }
         }
-    }
 
     func startCall(state: AppState, dispatch: @escaping ActionDispatch) -> Task<Void, Never> {
         Task {
@@ -162,51 +161,134 @@ class CallingMiddlewareHandler: CallingMiddlewareHandling {
                 handle(error: error, errorType: .callJoinFailed, dispatch: dispatch)
             }
         }
+      } catch {
+        self.logger.error("Failed to setup call with error: \(error)")
+        handle(error: error, errorType: .callJoinFailed, dispatch: dispatch)
+      }
     }
+  }
 
-    func endCall(state: AppState, dispatch: @escaping ActionDispatch) -> Task<Void, Never> {
-        Task {
-            do {
-                try await callingService.endCall()
-                dispatch(.callingAction(.callEnded))
-            } catch {
-                handle(error: error, errorType: .callEndFailed, dispatch: dispatch)
-                dispatch(.callingAction(.requestFailed))
-            }
+  func startCall(state: AppState, dispatch: @escaping ActionDispatch) -> Task<Void, Never> {
+    Task {
+      do {
+        try await callingService.startCall(
+          isCameraPreferred: state.localUserState.cameraState.operation == .on,
+          isAudioPreferred: state.localUserState.audioState.operation == .on
+        )
+        subscription(dispatch: dispatch)
+      } catch {
+        self.logger.error("Failed to start call with error: \(error)")
+        handle(error: error, errorType: .callJoinFailed, dispatch: dispatch)
+      }
+    }
+  }
+
+  func endCall(state: AppState, dispatch: @escaping ActionDispatch) -> Task<Void, Never> {
+    Task {
+      do {
+        try await callingService.endCall()
+        dispatch(.callingAction(.callEnded))
+      } catch {
+        handle(error: error, errorType: .callEndFailed, dispatch: dispatch)
+        dispatch(.callingAction(.requestFailed))
+      }
+    }
+  }
+
+  func holdCall(state: AppState, dispatch: @escaping ActionDispatch) -> Task<Void, Never> {
+    Task {
+      guard state.callingState.status == .connected else {
+        return
+      }
+
+      do {
+        try await callingService.holdCall()
+        await requestCameraPause(state: state, dispatch: dispatch).value
+      } catch {
+        handle(error: error, errorType: .callHoldFailed, dispatch: dispatch)
+      }
+    }
+  }
+
+  func resumeCall(state: AppState, dispatch: @escaping ActionDispatch) -> Task<Void, Never> {
+    Task {
+      guard state.callingState.status == .localHold else {
+        return
+      }
+
+      do {
+        try await callingService.resumeCall()
+        if state.localUserState.cameraState.operation == .paused {
+          await requestCameraOn(state: state, dispatch: dispatch).value
         }
+      } catch {
+        handle(error: error, errorType: .callResumeFailed, dispatch: dispatch)
+      }
     }
+  }
 
-    func holdCall(state: AppState, dispatch: @escaping ActionDispatch) -> Task<Void, Never> {
-        Task {
-            guard state.callingState.status == .connected else {
-                return
-            }
+  func enterBackground(state: AppState, dispatch: @escaping ActionDispatch) -> Task<Void, Never> {
+    Task {
+      await requestCameraPause(state: state, dispatch: dispatch).value
+    }
+  }
 
-            do {
-                try await callingService.holdCall()
-                await requestCameraPause(state: state, dispatch: dispatch).value
-            } catch {
-                handle(error: error, errorType: .callHoldFailed, dispatch: dispatch)
-            }
+  func enterForeground(state: AppState, dispatch: @escaping ActionDispatch) -> Task<Void, Never> {
+    Task {
+      guard state.lifeCycleState.currentStatus == .background,
+        state.callingState.status == .connected,
+        state.localUserState.cameraState.operation == .paused
+      else {
+        return
+      }
+      await requestCameraOn(state: state, dispatch: dispatch).value
+    }
+  }
+
+  func willTerminate(state: AppState, dispatch: @escaping ActionDispatch) -> Task<Void, Never> {
+    Task {
+      guard state.callingState.status == .connected else {
+        return
+      }
+      dispatch(.callingAction(.callEndRequested))
+    }
+  }
+
+  func requestCameraPreviewOn(state: AppState, dispatch: @escaping ActionDispatch) -> Task<
+    Void, Never
+  > {
+    Task {
+      if state.permissionState.cameraPermission == .notAsked {
+        dispatch(.permissionAction(.cameraPermissionRequested))
+      } else if state.permissionState.cameraPermission == .denied {
+        dispatch(.localUserAction(.cameraOffTriggered))
+      } else {
+        do {
+          let identifier = try await callingService.requestCameraPreviewOn()
+          dispatch(.localUserAction(.cameraOnSucceeded(videoStreamIdentifier: identifier)))
+        } catch {
+          dispatch(.localUserAction(.cameraOnFailed(error: error)))
         }
+      }
     }
+  }
 
-    func resumeCall(state: AppState, dispatch: @escaping ActionDispatch) -> Task<Void, Never> {
-        Task {
-            guard state.callingState.status == .localHold else {
-                return
-            }
-
-            do {
-                try await callingService.resumeCall()
-                if state.localUserState.cameraState.operation == .paused {
-                    await requestCameraOn(state: state, dispatch: dispatch).value
-                }
-            } catch {
-                handle(error: error, errorType: .callResumeFailed, dispatch: dispatch)
-            }
+  func requestCameraOn(state: AppState, dispatch: @escaping ActionDispatch) -> Task<Void, Never> {
+    Task {
+      if state.permissionState.cameraPermission == .notAsked {
+        dispatch(.permissionAction(.cameraPermissionRequested))
+      } else {
+        do {
+          let streamId = try await callingService.startLocalVideoStream()
+          try await Task.sleep(nanoseconds: NSEC_PER_SEC)
+          dispatch(.localUserAction(.cameraOnSucceeded(videoStreamIdentifier: streamId)))
+        } catch {
+          self.logger.error("Failed to start local video stream with error: \(error)")
+          dispatch(.localUserAction(.cameraOnFailed(error: error)))
         }
+      }
     }
+  }
 
     func recordingStateUpdated(state: AppState,
                                dispatch: @escaping ActionDispatch,
@@ -268,27 +350,83 @@ class CallingMiddlewareHandler: CallingMiddlewareHandling {
             }
             await requestCameraPause(state: state, dispatch: dispatch).value
         }
+      case .remote:
+        dispatch(.localUserAction(.cameraOnTriggered))
+      }
     }
+  }
 
-    func enterForeground(state: AppState, dispatch: @escaping ActionDispatch) -> Task<Void, Never> {
-        Task {
-            guard state.lifeCycleState.currentStatus == .background,
-                  state.callingState.status == .connected,
-                  state.localUserState.cameraState.operation == .paused else {
-                return
-            }
-            await requestCameraOn(state: state, dispatch: dispatch).value
-        }
-    }
+  func audioSessionInterrupted(state: AppState, dispatch: @escaping ActionDispatch) -> Task<
+    Void, Never
+  > {
+    Task {
+      guard state.callingState.status == .connected else {
+        return
+      }
 
-    func willTerminate(state: AppState, dispatch: @escaping ActionDispatch) -> Task<Void, Never> {
-        Task {
-            guard state.callingState.status == .connected else {
-                return
-            }
-            dispatch(.callingAction(.callEndRequested))
-        }
+      dispatch(.callingAction(.holdRequested))
     }
+  }
+
+  func admitAllLobbyParticipants(state: AppState, dispatch: @escaping ActionDispatch) -> Task<
+    Void, Never
+  > {
+    Task {
+      guard state.callingState.status == .connected else {
+        return
+      }
+
+      do {
+        try await callingService.admitAllLobbyParticipants()
+      } catch {
+        let errorCode = LobbyErrorCode.convertToLobbyErrorCode(error as NSError)
+        dispatch(.remoteParticipantsAction(.lobbyError(errorCode: errorCode)))
+      }
+    }
+  }
+
+  func declineAllLobbyParticipants(state: AppState, dispatch: @escaping ActionDispatch) -> Task<
+    Void, Never
+  > {
+    Task {
+      guard state.callingState.status == .connected else {
+        return
+      }
+      let participantIds = state.remoteParticipantsState.participantInfoList.filter { participant in
+        participant.status == .inLobby
+      }.map { participant in
+        participant.userIdentifier
+      }
+
+      for participantId in participantIds {
+        do {
+          try await callingService.declineLobbyParticipant(participantId)
+        } catch {
+          let errorCode = LobbyErrorCode.convertToLobbyErrorCode(error as NSError)
+          dispatch(.remoteParticipantsAction(.lobbyError(errorCode: errorCode)))
+        }
+      }
+    }
+  }
+
+  func admitLobbyParticipant(
+    state: AppState,
+    dispatch: @escaping ActionDispatch,
+    participantId: String
+  ) -> Task<Void, Never> {
+    Task {
+      guard state.callingState.status == .connected else {
+        return
+      }
+
+      do {
+        try await callingService.admitLobbyParticipant(participantId)
+      } catch {
+        let errorCode = LobbyErrorCode.convertToLobbyErrorCode(error as NSError)
+        dispatch(.remoteParticipantsAction(.lobbyError(errorCode: errorCode)))
+      }
+    }
+  }
 
     func requestCameraPreviewOn(state: AppState, dispatch: @escaping ActionDispatch) -> Task<Void, Never> {
         Task {
@@ -769,43 +907,44 @@ extension CallingMiddlewareHandler {
                     self.subscription.cancel()
                 }
 
-            }.store(in: subscription)
+      }.store(in: subscription)
 
-        callingService.isRecordingActiveSubject
-            .removeDuplicates()
-            .sink { isRecordingActive in
-                dispatch(.callingAction(.recordingStateUpdated(isRecordingActive: isRecordingActive)))
-            }.store(in: subscription)
+    callingService.isRecordingActiveSubject
+      .removeDuplicates()
+      .sink { isRecordingActive in
+        dispatch(.callingAction(.recordingStateUpdated(isRecordingActive: isRecordingActive)))
+      }.store(in: subscription)
 
-        callingService.isTranscriptionActiveSubject
-            .removeDuplicates()
-            .sink { isTranscriptionActive in
-                dispatch(.callingAction(.transcriptionStateUpdated(isTranscriptionActive: isTranscriptionActive)))
-            }.store(in: subscription)
+    callingService.isTranscriptionActiveSubject
+      .removeDuplicates()
+      .sink { isTranscriptionActive in
+        dispatch(
+          .callingAction(.transcriptionStateUpdated(isTranscriptionActive: isTranscriptionActive)))
+      }.store(in: subscription)
 
-        callingService.isLocalUserMutedSubject
-            .removeDuplicates()
-            .sink { isLocalUserMuted in
-                dispatch(.localUserAction(.microphoneMuteStateUpdated(isMuted: isLocalUserMuted)))
-            }.store(in: subscription)
+    callingService.isLocalUserMutedSubject
+      .removeDuplicates()
+      .sink { isLocalUserMuted in
+        dispatch(.localUserAction(.microphoneMuteStateUpdated(isMuted: isLocalUserMuted)))
+      }.store(in: subscription)
 
-        callingService.callIdSubject
-            .removeDuplicates()
-            .sink { callId in
-                dispatch(.callingAction(.callIdUpdated(callId: callId)))
-            }.store(in: subscription)
+    callingService.callIdSubject
+      .removeDuplicates()
+      .sink { callId in
+        dispatch(.callingAction(.callIdUpdated(callId: callId)))
+      }.store(in: subscription)
 
-        callingService.dominantSpeakersSubject
-            .throttle(for: 0.5, scheduler: DispatchQueue.main, latest: true)
-            .sink { speakers in
-                dispatch(.remoteParticipantsAction(.dominantSpeakersUpdated(speakers: speakers)))
-            }.store(in: subscription)
+    callingService.dominantSpeakersSubject
+      .throttle(for: 0.5, scheduler: DispatchQueue.main, latest: true)
+      .sink { speakers in
+        dispatch(.remoteParticipantsAction(.dominantSpeakersUpdated(speakers: speakers)))
+      }.store(in: subscription)
 
-        callingService.participantRoleSubject
-            .removeDuplicates()
-            .sink { participantRole in
-                dispatch(.localUserAction(.participantRoleChanged(participantRole: participantRole)))
-            }.store(in: subscription)
+    callingService.participantRoleSubject
+      .removeDuplicates()
+      .sink { participantRole in
+        dispatch(.localUserAction(.participantRoleChanged(participantRole: participantRole)))
+      }.store(in: subscription)
 
         callingService.totalParticipantCountSubject
             .removeDuplicates()
@@ -831,11 +970,11 @@ extension CallingMiddlewareHandler {
                 dispatch(.callDiagnosticAction(.network(diagnostic: networkDiagnostic)))
             }.store(in: subscription)
 
-        callingService.networkQualityDiagnosticsSubject
-            .removeDuplicates()
-            .sink { networkQualityDiagnostic in
-                dispatch(.callDiagnosticAction(.networkQuality(diagnostic: networkQualityDiagnostic)))
-            }.store(in: subscription)
+    callingService.networkQualityDiagnosticsSubject
+      .removeDuplicates()
+      .sink { networkQualityDiagnostic in
+        dispatch(.callDiagnosticAction(.networkQuality(diagnostic: networkQualityDiagnostic)))
+      }.store(in: subscription)
 
         callingService.mediaDiagnosticsSubject
             .removeDuplicates()

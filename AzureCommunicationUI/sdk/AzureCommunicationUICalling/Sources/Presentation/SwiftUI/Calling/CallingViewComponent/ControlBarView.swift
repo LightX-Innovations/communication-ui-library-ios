@@ -6,7 +6,7 @@
 import SwiftUI
 
 struct ControlBarView: View {
-    @ObservedObject var viewModel: ControlBarViewModel
+  @ObservedObject var viewModel: ControlBarViewModel
 
     // anchor views for drawer views on (iPad)
     @State var audioDeviceButtonSourceView = UIView()
@@ -139,6 +139,43 @@ struct ControlBarView: View {
             .modifier(LockPhoneOrientation())
         }
     }
+  }
+
+  var moreButton: some View {
+    IconButton(viewModel: viewModel.moreButtonViewModel)
+      .background(SourceViewSpace(sourceView: moreListSourceView))
+      .background(SourceViewSpace(sourceView: debugInfoSourceView))
+      .accessibilityIdentifier(AccessibilityIdentifier.moreAccessibilityID.rawValue)
+      .accessibilityFocused($focusedOnMoreButton, equals: true)
+  }
+
+  var moreCallOptionsList: some View {
+    return Group {
+      MoreCallOptionsList(
+        isPresented: $viewModel.isMoreCallOptionsListDisplayed,
+        viewModel: viewModel.moreCallOptionsListViewModel,
+        sourceView: moreListSourceView
+      )
+      .modifier(LockPhoneOrientation())
+      .onDisappear {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+          focusedOnMoreButton = true
+        }
+      }
+    }
+  }
+  var shareActivityView: some View {
+    return Group {
+      SharingActivityView(
+        viewModel: viewModel.debugInfoSharingActivityViewModel,
+        applicationActivities: nil,
+        sourceView: debugInfoSourceView,
+        isPresented: $viewModel.isShareActivityDisplayed
+      )
+      .edgesIgnoringSafeArea(.all)
+      .modifier(LockPhoneOrientation())
+    }
+  }
 }
 
 struct LeaveCallConfirmationListViewModel {

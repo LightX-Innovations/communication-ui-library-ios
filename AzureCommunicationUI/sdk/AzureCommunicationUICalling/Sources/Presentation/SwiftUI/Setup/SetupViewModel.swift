@@ -13,10 +13,10 @@ class SetupViewModel: ObservableObject {
     private let callType: CompositeCallType
     private var callingStatus: CallingStatus = .none
 
-    let isRightToLeft: Bool
-    let previewAreaViewModel: PreviewAreaViewModel
-    var title: String
-    var subTitle: String?
+  let isRightToLeft: Bool
+  let previewAreaViewModel: PreviewAreaViewModel
+  var title: String
+  var subTitle: String?
 
     var networkManager: NetworkManager
     var audioSessionManager: AudioSessionManagerProtocol
@@ -137,28 +137,39 @@ class SetupViewModel: ObservableObject {
         }
     }
 
-    deinit {
-        networkManager.stopMonitor()
-    }
+    callingStatus = newCallingStatus
+    let localUserState = state.localUserState
+    let permissionState = state.permissionState
+    let callingState = state.callingState
+    previewAreaViewModel.update(
+      localUserState: localUserState,
+      permissionState: permissionState,
+      visibilityState: state.visibilityState)
+    setupControlBarViewModel.update(
+      localUserState: localUserState,
+      permissionState: permissionState,
+      callingState: callingState)
+    joinCallButtonViewModel.update(isDisabled: permissionState.audioPermission == .denied)
+    updateAccessibilityLabel()
+    errorInfoViewModel.update(errorState: state.errorState)
+  }
 
-    func joinCallButtonTapped() {
-        guard networkManager.isConnected else {
-            handleOffline()
-            return
-        }
-        guard audioSessionManager.isAudioUsedByOther() else {
-            handleMicUnavailableEvent()
-            return
-        }
-        isJoinRequested = true
-        store.dispatch(action: .callingAction(.callStartRequested))
-    }
+  func shouldShowSetupControlBarView() -> Bool {
+    let cameraStatus = store.state.localUserState.cameraState.operation
+    return cameraStatus == .off || !isJoinRequested
+  }
 
-    func dismissButtonTapped() {
-        let isJoining = callingStatus != .none
-        let action: Action = isJoining ? .callingAction(.callEndRequested) : .compositeExitAction
-        store.dispatch(action: action)
-    }
+  private func handleOffline() {
+    store.dispatch(
+      action: .errorAction(
+        .statusErrorAndCallReset(
+          internalError: .callJoinConnectionFailed,
+          error: nil)))
+    // only show banner again when user taps on button explicitly
+    // banner would not reappear when other events^1 send identical error state again
+    // 1: camera on/off, audio on/off, switch to background/foreground, etc.
+    errorInfoViewModel.show()
+  }
 
     func receive(_ state: AppState) {
         let newCallingStatus = state.callingState.status

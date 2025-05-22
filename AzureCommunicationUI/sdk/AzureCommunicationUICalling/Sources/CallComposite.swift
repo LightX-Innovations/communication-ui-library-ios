@@ -49,15 +49,18 @@ public class CallComposite {
         </CALL_START_TIME> */
     }
 
-    /// The events handler for Call Composite
-    public let events: Events
+    store.$state
+      .receive(on: DispatchQueue.main)
+      .sink { [weak self] state in
+        self?.receive(state)
+      }.store(in: &cancellables)
 
-    private let themeOptions: ThemeOptions?
-    private let localizationOptions: LocalizationOptions?
-    private let enableMultitasking: Bool
-    private let enableSystemPipWhenMultitasking: Bool
-    private let setupViewOrientationOptions: OrientationOptions?
-    private let callingViewOrientationOptions: OrientationOptions?
+    let toolkitHostingController = makeToolkitHostingController(
+      router: NavigationRouter(store: store, logger: logger),
+      viewFactory: viewFactory
+    )
+    self.viewController = toolkitHostingController
+    UIApplication.shared.isIdleTimerDisabled = true
 
     // Internal dependencies
     private var logger: Logger = DefaultLogger(category: "Calling")
@@ -112,9 +115,160 @@ public class CallComposite {
         return localDebugInfoManager.getDebugInfo()
     }
 
-    /// Get call state for the Call Composite.
-    public var callState: CallState {
-        return store?.state.callingState.status.toCallCompositeCallState() ?? CallState.none
+    store.dispatch(action: .callingAction(.setupCall))
+
+    return toolkitHostingController
+  }
+
+  public func getStore() -> Store<AppState, Action>? {
+    return store
+  }
+
+  /// Start Call Composite experience with joining a Teams meeting.
+  /// - Parameter remoteOptions: RemoteOptions used to send to ACS to locate the call.
+  /// - Parameter localOptions: LocalOptions used to set the user participants information for the call.
+  ///                            This is data is not sent up to ACS.
+  public func launch(
+    remoteOptions: RemoteOptions,
+    localOptions: LocalOptions? = nil
+  ) -> UIViewController {
+    let callConfiguration = CallConfiguration(
+      locator: remoteOptions.locator,
+      credential: remoteOptions.credential,
+      displayName: remoteOptions.displayName)
+
+    return launch(callConfiguration, localOptions: localOptions)
+  }
+
+  /// Set ParticipantViewData to be displayed for the remote participant. This is data is not sent up to ACS.
+  /// - Parameters:
+  ///   - remoteParticipantViewData: ParticipantViewData used to set the participant's information for the call.
+  ///   - identifier: The communication identifier for the remote participant.
+  ///   - completionHandler: The completion handler that receives `Result` enum value with either
+  ///                        a `Void` or an `SetParticipantViewDataError`.
+  public func set(
+    remoteParticipantViewData: ParticipantViewData,
+    for identifier: CommunicationIdentifier,
+    completionHandler: ((Result<Void, SetParticipantViewDataError>) -> Void)? = nil
+  ) {
+    guard let avatarManager = avatarViewManager else {
+      completionHandler?(.failure(SetParticipantViewDataError.participantNotInCall))
+      return
+    }
+    avatarManager.set(
+      remoteParticipantViewData: remoteParticipantViewData,
+      for: identifier,
+      completionHandler: completionHandler)
+  }
+
+  /// Display Call Composite if it was hidden by user going Back in navigation while on the call.
+  private func displayCallCompositeIfWasHidden() {
+    guard let store = self.store, let viewFactory = self.viewFactory else {
+      logger.error("CallComposite was not launched yet. launch() method has to be called first.")
+      return
+    }
+    self.pipManager?.stopPictureInPicture()
+    if self.pipViewController != nil {
+      self.events.onPictureInPictureChanged?(false)
+    }
+    self.pipViewController?.dismissSelf()
+    self.pipViewController = nil
+    self.viewController?.dismissSelf()
+
+    let viewController = makeToolkitHostingController(
+      router: NavigationRouter(store: store, logger: logger),
+      viewFactory: viewFactory
+    )
+
+    self.viewController = viewController
+    // present(viewController)
+
+    self.pipManager?.reset()
+  }
+
+  /// Controls if CallComposite UI is hidder. If CallComosite is created with enableSystemPipWhenMultitasking
+  /// set to true, then setting isHidden to true will start syspem Picture-in-Picture view.
+  public var isHidden: Bool {
+    get {
+      guard let store = self.store else {
+        return true
+      }
+      return store.state.visibilityState.currentStatus != .visible
+    }
+    set(isHidden) {
+      if isHidden {
+        hide()
+      } else {
+        displayCallCompositeIfWasHidden()
+      }
+    }
+  }
+
+  private func hide() {
+    self.viewController?.dismissSelf()
+    self.viewController = nil
+    if self.enableSystemPipWhenMultitasking && store?.state.navigationState.status == .inCall {
+      store?.dispatch(action: .visibilityAction(.pipModeRequested))
+    }
+  }
+
+  private func constructViewFactoryAndDependencies(
+    for callConfiguration: CallConfiguration,
+    localOptions: LocalOptions?,
+    callCompositeEventsHandler: CallComposite.Events,
+    withCallingSDKWrapper wrapper: CallingSDKWrapperProtocol? = nil,
+    withCustomSDKFactory factory: CustomSDKFactory? = nil
+  ) -> CompositeViewFactoryProtocol {
+    let callingSdkWrapper =
+      wrapper ?? factory?.makeCallingSDKWrapper(
+        logger: logger,
+        callingEventsHandler: CallingSDKEventsHandler(logger: logger),
+        callConfiguration: callConfiguration)
+      ?? CallingSDKWrapper(
+        logger: logger,
+        callingEventsHandler: CallingSDKEventsHandler(logger: logger),
+        callConfiguration: callConfiguration
+      )
+
+    let store = Store.constructStore(
+      logger: logger,
+      callingService: CallingService(logger: logger, callingSDKWrapper: callingSdkWrapper),
+      displayName: localOptions?.participantViewData?.displayName ?? callConfiguration.displayName,
+      startWithCameraOn: localOptions?.cameraOn,
+      startWithMicrophoneOn: localOptions?.microphoneOn,
+      skipSetupScreen: localOptions?.skipSetupScreen
+    )
+    self.store = store
+
+    // Construct managers
+    let avatarViewManager = AvatarViewManager(
+      store: store,
+      localParticipantViewData: localOptions?.participantViewData
+    )
+    self.avatarViewManager = avatarViewManager
+
+    self.errorManager = CompositeErrorManager(
+      store: store, callCompositeEventsHandler: callCompositeEventsHandler)
+    self.callStateManager = CallStateManager(
+      store: store, callCompositeEventsHandler: callCompositeEventsHandler)
+    self.exitManager = CompositeExitManager(
+      store: store, callCompositeEventsHandler: callCompositeEventsHandler)
+    self.lifeCycleManager = UIKitAppLifeCycleManager(store: store, logger: logger)
+    self.permissionManager = PermissionsManager(store: store)
+    self.audioSessionManager = AudioSessionManager(store: store, logger: logger)
+    self.remoteParticipantsManager = RemoteParticipantsManager(
+      store: store,
+      callCompositeEventsHandler: callCompositeEventsHandler,
+      avatarViewManager: avatarViewManager
+    )
+    let debugInfoManager = createDebugInfoManager(callingSDKWrapper: callingSdkWrapper)
+    self.debugInfoManager = debugInfoManager
+    let videoViewManager = VideoViewManager(
+      callingSDKWrapper: callingSdkWrapper, logger: logger
+    )
+
+    if enableSystemPipWhenMultitasking {
+      self.pipManager = createPipManager(store)
     }
 
     /// Create an instance of CallComposite with options.
@@ -169,6 +323,7 @@ public class CallComposite {
             self.disableInternalPushForIncomingCall = disableInternalPushForIncomingCall
         }
     }
+  }
 
     /// Dismiss call composite. If call is in progress, user will leave a call.
     public func dismiss() {
@@ -182,6 +337,7 @@ public class CallComposite {
             exitManagerCache?.onDismissed()
         }
     }
+  }
 
     /* <SDK_CX_PROVIDER_SUPPORT>
      /// Get CXProvider
@@ -321,6 +477,7 @@ public class CallComposite {
         self.init(withOptions: options)
         self.customCallingSdkWrapper = callingSDKWrapperProtocol
     }
+  }
 
     deinit {
         logger.debug("CallComposite Call Composite deallocated")
@@ -741,12 +898,54 @@ and launch(locator: JoinLocator, localOptions: LocalOptions? = nil) instead.
 }
 // swiftlint:enable function_body_length
 extension CallComposite {
-    private func receiveStoreEvents(_ store: Store<AppState, Action>) {
-        store.$state
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] state in
-                self?.receive(state)
-            }.store(in: &cancellables)
+  private func receiveStoreEvents(_ store: Store<AppState, Action>) {
+    store.$state
+      .receive(on: DispatchQueue.main)
+      .sink { [weak self] state in
+        self?.receive(state)
+      }.store(in: &cancellables)
+  }
+
+  private func receive(_ state: AppState) {
+    if state.visibilityState.currentStatus == .hideRequested {
+      store?.dispatch(action: .visibilityAction(.hideEntered))
+      hide()
+    }
+  }
+
+  private func makeToolkitHostingController(
+    router: NavigationRouter,
+    viewFactory: CompositeViewFactoryProtocol
+  )
+    -> ContainerUIHostingController
+  {
+    let isRightToLeft = localizationProvider.isRightToLeft
+    let setupViewOrientationMask = orientationProvider.orientationMask(
+      for:
+        setupViewOrientationOptions)
+    let callingViewOrientationMask = orientationProvider.orientationMask(
+      for:
+        callingViewOrientationOptions)
+    let rootView = ContainerView(
+      router: router,
+      logger: logger,
+      viewFactory: viewFactory,
+      setupViewOrientationMask: setupViewOrientationMask,
+      callingViewOrientationMask: callingViewOrientationMask,
+      isRightToLeft: isRightToLeft)
+    let containerUIHostingController = ContainerUIHostingController(
+      rootView: rootView,
+      callComposite: self,
+      isRightToLeft: isRightToLeft)
+    containerUIHostingController.modalPresentationStyle = .fullScreen
+
+    router.setDismissComposite { [weak containerUIHostingController, weak self] in
+      containerUIHostingController?.dismissSelf()
+      self?.viewController = nil
+      self?.pipViewController = nil
+      self?.viewFactory = nil
+      self?.cleanUpManagers()
+      UIApplication.shared.isIdleTimerDisabled = false
     }
 
     private func receive(_ state: AppState) {
@@ -764,24 +963,7 @@ extension CallComposite {
         </CALL_START_TIME> */
     }
 
-    private func makeToolkitHostingController(router: NavigationRouter,
-                                              viewFactory: CompositeViewFactoryProtocol)
-    -> ContainerUIHostingController {
-        let isRightToLeft = localizationProvider.isRightToLeft
-        let setupViewOrientationMask = orientationProvider.orientationMask(for:
-                                                                            setupViewOrientationOptions)
-        let callingViewOrientationMask = orientationProvider.orientationMask(for:
-                                                                                callingViewOrientationOptions)
-        let rootView = ContainerView(router: router,
-                                     logger: logger,
-                                     viewFactory: viewFactory,
-                                     setupViewOrientationMask: setupViewOrientationMask,
-                                     callingViewOrientationMask: callingViewOrientationMask,
-                                     isRightToLeft: isRightToLeft)
-        let containerUIHostingController = ContainerUIHostingController(rootView: rootView,
-                                                                        callComposite: self,
-                                                                        isRightToLeft: isRightToLeft)
-        containerUIHostingController.modalPresentationStyle = .fullScreen
+  private func createPipManager(_ store: Store<AppState, Action>) -> PipManager? {
 
         router.setDismissComposite { [weak containerUIHostingController, weak self] in
             self?.logger.debug( "CallComposite setDismissComposite")
@@ -809,40 +991,28 @@ extension CallComposite {
             }
         }
 
-        return containerUIHostingController
-    }
-
-    private func createPipManager(_ store: Store<AppState, Action>) -> PipManager? {
-
-        return PipManager(store: store, logger: logger,
-
-                          onRequirePipContentView: {
-            guard let store = self.store, let viewFactory = self.viewFactory else {
-                return nil
-            }
-
-            let viewController = self.makeToolkitHostingController(
-            router: NavigationRouter(store: store, logger: self.logger),
-            viewFactory: viewFactory)
-            self.pipViewController = viewController
-            return viewController.view
-        },
-                                     onRequirePipPlaceholderView: {
-            return self.viewController?.view
-        },
-                                     onPipStarted: {
-            self.viewController?.dismissSelf(animated: false)
-            self.viewController = nil
-            self.events.onPictureInPictureChanged?(true)
-        },
-                                     onPipStoped: {
-            self.pipViewController?.dismissSelf()
-            self.displayCallCompositeIfWasHidden()
-        },
-                                     onPipStartFailed: {
-            self.viewController?.dismissSelf()
-            self.viewController = nil
-        })
-    }
+        let viewController = self.makeToolkitHostingController(
+          router: NavigationRouter(store: store, logger: self.logger),
+          viewFactory: viewFactory)
+        self.pipViewController = viewController
+        return viewController.view
+      },
+      onRequirePipPlaceholderView: {
+        return self.viewController?.view
+      },
+      onPipStarted: {
+        self.viewController?.dismissSelf(animated: false)
+        self.viewController = nil
+        self.events.onPictureInPictureChanged?(true)
+      },
+      onPipStoped: {
+        self.pipViewController?.dismissSelf()
+        self.displayCallCompositeIfWasHidden()
+      },
+      onPipStartFailed: {
+        self.viewController?.dismissSelf()
+        self.viewController = nil
+      })
+  }
 }
 // swiftlint:enable type_body_length

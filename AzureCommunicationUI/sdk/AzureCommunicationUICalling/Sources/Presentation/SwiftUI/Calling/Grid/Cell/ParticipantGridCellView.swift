@@ -39,39 +39,55 @@ struct ParticipantGridCellView: View {
             .accessibilityLabel(Text(viewModel.accessibilityLabel))
             .accessibilityIdentifier(AccessibilityIdentifier.participantGridCellViewAccessibilityID.rawValue)
         }
-        .onReceive(viewModel.$videoViewModel) { model in
-            if model?.videoStreamId != displayedVideoStreamId {
-                displayedVideoStreamId = model?.videoStreamId
-            }
-        }
-        .onReceive(viewModel.$participantIdentifier) {
-            updateParticipantViewData(for: $0)
-        }
-        .onReceive(avatarViewManager.updatedId) {
-            guard $0 == viewModel.participantIdentifier else {
-                return
-            }
+      }
+      .accessibilityElement(children: .combine)
+      .accessibilityLabel(Text(viewModel.accessibilityLabel))
+      .accessibilityIdentifier(
+        AccessibilityIdentifier.participantGridCellViewAccessibilityID.rawValue)
+    }
+    .onReceive(viewModel.$videoViewModel) { model in
+      if model?.videoStreamId != displayedVideoStreamId {
+        displayedVideoStreamId = model?.videoStreamId
+      }
+    }
+    .onReceive(viewModel.$participantIdentifier) {
+      updateParticipantViewData(for: $0)
+    }
+    .onReceive(avatarViewManager.updatedId) {
+      guard $0 == viewModel.participantIdentifier else {
+        return
+      }
 
-            updateParticipantViewData(for: viewModel.participantIdentifier)
-        }
+      updateParticipantViewData(for: viewModel.participantIdentifier)
+    }
+  }
+
+  func getRendererViewInfo(for videoStreamId: String) -> ParticipantRendererViewInfo? {
+    guard !videoStreamId.isEmpty else {
+      return nil
+    }
+    let remoteParticipantVideoViewId = RemoteParticipantVideoViewId(
+      userIdentifier: viewModel.participantIdentifier,
+      videoStreamIdentifier: videoStreamId)
+    return rendererViewManager?.getRemoteParticipantVideoRendererView(remoteParticipantVideoViewId)
+  }
+
+  private func updateParticipantViewData(for identifier: String) {
+    guard
+      let participantViewData =
+        avatarViewManager.avatarStorage.value(forKey: identifier)
+    else {
+      avatarImage = nil
+      viewModel.updateParticipantNameIfNeeded(with: nil)
+      return
     }
 
-    func getRendererViewInfo(for videoStreamId: String) -> ParticipantRendererViewInfo? {
-        guard !videoStreamId.isEmpty else {
-            return nil
-        }
-        let remoteParticipantVideoViewId = RemoteParticipantVideoViewId(userIdentifier: viewModel.participantIdentifier,
-                                                                        videoStreamIdentifier: videoStreamId)
-        return rendererViewManager?.getRemoteParticipantVideoRendererView(remoteParticipantVideoViewId)
+    if avatarImage !== participantViewData.avatarImage {
+      avatarImage = participantViewData.avatarImage
     }
 
-    private func updateParticipantViewData(for identifier: String) {
-        guard let participantViewData =
-                avatarViewManager.avatarStorage.value(forKey: identifier) else {
-            avatarImage = nil
-            viewModel.updateParticipantNameIfNeeded(with: nil)
-            return
-        }
+    viewModel.updateParticipantNameIfNeeded(with: participantViewData.displayName)
+  }
 
         if avatarImage !== participantViewData.avatarImage {
             avatarImage = participantViewData.avatarImage
@@ -101,6 +117,7 @@ struct ParticipantGridCellView: View {
             }
         }
     }
+  }
 
 }
 
@@ -116,18 +133,18 @@ struct ParticipantTitleView: View {
         return !isMuted && displayName?.trimmingCharacters(in: .whitespaces).isEmpty == true
     }
 
-    private enum Constants {
-        static let hSpace: CGFloat = 4
+  private enum Constants {
+    static let hSpace: CGFloat = 4
 
-        // MARK: Font Minimum Scale Factor
-        // Under accessibility mode, the largest size is 35
-        // so the scale factor would be 9/35 or 0.2
-        static let accessibilityFontScale: CGFloat = 0.2
-        // UI guideline suggested min font size should be 9.
-        // Since Fonts.caption1 has font size of 12,
-        // so min scale factor should be 9/12 or 0.75 as default.
-        static let defaultFontScale: CGFloat = 0.75
-    }
+    // MARK: Font Minimum Scale Factor
+    // Under accessibility mode, the largest size is 35
+    // so the scale factor would be 9/35 or 0.2
+    static let accessibilityFontScale: CGFloat = 0.2
+    // UI guideline suggested min font size should be 9.
+    // Since Fonts.caption1 has font size of 12,
+    // so min scale factor should be 9/12 or 0.75 as default.
+    static let defaultFontScale: CGFloat = 0.75
+  }
 
     var body: some View {
         HStack(alignment: .center, spacing: Constants.hSpace, content: {

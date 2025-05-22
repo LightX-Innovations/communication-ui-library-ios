@@ -3,19 +3,18 @@
 //  Licensed under the MIT License.
 //
 
-import Foundation
 import Combine
 import SwiftUI
 
 class IconButtonViewModel: ObservableObject {
-    enum ButtonType {
-        case controlButton
-        case roundedRectButton
-        case infoButton
-        case dismissButton
-        case cameraSwitchButtonPip
-        case cameraSwitchButtonFull
-    }
+  enum ButtonType {
+    case controlButton
+    case roundedRectButton
+    case infoButton
+    case dismissButton
+    case cameraSwitchButtonPip
+    case cameraSwitchButtonFull
+  }
 
     @Published var iconName: CompositeIcon?
     @Published var icon: UIImage?
@@ -53,34 +52,33 @@ class IconButtonViewModel: ObservableObject {
         self.icon = icon
     }
 
-    func update(iconName: CompositeIcon?) {
-        if iconName != nil && self.iconName != iconName {
-            self.iconName = iconName!
-        }
+  func update(iconName: CompositeIcon?) {
+    if iconName != nil && self.iconName != iconName {
+      self.iconName = iconName!
     }
+  }
 
-    func update(accessibilityLabel: String) {
-        if self.accessibilityLabel != accessibilityLabel {
-            self.accessibilityLabel = accessibilityLabel
-        }
+  func update(accessibilityLabel: String) {
+    if self.accessibilityLabel != accessibilityLabel {
+      self.accessibilityLabel = accessibilityLabel
     }
+  }
 
-    func update(accessibilityValue: String) {
-        if self.accessibilityValue != accessibilityValue {
-            self.accessibilityValue = accessibilityValue
-        }
+  func update(accessibilityValue: String) {
+    if self.accessibilityValue != accessibilityValue {
+      self.accessibilityValue = accessibilityValue
     }
+  }
 
-    func update(accessibilityHint: String) {
-        if self.accessibilityHint != accessibilityHint {
-            self.accessibilityHint = accessibilityHint
-        }
+  func update(accessibilityHint: String) {
+    if self.accessibilityHint != accessibilityHint {
+      self.accessibilityHint = accessibilityHint
     }
+  }
 
-    func update(isDisabled: Bool) {
-        if self.isDisabled != isDisabled {
-            self.isDisabled = isDisabled
-        }
+  func update(isDisabled: Bool) {
+    if self.isDisabled != isDisabled {
+      self.isDisabled = isDisabled
     }
 
     func update(isVisible: Bool) {

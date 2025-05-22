@@ -7,21 +7,21 @@ import Foundation
 import SwiftUI
 
 class ContainerUIHostingController: UIHostingController<ContainerUIHostingController.Root> {
-    class EnvironmentProperty {
-        @Published var supportedOrientations: UIInterfaceOrientationMask
-        @Published var isProximitySensorOn: Bool
-        @Published var prefersHomeIndicatorAutoHidden: Bool
+  class EnvironmentProperty {
+    @Published var supportedOrientations: UIInterfaceOrientationMask
+    @Published var isProximitySensorOn: Bool
+    @Published var prefersHomeIndicatorAutoHidden: Bool
 
-        init() {
-            self.supportedOrientations = .allButUpsideDown
-            self.isProximitySensorOn = false
-            self.prefersHomeIndicatorAutoHidden = false
-        }
+    init() {
+      self.supportedOrientations = .allButUpsideDown
+      self.isProximitySensorOn = false
+      self.prefersHomeIndicatorAutoHidden = false
     }
+  }
 
-    private let callComposite: CallComposite
-    private let environmentProperties: EnvironmentProperty
-    private let cancelBag = CancelBag()
+  private let callComposite: CallComposite
+  private let environmentProperties: EnvironmentProperty
+  private let cancelBag = CancelBag()
 
     init(rootView: ContainerView,
          callComposite: CallComposite,
@@ -37,24 +37,24 @@ class ContainerUIHostingController: UIHostingController<ContainerUIHostingContro
         subscribeEnvironmentProperties(containerView: rootView)
     }
 
-    @objc required dynamic init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
+  @objc required dynamic init?(coder aDecoder: NSCoder) {
+    fatalError("init(coder:) has not been implemented")
+  }
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        overrideUserInterfaceStyle = StyleProvider.color.colorSchemeOverride
-        view.backgroundColor = StyleProvider.color.backgroundColor
-    }
+  override func viewDidLoad() {
+    super.viewDidLoad()
+    overrideUserInterfaceStyle = StyleProvider.color.colorSchemeOverride
+    view.backgroundColor = StyleProvider.color.backgroundColor
+  }
 
-    override func viewDidDisappear(_ animated: Bool) {
-        resetUIDeviceSetup()
-        super.viewDidDisappear(animated)
-    }
+  override func viewDidDisappear(_ animated: Bool) {
+    resetUIDeviceSetup()
+    super.viewDidDisappear(animated)
+  }
 
-    open override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        self.environmentProperties.supportedOrientations
-    }
+  open override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+    self.environmentProperties.supportedOrientations
+  }
 
     private func subscribeEnvironmentProperties(containerView: ContainerView) {
         environmentProperties
@@ -110,27 +110,70 @@ class ContainerUIHostingController: UIHostingController<ContainerUIHostingContro
 
         if !UIDevice.current.isGeneratingDeviceOrientationNotifications {
             UIDevice.current.beginGeneratingDeviceOrientationNotifications()
+          }
+        }
+      }).store(in: cancelBag)
+
+    environmentProperties
+      .$isProximitySensorOn
+      .receive(on: RunLoop.main)
+      .removeDuplicates()
+      .sink(receiveValue: { isEnable in
+        UIDevice.current.toggleProximityMonitoringStatus(isEnabled: isEnable)
+      }).store(in: cancelBag)
+
+    environmentProperties
+      .$prefersHomeIndicatorAutoHidden
+      .receive(on: RunLoop.main)
+      .sink(receiveValue: { [weak self] shouldHide in
+        guard let strongSelf = self else {
+          return
+        }
+        strongSelf._prefersHomeIndicatorAutoHidden = shouldHide
+      }).store(in: cancelBag)
+  }
+
+  private func haltSetupViewOrientation(containerView: ContainerView) {
+    if containerView.router.currentView == .setupView,
+      traitCollection.userInterfaceIdiom == .phone,
+      UIDevice.current.isGeneratingDeviceOrientationNotifications
+    {
+      UIDevice.current.endGeneratingDeviceOrientationNotifications()
+    }
+  }
+
+  private func resetUIDeviceSetup() {
+    UIDevice.current.toggleProximityMonitoringStatus(isEnabled: false)
+
+    if !UIDevice.current.isGeneratingDeviceOrientationNotifications {
+      UIDevice.current.beginGeneratingDeviceOrientationNotifications()
+    }
+  }
+
+  struct Root: View {
+    let containerView: ContainerView
+    let environmentProperties: EnvironmentProperty
+
+    var body: some View {
+      containerView
+        .onPreferenceChange(SupportedOrientationsPreferenceKey.self) {
+          // Update the binding to set the value on the root controller.
+          self.environmentProperties.supportedOrientations = $0
+        }
+        .onPreferenceChange(ProximitySensorPreferenceKey.self) {
+          self.environmentProperties.isProximitySensorOn = $0
+        }
+        .onPreferenceChange(PrefersHomeIndicatorAutoHiddenPreferenceKey.self) {
+          self.environmentProperties.prefersHomeIndicatorAutoHidden = $0
         }
     }
+  }
 
-    struct Root: View {
-        let containerView: ContainerView
-        let environmentProperties: EnvironmentProperty
+  // MARK: Prefers Home Indicator Auto Hidden
 
-        var body: some View {
-            containerView
-                .onPreferenceChange(SupportedOrientationsPreferenceKey.self) {
-                    // Update the binding to set the value on the root controller.
-                    self.environmentProperties.supportedOrientations = $0
-                }
-                .onPreferenceChange(ProximitySensorPreferenceKey.self) {
-                    self.environmentProperties.isProximitySensorOn = $0
-                }
-                .onPreferenceChange(PrefersHomeIndicatorAutoHiddenPreferenceKey.self) {
-                    self.environmentProperties.prefersHomeIndicatorAutoHidden = $0
-                }
-        }
-    }
+  private var _prefersHomeIndicatorAutoHidden: Bool = false {
+    didSet { setNeedsUpdateOfHomeIndicatorAutoHidden() }
+  }
 
     // MARK: Prefers Home Indicator Auto Hidden
 

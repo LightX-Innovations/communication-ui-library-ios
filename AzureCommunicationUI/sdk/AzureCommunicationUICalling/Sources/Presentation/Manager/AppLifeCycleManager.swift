@@ -7,80 +7,86 @@ import Combine
 import Foundation
 import UIKit
 
-protocol LifeCycleManagerProtocol {
+public protocol LifeCycleManagerProtocol {
 
 }
 
-class UIKitAppLifeCycleManager: LifeCycleManagerProtocol {
+public class UIKitAppLifeCycleManager: LifeCycleManagerProtocol {
 
-    private let logger: Logger
-    private let store: Store<AppState, Action>
-    private var operationStatus: OperationStatus
-    private var callingStatus: CallingStatus
-    private var runLoop: CFRunLoop?
+  private let logger: Logger
+  private let store: Store<AppState, Action>
+  private var operationStatus: OperationStatus
+  private var callingStatus: CallingStatus
+  private var runLoop: CFRunLoop?
 
-    var cancellables = Set<AnyCancellable>()
+  var cancellables = Set<AnyCancellable>()
 
-    init(store: Store<AppState, Action>,
-         logger: Logger) {
-        self.logger = logger
-        self.store = store
-        self.operationStatus = .none
-        self.callingStatus = .none
-        store.$state
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] state in
-                self?.receive(state: state)
-            }.store(in: &cancellables)
-        NotificationCenter.default.addObserver(self,
-                                               selector: #selector(willDeactivate),
-                                               name: UIApplication.willResignActiveNotification,
-                                               object: nil)
-        NotificationCenter.default.addObserver(self,
-                                               selector: #selector(didActivate),
-                                               name: UIApplication.didBecomeActiveNotification,
-                                               object: nil)
+  init(
+    store: Store<AppState, Action>,
+    logger: Logger
+  ) {
+    self.logger = logger
+    self.store = store
+    self.operationStatus = .none
+    self.callingStatus = .none
+    store.$state
+      .receive(on: DispatchQueue.main)
+      .sink { [weak self] state in
+        self?.receive(state: state)
+      }.store(in: &cancellables)
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(willDeactivate),
+      name: UIApplication.willResignActiveNotification,
+      object: nil)
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(didActivate),
+      name: UIApplication.didBecomeActiveNotification,
+      object: nil)
 
-        NotificationCenter.default.addObserver(self, selector: #selector(willTerminate),
-                                               name: UIApplication.willTerminateNotification,
-                                               object: nil)
+    NotificationCenter.default.addObserver(
+      self, selector: #selector(willTerminate),
+      name: UIApplication.willTerminateNotification,
+      object: nil)
+  }
+
+  private func receive(state: AppState) {
+    update(callingState: state.callingState)
+  }
+
+  private func update(callingState: CallingState) {
+    callingStatus = callingState.status
+    let newOperationStatus = callingState.operationStatus
+    guard operationStatus != newOperationStatus else {
+      return
+    }
+    operationStatus = newOperationStatus
+
+    if operationStatus == .callEnded,
+      let currentRunloop = runLoop
+    {
+      CFRunLoopStop(currentRunloop)
     }
 
-    private func receive(state: AppState) {
-        update(callingState: state.callingState)
+  }
+
+  @objc func willDeactivate(_ notification: Notification) {
+    logger.debug("LifeCycle: Will Deactivate")
+    store.dispatch(action: .lifecycleAction(.backgroundEntered))
+  }
+
+  @objc func didActivate(_ notification: Notification) {
+    logger.debug("LifeCycle: Did Activate")
+    store.dispatch(action: .lifecycleAction(.foregroundEntered))
+  }
+
+  @objc func willTerminate(_ notification: Notification) {
+    logger.debug("LifeCycle: Will Terminate")
+    store.dispatch(action: .lifecycleAction(.willTerminate))
+    if callingStatus == .connected {
+      self.runLoop = CFRunLoopGetCurrent()
+      CFRunLoopRun()
     }
-
-    private func update(callingState: CallingState) {
-        callingStatus = callingState.status
-        let newOperationStatus = callingState.operationStatus
-        guard operationStatus != newOperationStatus else {
-            return
-        }
-        operationStatus = newOperationStatus
-
-        if operationStatus == .callEnded,
-           let currentRunloop = runLoop {
-            CFRunLoopStop(currentRunloop)
-        }
-
-    }
-
-    @objc func willDeactivate(_ notification: Notification) {
-        logger.debug("LifeCycle: Will Deactivate")
-        store.dispatch(action: .lifecycleAction(.backgroundEntered))
-    }
-
-    @objc func didActivate(_ notification: Notification) {
-        logger.debug("LifeCycle: Did Activate")
-        store.dispatch(action: .lifecycleAction(.foregroundEntered))
-    }
-
-    @objc func willTerminate(_ notification: Notification) {
-        logger.debug("LifeCycle: Will Terminate")
-        store.dispatch(action: .lifecycleAction(.willTerminate))
-        if callingStatus == .connected {
-            self.runLoop = CFRunLoopGetCurrent()
-            CFRunLoopRun()
-        }
-    }
+  }
 }

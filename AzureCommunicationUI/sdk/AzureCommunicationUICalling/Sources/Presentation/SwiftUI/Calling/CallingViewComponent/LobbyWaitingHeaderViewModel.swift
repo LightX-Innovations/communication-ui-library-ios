@@ -11,10 +11,10 @@ internal class LobbyWaitingHeaderViewModel: ObservableObject {
     @Published var isDisplayed = false
     @Published var isVoiceOverEnabled = false
 
-    private let logger: Logger
-    private let accessibilityProvider: AccessibilityProviderProtocol
-    private let localizationProvider: LocalizationProviderProtocol
-    private var lobbyParticipantCount: Int = 0
+  private let logger: Logger
+  private let accessibilityProvider: AccessibilityProviderProtocol
+  private let localizationProvider: LocalizationProviderProtocol
+  private var lobbyParticipantCount: Int = 0
 
     var participantListButtonViewModel: PrimaryButtonViewModel!
     var dismissButtonViewModel: IconButtonViewModel!
@@ -48,17 +48,47 @@ internal class LobbyWaitingHeaderViewModel: ObservableObject {
         self.participantListButtonViewModel.accessibilityLabel = self.localizationProvider.getLocalizedString(
             .lobbyWaitingHeaderViewButtonAccessibilityLabel)
 
-        self.dismissButtonViewModel = compositeViewModelFactory.makeIconButtonViewModel(
-            iconName: .dismiss,
-            buttonType: .infoButton,
-            isDisabled: false) { [weak self] in
-                guard let self = self else {
-                    return
-                }
-                self.isDisplayed = false
-        }
-        self.dismissButtonViewModel.accessibilityLabel = self.localizationProvider.getLocalizedString(
-            .lobbyWaitingHeaderDismissButtonAccessibilityLabel)
+    self.dismissButtonViewModel = compositeViewModelFactory.makeIconButtonViewModel(
+      iconName: .dismiss,
+      buttonType: .infoButton,
+      isDisabled: false
+    ) { [weak self] in
+      guard let self = self else {
+        return
+      }
+      self.isDisplayed = false
+    }
+    self.dismissButtonViewModel.accessibilityLabel = self.localizationProvider.getLocalizedString(
+      .lobbyWaitingHeaderDismissButtonAccessibilityLabel)
+  }
+
+  func showParticipantListButtonTapped() {
+    self.displayParticipantsList()
+  }
+
+  func displayParticipantsList() {
+    self.isParticipantsListDisplayed = true
+  }
+
+  func update(
+    localUserState: LocalUserState,
+    remoteParticipantsState: RemoteParticipantsState,
+    callingState: CallingState,
+    visibilityState: VisibilityState
+  ) {
+    let canShow = canShowLobby(
+      callingState: callingState,
+      visibilityState: visibilityState,
+      participantRole: localUserState.participantRole)
+
+    let newLobbyParticipantCount = lobbyUsersCount(remoteParticipantsState)
+    let isDisplayed =
+      canShow
+      && newLobbyParticipantCount > 0
+      && (isDisplayed || newLobbyParticipantCount > lobbyParticipantCount)
+
+    if self.isDisplayed != isDisplayed {
+      self.isDisplayed = isDisplayed
     }
 
     func update(localUserState: LocalUserState,

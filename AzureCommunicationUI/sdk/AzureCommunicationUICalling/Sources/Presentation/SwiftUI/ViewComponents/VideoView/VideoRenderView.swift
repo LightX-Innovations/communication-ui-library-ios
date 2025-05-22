@@ -3,36 +3,36 @@
 //  Licensed under the MIT License.
 //
 
+import Combine
 import Foundation
 import SwiftUI
-import Combine
 
 struct VideoRendererView: UIViewRepresentable {
-    let rendererView: UIView
+  let rendererView: UIView
 
-    func makeUIView(context: Context) -> VideoRendererUIView {
-        return VideoRendererUIView(rendererView: rendererView)
-    }
+  func makeUIView(context: Context) -> VideoRendererUIView {
+    return VideoRendererUIView(rendererView: rendererView)
+  }
 
-    func updateUIView(_ uiView: VideoRendererUIView, context: Context) {
-    }
+  func updateUIView(_ uiView: VideoRendererUIView, context: Context) {
+  }
 }
 
 class VideoRendererUIView: UIView {
-    private var rendererView: UIView?
+  private var rendererView: UIView?
 
-    init(rendererView: UIView) {
-        super.init(frame: .zero)
-        self.rendererView = rendererView
-        addSubview(rendererView)
-    }
+  init(rendererView: UIView) {
+    super.init(frame: .zero)
+    self.rendererView = rendererView
+    addSubview(rendererView)
+  }
 
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
+  required init?(coder: NSCoder) {
+    fatalError("init(coder:) has not been implemented")
+  }
 
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        rendererView?.frame = bounds
-    }
+  override func layoutSubviews() {
+    super.layoutSubviews()
+    rendererView?.frame = bounds
+  }
 }

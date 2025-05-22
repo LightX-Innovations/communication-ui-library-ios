@@ -103,33 +103,107 @@ class SetupControlBarViewModel: ObservableObject {
         button.onClick?(button)
     }
 
-    func videoButtonTapped() {
-        let isPreview = callingStatus == .none
-        let isCameraOn = cameraStatus == .on
-        switch (isCameraOn, isPreview) {
-        case (false, true):
-            dispatch(.localUserAction(.cameraPreviewOnTriggered))
-        case (false, false):
-            dispatch(.localUserAction(.cameraOnTriggered))
-        case (true, _):
-            dispatch(.localUserAction(.cameraOffTriggered))
-        }
+    cameraButtonViewModel.accessibilityLabel = self.localizationProvider.getLocalizedString(
+      .videoOffAccessibilityLabel)
+
+    micButtonViewModel = compositeViewModelFactory.makeIconWithLabelButtonViewModel(
+      selectedButtonState: MicButtonState.micOff,
+      localizationProvider: self.localizationProvider,
+      buttonTypeColor: .colorThemedWhite,
+      isDisabled: false
+    ) { [weak self] in
+      guard let self = self else {
+        return
+      }
+      self.logger.debug("Toggle microphone button tapped")
+      self.microphoneButtonTapped()
+    }
+    micButtonViewModel.accessibilityLabel = self.localizationProvider.getLocalizedString(
+      .micOffAccessibilityLabel)
+
+    audioDeviceButtonViewModel = compositeViewModelFactory.makeIconWithLabelButtonViewModel(
+      selectedButtonState: AudioButtonState.speaker,
+      localizationProvider: self.localizationProvider,
+      buttonTypeColor: .colorThemedWhite,
+      isDisabled: false
+    ) { [weak self] in
+      guard let self = self else {
+        return
+      }
+      self.logger.debug("Select audio device button tapped")
+      self.selectAudioDeviceButtonTapped()
+    }
+    audioDeviceButtonViewModel.accessibilityLabel = self.localizationProvider.getLocalizedString(
+      .deviceAccesibiiltyLabel)
+    isCameraDisplayed = audioVideoMode != .audioOnly
+  }
+
+  func videoButtonTapped() {
+    let isPreview = callingStatus == .none
+    let isCameraOn = cameraStatus == .on
+    switch (isCameraOn, isPreview) {
+    case (false, true):
+      dispatch(.localUserAction(.cameraPreviewOnTriggered))
+    case (false, false):
+      dispatch(.localUserAction(.cameraOnTriggered))
+    case (true, _):
+      dispatch(.localUserAction(.cameraOffTriggered))
+    }
+  }
+
+  func microphoneButtonTapped() {
+    let isPreview = callingStatus == .none
+    let isMicOn = micStatus == .on
+    switch (isMicOn, isPreview) {
+    case (false, true):
+      dispatch(.localUserAction(.microphonePreviewOn))
+    case (false, false):
+      dispatch(.localUserAction(.microphoneOnTriggered))
+    case (true, true):
+      dispatch(.localUserAction(.microphonePreviewOff))
+    case (true, false):
+      dispatch(.localUserAction(.microphoneOffTriggered))
+    }
+  }
+
+  func selectAudioDeviceButtonTapped() {
+    isAudioDeviceSelectionDisplayed = true
+  }
+
+  func isCameraDisabled() -> Bool {
+    return isJoinRequested || cameraPermission == .denied
+  }
+
+  func isAudioDisabled() -> Bool {
+    return isJoinRequested || audioPermission == .denied
+  }
+
+  func isControlBarHidden() -> Bool {
+    return audioPermission == .denied
+  }
+
+  func update(
+    localUserState: LocalUserState,
+    permissionState: PermissionState,
+    callingState: CallingState
+  ) {
+    if cameraPermission != permissionState.cameraPermission {
+      cameraPermission = permissionState.cameraPermission
+    }
+    if audioPermission != permissionState.audioPermission {
+      audioPermission = permissionState.audioPermission
+    }
+    callingStatus = callingState.status
+    cameraStatus = localUserState.cameraState.operation
+    micStatus = localUserState.audioState.operation
+    updateButtonViewModel(localUserState: localUserState)
+    if localVideoStreamId != localUserState.localVideoStreamIdentifier {
+      localVideoStreamId = localUserState.localVideoStreamIdentifier
+      updateButtonTypeColor(isLocalVideoOff: localVideoStreamId == nil)
     }
 
-    func microphoneButtonTapped() {
-        let isPreview = callingStatus == .none
-        let isMicOn = micStatus == .on
-        switch (isMicOn, isPreview) {
-        case (false, true):
-            dispatch(.localUserAction(.microphonePreviewOn))
-        case (false, false):
-            dispatch(.localUserAction(.microphoneOnTriggered))
-        case (true, true):
-            dispatch(.localUserAction(.microphonePreviewOff))
-        case (true, false):
-            dispatch(.localUserAction(.microphoneOffTriggered))
-        }
-    }
+    audioDevicesListViewModel.update(audioDeviceStatus: localUserState.audioState.device)
+  }
 
     func selectAudioDeviceButtonTapped() {
         dispatch(.showAudioSelection)
@@ -153,9 +227,12 @@ class SetupControlBarViewModel: ObservableObject {
         isJoinRequested
     }
 
-    func isControlBarHidden() -> Bool {
-        return audioPermission == .denied
-    }
+    let audioDeviceStatus = localUserState.audioState.device
+    audioDeviceButtonViewModel.update(
+      selectedButtonState: AudioButtonState.getButtonState(from: audioDeviceStatus))
+    audioDeviceButtonViewModel.update(
+      accessibilityValue: audioDeviceStatus.getLabel(localizationProvider: localizationProvider))
+  }
 
     func update(localUserState: LocalUserState,
                 permissionState: PermissionState,

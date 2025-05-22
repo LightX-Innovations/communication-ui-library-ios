@@ -6,5 +6,5 @@
 import Foundation
 
 struct JoiningCallActivityViewModel {
-    var title: String
+  var title: String
 }

@@ -163,11 +163,7 @@ class ControlBarViewModel: ObservableObject {
             return
         }
 
-        isCameraStateUpdating = true
-        let action: LocalUserAction = cameraState.operation == .on ?
-            .cameraOffTriggered : .cameraOnTriggered
-        dispatch(.localUserAction(action))
-    }
+    moreButtonViewModel.update(isDisabled: isMoreButtonDisabled())
 
     func isMoreButtonVisible() -> Bool {
         buttonViewDataState.callScreenCustomButtonsState.filter({ button in button.visible }).isEmpty == false ||

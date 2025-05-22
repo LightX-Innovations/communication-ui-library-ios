@@ -3,9 +3,9 @@
 //  Licensed under the MIT License.
 //
 
-struct CallInfoModel {
-    let status: CallingStatus
-    let internalError: CallCompositeInternalError?
-    let callEndReasonCode: Int?
-    let callEndReasonSubCode: Int?
+public struct CallInfoModel {
+  let status: CallingStatus
+  let internalError: CallCompositeInternalError?
+  let callEndReasonCode: Int?
+  let callEndReasonSubCode: Int?
 }

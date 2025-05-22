@@ -4,7 +4,6 @@
 //
 
 import AzureCommunicationCalling
-
 import Combine
 import Foundation
 
@@ -36,8 +35,27 @@ class CallingSDKWrapper: NSObject, CallingSDKWrapperProtocol {
         super.init()
     }
 
-    deinit {
-        logger.debug("CallingSDKWrapper deallocated")
+    joinCallOptions.outgoingAudioOptions = OutgoingAudioOptions()
+    joinCallOptions.outgoingAudioOptions?.muted = !isAudioPreferred
+    joinCallOptions.incomingVideoOptions = incomingVideoOptions
+
+    var joinLocator: JoinMeetingLocator
+    if callConfiguration.compositeCallType == .groupCall,
+      let groupId = callConfiguration.groupId
+    {
+      joinLocator = GroupCallLocator(groupId: groupId)
+    } else if callConfiguration.compositeCallType == .teamsMeeting,
+      let meetingLink = callConfiguration.meetingLink
+    {
+      joinLocator = TeamsMeetingLinkLocator(
+        meetingLink: meetingLink.trimmingCharacters(in: .whitespacesAndNewlines))
+    } else if callConfiguration.compositeCallType == .roomCall,
+      let roomId = callConfiguration.roomId
+    {
+      joinLocator = RoomCallLocator(roomId: roomId)
+    } else {
+      logger.error("Invalid groupID / meeting link")
+      throw CallCompositeInternalError.callJoinFailed
     }
 
     func dispose() {
@@ -69,24 +87,40 @@ class CallingSDKWrapper: NSObject, CallingSDKWrapperProtocol {
         }
     }
 
-    func joinCall(isCameraPreferred: Bool, isAudioPreferred: Bool) async throws {
-        logger.debug( "Joining call")
-        let joinCallOptions = JoinCallOptions()
+    let remoteParticipant = AzureCommunicationCalling.RemoteParticipant
+      .toCompositeRemoteParticipant(acsRemoteParticipant: remote)
+    guard
+      let castValue = remoteParticipant as? CompositeRemoteParticipant<ParticipantType, StreamType>
+    else {
+      return nil
+    }
+    return castValue
+  }
 
-        // to fix iOS 15 issue
-        // by default on iOS 15 calling SDK incoming type is raw video
-        // because of this on iOS 15 remote video start event is not received
-        let incomingVideoOptions = IncomingVideoOptions()
-        incomingVideoOptions.streamType = .remoteIncoming
+  private func findParticipant(identifier: String) -> AzureCommunicationCalling.RemoteParticipant? {
+    call?.remoteParticipants.first(where: { $0.identifier.rawId == identifier })
+  }
 
-        if isCameraPreferred,
-           let localVideoStream = localVideoStream {
-            let localVideoStreamArray = [localVideoStream]
+  public func getLocalVideoStream<LocalVideoStreamType>(_ identifier: String)
+    -> CompositeLocalVideoStream<LocalVideoStreamType>?
+  {
 
-            let videoOptions = OutgoingVideoOptions()
-            videoOptions.streams = localVideoStreamArray
-            joinCallOptions.outgoingVideoOptions = videoOptions
-        }
+    guard getLocalVideoStreamIdentifier() == identifier else {
+      return nil
+    }
+    guard let videoStream = localVideoStream,
+      let castVideoStream = videoStream as? LocalVideoStreamType
+    else {
+      return nil
+    }
+    guard videoStream is LocalVideoStreamType else {
+      return nil
+    }
+    return CompositeLocalVideoStream(
+      mediaStreamType: videoStream.sourceType.asCompositeMediaStreamType,
+      wrappedObject: castVideoStream
+    )
+  }
 
         joinCallOptions.outgoingAudioOptions = OutgoingAudioOptions()
         joinCallOptions.outgoingAudioOptions?.muted = !isAudioPreferred
@@ -235,84 +269,103 @@ class CallingSDKWrapper: NSObject, CallingSDKWrapperProtocol {
         }
     }
 
-    func endCall() async throws {
-        guard call != nil else {
-            throw CallCompositeInternalError.callEndFailed
-        }
-        do {
-            try await call?.hangUp(options: HangUpOptions())
-            logger.debug("Call ended successfully")
-        } catch {
-            logger.error( "It was not possible to hangup the call.")
-            throw error
-        }
+    do {
+      try await call.muteOutgoingAudio()
+    } catch {
+      logger.error("ERROR: It was not possible to mute. \(error)")
+      throw error
+    }
+    logger.debug("Mute successful")
+  }
+
+  public func unmuteLocalMic() async throws {
+    guard let call = call else {
+      return
+    }
+    guard call.isOutgoingAudioMuted else {
+      logger.warning("unmuteOutgoingAudio is skipped as outgoing audio already muted")
+      return
     }
 
-    func getRemoteParticipant<ParticipantType, StreamType>(_ identifier: String)
-    -> CompositeRemoteParticipant<ParticipantType, StreamType>? {
-        guard let remote = findParticipant(identifier: identifier) else {
-            return nil
-        }
+    do {
+      try await call.unmuteOutgoingAudio()
+    } catch {
+      logger.error("ERROR: It was not possible to unmute. \(error)")
+      throw error
+    }
+    logger.debug("Unmute successful")
+  }
 
-        let remoteParticipant = AzureCommunicationCalling.RemoteParticipant
-            .toCompositeRemoteParticipant(acsRemoteParticipant: remote)
-        guard let castValue = remoteParticipant as? CompositeRemoteParticipant<ParticipantType, StreamType> else {
-            return nil
-        }
-        return castValue
+  public func holdCall() async throws {
+    guard let call = call else {
+      return
     }
 
-    private func findParticipant(identifier: String) -> AzureCommunicationCalling.RemoteParticipant? {
-        call?.remoteParticipants.first(where: { $0.identifier.rawId == identifier })
+    do {
+      try await call.hold()
+      logger.debug("Hold Call successful")
+    } catch {
+      logger.error("ERROR: It was not possible to hold call. \(error)")
+    }
+  }
+
+  public func resumeCall() async throws {
+    guard let call = call else {
+      return
     }
 
-    func getLocalVideoStream<LocalVideoStreamType>(_ identifier: String)
-    -> CompositeLocalVideoStream<LocalVideoStreamType>? {
+    do {
+      try await call.resume()
+      logger.debug("Resume Call successful")
+    } catch {
+      logger.error("ERROR: It was not possible to resume call. \(error)")
+      throw error
+    }
+  }
 
-        guard getLocalVideoStreamIdentifier() == identifier else {
-            return nil
-        }
-        guard let videoStream = localVideoStream,
-              let castVideoStream = videoStream as? LocalVideoStreamType else {
-            return nil
-        }
-        guard videoStream is LocalVideoStreamType else {
-            return nil
-        }
-        return CompositeLocalVideoStream(
-            mediaStreamType: videoStream.sourceType.asCompositeMediaStreamType,
-            wrappedObject: castVideoStream
-        )
+  public func getLogFiles() -> [URL] {
+    guard let callClient = callClient else {
+      return []
+    }
+    return callClient.debugInfo.supportFiles
+  }
+
+  public func admitAllLobbyParticipants() async throws {
+    guard let call = call else {
+      return
     }
 
-    func startCallLocalVideoStream() async throws -> String {
-        let stream = await getValidLocalVideoStream()
-        return try await startCallVideoStream(stream)
+    do {
+      try await call.callLobby.admitAll()
+      logger.debug("Admit All participants successful")
+    } catch {
+      logger.error("ERROR: It was not possible to admit all lobby participants. \(error)")
+      throw error
+    }
+  }
+
+  public func admitLobbyParticipant(_ participantId: String) async throws {
+    guard let call = call else {
+      return
     }
 
-    func stopLocalVideoStream() async throws {
-        guard let call = self.call,
-              let videoStream = self.localVideoStream else {
-            logger.debug("Local video stopped successfully without call")
-            return
-        }
-        do {
-            try await call.stopVideo(stream: videoStream)
-            logger.debug("Local video stopped successfully")
-        } catch {
-            logger.error( "Local video failed to stop. \(error)")
-            throw error
-        }
+    let identifier = createCommunicationIdentifier(fromRawId: participantId)
+
+    do {
+      try await call.callLobby.admit(identifiers: [identifier])
+      logger.debug("Admit participants successful")
+    } catch {
+      logger.error("ERROR: It was not possible to admit lobby participants. \(error)")
+      throw error
+    }
+  }
+
+  public func declineLobbyParticipant(_ participantId: String) async throws {
+    guard let call = call else {
+      return
     }
 
-    func switchCamera() async throws -> CameraDevice {
-        guard let videoStream = localVideoStream else {
-            let error = CallCompositeInternalError.cameraSwitchFailed
-            logger.error("\(error)")
-            throw error
-        }
-        let currentCamera = videoStream.source
-        let flippedFacing: CameraFacing = currentCamera.cameraFacing == .front ? .back : .front
+    let identifier = createCommunicationIdentifier(fromRawId: participantId)
 
         let deviceInfo = await getVideoDeviceInfo(flippedFacing)
         try await change(videoStream, source: deviceInfo)
@@ -620,17 +673,25 @@ extension CallingSDKWrapper {
         }
     }
 
-    private func change(
-        _ videoStream: AzureCommunicationCalling.LocalVideoStream, source: VideoDeviceInfo
-    ) async throws {
-        do {
-            try await videoStream.switchSource(camera: source)
-            logger.debug("Local video switched camera successfully")
-        } catch {
-            logger.error( "Local video failed to switch camera. \(error)")
-            throw error
-        }
+  private func startCallVideoStream(
+    _ videoStream: AzureCommunicationCalling.LocalVideoStream
+  ) async throws -> String {
+    guard let call = self.call else {
+      let error = CallCompositeInternalError.cameraOnFailed
+      self.logger.error("Start call video stream failed")
+      throw error
     }
+    do {
+      let localVideoStreamId = getLocalVideoStreamIdentifier() ?? ""
+      logger.debug("Starting local video")
+      try await call.startVideo(stream: videoStream)
+      logger.debug("Local video started successfully")
+      return localVideoStreamId
+    } catch {
+      logger.error("Local video failed to start. \(error)")
+      throw error
+    }
+  }
 
     private func setupFeatures() {
         guard let call = call else {
@@ -658,48 +719,70 @@ extension CallingSDKWrapper {
             }
         }
     }
+  }
 
-    private func getLocalVideoStreamIdentifier() -> String? {
-        guard localVideoStream != nil else {
-            return nil
-        }
-        return "builtinCameraVideoStream"
+  private func setupFeatures() {
+    guard let call = call else {
+      return
     }
+    let recordingCallFeature = call.feature(Features.recording)
+    let transcriptionCallFeature = call.feature(Features.transcription)
+    let dominantSpeakersFeature = call.feature(Features.dominantSpeakers)
+    let localUserDiagnosticsFeature = call.feature(Features.localUserDiagnostics)
+    if let callingEventsHandler = self.callingEventsHandler as? CallingSDKEventsHandler {
+      callingEventsHandler.assign(recordingCallFeature)
+      callingEventsHandler.assign(transcriptionCallFeature)
+      callingEventsHandler.assign(dominantSpeakersFeature)
+      callingEventsHandler.assign(localUserDiagnosticsFeature)
+    }
+  }
+
+  private func getLocalVideoStreamIdentifier() -> String? {
+    guard localVideoStream != nil else {
+      return nil
+    }
+    return "builtinCameraVideoStream"
+  }
 }
 // swiftlint:enable type_body_length
 
 extension CallingSDKWrapper: DeviceManagerDelegate {
-    func deviceManager(_ deviceManager: DeviceManager, didUpdateCameras args: VideoDevicesUpdatedEventArgs) {
-        for newDevice in args.addedVideoDevices {
-            newVideoDeviceAddedHandler?(newDevice)
+  public func deviceManager(
+    _ deviceManager: DeviceManager, didUpdateCameras args: VideoDevicesUpdatedEventArgs
+  ) {
+    for newDevice in args.addedVideoDevices {
+      newVideoDeviceAddedHandler?(newDevice)
+    }
+  }
+
+  private func getVideoDeviceInfo(_ cameraFacing: CameraFacing) async -> VideoDeviceInfo {
+    // If we have a camera, return the value right away
+    await withCheckedContinuation({ continuation in
+      if let camera = deviceManager?.cameras
+        .first(where: { $0.cameraFacing == cameraFacing }
+        )
+      {
+        newVideoDeviceAddedHandler = nil
+        return continuation.resume(returning: camera)
+      }
+      newVideoDeviceAddedHandler = { deviceInfo in
+        if deviceInfo.cameraFacing == cameraFacing {
+          continuation.resume(returning: deviceInfo)
         }
+      }
+    })
+  }
+
+  private func getValidLocalVideoStream() async -> AzureCommunicationCalling.LocalVideoStream {
+    if let existingVideoStream = localVideoStream {
+      self.logger.debug("Local video stream already exists")
+      return existingVideoStream
     }
 
-    private func getVideoDeviceInfo(_ cameraFacing: CameraFacing) async -> VideoDeviceInfo {
-        // If we have a camera, return the value right away
-        await withCheckedContinuation({ continuation in
-            if let camera = deviceManager?.cameras
-                .first(where: { $0.cameraFacing == cameraFacing }
-                ) {
-                newVideoDeviceAddedHandler = nil
-                return continuation.resume(returning: camera)
-            }
-            newVideoDeviceAddedHandler = { deviceInfo in
-                if deviceInfo.cameraFacing == cameraFacing {
-                    continuation.resume(returning: deviceInfo)
-                }
-            }
-        })
-    }
-
-    private func getValidLocalVideoStream() async -> AzureCommunicationCalling.LocalVideoStream {
-        if let existingVideoStream = localVideoStream {
-            return existingVideoStream
-        }
-
-        let videoDevice = await getVideoDeviceInfo(.front)
-        let videoStream = AzureCommunicationCalling.LocalVideoStream(camera: videoDevice)
-        localVideoStream = videoStream
-        return videoStream
-    }
+    let videoDevice = await getVideoDeviceInfo(.front)
+    self.logger.debug("Video device found \(videoDevice)")
+    let videoStream = AzureCommunicationCalling.LocalVideoStream(camera: videoDevice)
+    localVideoStream = videoStream
+    return videoStream
+  }
 }

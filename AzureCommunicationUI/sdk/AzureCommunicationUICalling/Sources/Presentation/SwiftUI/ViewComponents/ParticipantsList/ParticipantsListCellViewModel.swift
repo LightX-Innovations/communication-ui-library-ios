@@ -67,38 +67,42 @@ class ParticipantsListCellViewModel: BaseDrawerItemViewModel {
         return participantViewData
     }
 
-    func getCellDisplayName(with participantViewData: ParticipantViewData?) -> String {
-        let name = getParticipantName(with: participantViewData)
-        let isNameEmpty = name.trimmingCharacters(in: .whitespaces).isEmpty
-        let displayName = isNameEmpty
-        ? localizationProvider.getLocalizedString(.unnamedParticipant)
-        : name
-        return isLocalParticipant
-        ? localizationProvider.getLocalizedString(.localeParticipantWithSuffix, displayName)
-        : displayName
-    }
 
-    func getCellAccessibilityLabel(with participantViewData: ParticipantViewData?) -> String {
-        let status = isInLobby ? localizationProvider.getLocalizedString(.participantListLobbyAction)
-        : isHold ? getOnHoldString() :
-        localizationProvider.getLocalizedString(isMuted ? .muted : .unmuted)
-        return "\(getCellDisplayName(with: participantViewData)) \(status)"
-    }
+  func getCellDisplayName(with participantViewData: ParticipantViewData?) -> String {
+    let name = getParticipantName(with: participantViewData)
+    let isNameEmpty = name.trimmingCharacters(in: .whitespaces).isEmpty
+    let displayName =
+      isNameEmpty
+      ? localizationProvider.getLocalizedString(.unnamedParticipant)
+      : name
+    return isLocalParticipant
+      ? localizationProvider.getLocalizedString(.localeParticipantWithSuffix, displayName)
+      : displayName
+  }
 
-    func getParticipantName(with participantViewData: ParticipantViewData?) -> String {
-        let name: String
-        if let data = participantViewData, let renderDisplayName = data.displayName {
-            let isRendererNameEmpty = renderDisplayName.trimmingCharacters(in: .whitespaces).isEmpty
-            name = isRendererNameEmpty ? displayName : renderDisplayName
-        } else {
-            name = displayName
-        }
-        return name
-    }
+  func getCellAccessibilityLabel(with participantViewData: ParticipantViewData?) -> String {
+    let status =
+      isInLobby
+      ? localizationProvider.getLocalizedString(.participantListLobbyAction)
+      : isHold
+        ? getOnHoldString() : localizationProvider.getLocalizedString(isMuted ? .muted : .unmuted)
+    return "\(getCellDisplayName(with: participantViewData)) \(status)"
+  }
 
-    func getOnHoldString() -> String {
-        localizationProvider.getLocalizedString(.onHold)
+  func getParticipantName(with participantViewData: ParticipantViewData?) -> String {
+    let name: String
+    if let data = participantViewData, let renderDisplayName = data.displayName {
+      let isRendererNameEmpty = renderDisplayName.trimmingCharacters(in: .whitespaces).isEmpty
+      name = isRendererNameEmpty ? displayName : renderDisplayName
+    } else {
+      name = displayName
     }
+    return name
+  }
+
+  func getOnHoldString() -> String {
+    localizationProvider.getLocalizedString(.onHold)
+  }
 }
 
 extension ParticipantsListCellViewModel {

@@ -5,7 +5,7 @@
 
 import Combine
 
-extension Reducer {
+public extension Reducer {
     static func appStateReducer(
         permissionsReducer: Reducer<PermissionState, PermissionAction> = .livePermissionsReducer,
         localUserReducer: Reducer<LocalUserState, LocalUserAction> = .liveLocalUserReducer,
@@ -26,7 +26,7 @@ extension Reducer {
         rttReducer: Reducer<RttState, RttAction> = .rttReducer
     ) -> Reducer<AppState, Action> {
 
-        return Reducer<AppState, Action> { state, action in
+    return Reducer<AppState, Action> { state, action in
 
             var permissionState = state.permissionState
             var localUserState = state.localUserState
@@ -45,18 +45,18 @@ extension Reducer {
             var buttonViewDataState = state.buttonViewDataState
             var rttState = state.rttState
 
-            switch action {
-            case let .permissionAction(permAction):
-                permissionState = permissionsReducer.reduce(state.permissionState, permAction)
+      switch action {
+      case let .permissionAction(permAction):
+        permissionState = permissionsReducer.reduce(state.permissionState, permAction)
 
-            case let .localUserAction(localUserAction):
-                localUserState = localUserReducer.reduce(state.localUserState, localUserAction)
+      case let .localUserAction(localUserAction):
+        localUserState = localUserReducer.reduce(state.localUserState, localUserAction)
 
-            case let .lifecycleAction(lifecycleAction):
-                lifeCycleState = lifeCycleReducer.reduce(state.lifeCycleState, lifecycleAction)
+      case let .lifecycleAction(lifecycleAction):
+        lifeCycleState = lifeCycleReducer.reduce(state.lifeCycleState, lifecycleAction)
 
-            case let .visibilityAction(visibilityAction):
-                visibilityState = visibilityReducer.reduce(state.visibilityState, visibilityAction)
+      case let .visibilityAction(visibilityAction):
+        visibilityState = visibilityReducer.reduce(state.visibilityState, visibilityAction)
 
             case let .captionsAction(captionsAction):
                 captionsState = captionsReducer.reduce(state.captionsState, captionsAction)
@@ -72,11 +72,12 @@ extension Reducer {
                 break
             }
 
-            callingState = callingReducer.reduce(state.callingState, action)
-            navigationState = navigationReducer.reduce(state.navigationState, action)
-            errorState = errorReducer.reduce(state.errorState, action)
-            remoteParticipantState = remoteParticipantsReducer.reduce(state.remoteParticipantsState, action)
-            diagnosticsState = diagnosticsReducer.reduce(state.diagnosticsState, action)
+      callingState = callingReducer.reduce(state.callingState, action)
+      navigationState = navigationReducer.reduce(state.navigationState, action)
+      errorState = errorReducer.reduce(state.errorState, action)
+      remoteParticipantState = remoteParticipantsReducer.reduce(
+        state.remoteParticipantsState, action)
+      diagnosticsState = diagnosticsReducer.reduce(state.diagnosticsState, action)
 
             if case let .audioSessionAction(audioAction) = action {
                 audioSessionState = audioSessionReducer.reduce(state.audioSessionState, audioAction)
@@ -100,4 +101,5 @@ extension Reducer {
             )
         }
     }
+  }
 }

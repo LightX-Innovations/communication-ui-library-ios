@@ -3,24 +3,27 @@
 //  Licensed under the MIT License.
 //
 
-import SwiftUI
 import FluentUI
+import SwiftUI
 import UIKit
 
 struct CompositeAvatar: View {
-    @Binding var displayName: String?
-    @Binding var avatarImage: UIImage?
-    var isSpeaking: Bool
-    var avatarSize: MSFAvatarSize = .size72
-    var body: some View {
-        let isNameEmpty = displayName == nil
-        || displayName?.trimmingCharacters(in: .whitespaces).isEmpty == true
-        return Avatar(style: isNameEmpty ? .outlined : .default,
-                      size: avatarSize,
-                      image: avatarImage,
-                      primaryText: displayName)
-            .ringColor(StyleProvider.color.primaryColor)
-            .isRingVisible(isSpeaking)
-            .accessibilityHidden(true)
-    }
+  @Binding var displayName: String?
+  @Binding var avatarImage: UIImage?
+  var isSpeaking: Bool
+  var avatarSize: MSFAvatarSize = .size72
+  var body: some View {
+    let isNameEmpty =
+      displayName == nil
+      || displayName?.trimmingCharacters(in: .whitespaces).isEmpty == true
+    return Avatar(
+      style: isNameEmpty ? .outlined : .default,
+      size: avatarSize,
+      image: avatarImage,
+      primaryText: displayName
+    )
+    .ringColor(StyleProvider.color.primaryColor)
+    .isRingVisible(isSpeaking)
+    .accessibilityHidden(true)
+  }
 }

@@ -3,13 +3,13 @@
 //  Licensed under the MIT License.
 //
 
-import Foundation
 import AVKit
+import Foundation
 
 @available(iOS 15.0, *)
 final class CallPipVideoViewController: AVPictureInPictureVideoCallViewController {
-    var onRequirePipContentView: (() -> UIView?)?
-    var onRequireContentFailed: (() -> Void)?
+  var onRequirePipContentView: (() -> UIView?)?
+  var onRequireContentFailed: (() -> Void)?
 
     /// Indicate if the pip container is ready for adding content.
     private var isPipPlaceholderReady = false
@@ -18,9 +18,8 @@ final class CallPipVideoViewController: AVPictureInPictureVideoCallViewControlle
         super.init(nibName: nil, bundle: nil)
     }
 
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
+    pipContentView.translatesAutoresizingMaskIntoConstraints = false
+    view.addSubview(pipContentView)
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)

@@ -6,24 +6,27 @@
 import Combine
 
 extension Middleware {
-    static func liveCallingMiddleware(callingMiddlewareHandler actionHandler: CallingMiddlewareHandling)
-    -> Middleware<AppState, AzureCommunicationUICalling.Action> {
-        .init(
-            apply: { dispatch, getState in
-                return { next in
-                    return { action in
-                        switch action {
-                        case .callingAction(let callingAction):
-                            handleCallingAction(callingAction, actionHandler, getState, dispatch)
+  static func liveCallingMiddleware(
+    callingMiddlewareHandler actionHandler: CallingMiddlewareHandling
+  )
+    -> Middleware<AppState, AzureCommunicationUICalling.Action>
+  {
+    .init(
+      apply: { dispatch, getState in
+        return { next in
+          return { action in
+            switch action {
+            case .callingAction(let callingAction):
+              handleCallingAction(callingAction, actionHandler, getState, dispatch)
 
-                        case .localUserAction(let localUserAction):
-                            handleLocalUserAction(localUserAction, actionHandler, getState, dispatch)
+            case .localUserAction(let localUserAction):
+              handleLocalUserAction(localUserAction, actionHandler, getState, dispatch)
 
-                        case .permissionAction(let permissionAction):
-                            handlePermissionAction(permissionAction, actionHandler, getState, dispatch)
+            case .permissionAction(let permissionAction):
+              handlePermissionAction(permissionAction, actionHandler, getState, dispatch)
 
-                        case .lifecycleAction(let lifecycleAction):
-                            handleLifecycleAction(lifecycleAction, actionHandler, getState, dispatch)
+            case .lifecycleAction(let lifecycleAction):
+              handleLifecycleAction(lifecycleAction, actionHandler, getState, dispatch)
 
                         case .audioSessionAction(let audioAction):
                             handleAudioSessionAction(audioAction, actionHandler, getState, dispatch)
@@ -117,7 +120,8 @@ private func handleLocalUserAction(_ action: LocalUserAction,
             .audioDeviceChangeRequested,
             .audioDeviceChangeSucceeded,
             .audioDeviceChangeFailed,
-            .participantRoleChanged:
+            .participantRoleChanged,
+            .updateCameraTransforms:
         break
     }
 }
@@ -154,20 +158,31 @@ private func handleLifecycleAction(_ action: LifecycleAction,
         if getState().callingState.status == .connected {
             actionHandler.endCall(state: getState(), dispatch: dispatch)
         }
-    }
+      }
+    )
+  }
 }
 
-private func handleAudioSessionAction(_ action: AudioSessionAction,
-                                      _ actionHandler: CallingMiddlewareHandling,
-                                      _ getState: () -> AppState,
-                                      _ dispatch: @escaping ActionDispatch) {
-    switch action {
-    case .audioInterrupted:
-        actionHandler.audioSessionInterrupted(state: getState(), dispatch: dispatch)
-    case .audioInterruptEnded,
-            .audioEngaged:
-        break
-    }
+private func handleCallingAction(
+  _ action: CallingAction,
+  _ actionHandler: CallingMiddlewareHandling,
+  _ getState: () -> AppState,
+  _ dispatch: @escaping ActionDispatch
+) {
+  switch action {
+  case .setupCall:
+    actionHandler.setupCall(state: getState(), dispatch: dispatch)
+  case .callStartRequested:
+    actionHandler.startCall(state: getState(), dispatch: dispatch)
+  case .callEndRequested:
+    actionHandler.endCall(state: getState(), dispatch: dispatch)
+  case .holdRequested:
+    actionHandler.holdCall(state: getState(), dispatch: dispatch)
+  case .resumeRequested:
+    actionHandler.resumeCall(state: getState(), dispatch: dispatch)
+  default:
+    break
+  }
 }
 
 private func handleRemoteParticipantAction(_ action: RemoteParticipantsAction,

@@ -45,4 +45,11 @@ extension Reducer where State == RemoteParticipantsState,
                                        lobbyError: lobbyError,
                                        totalParticipantCount: totalParticipantCount)
     }
+    return RemoteParticipantsState(
+      participantInfoList: participantInfoList,
+      lastUpdateTimeStamp: lastUpdateTimeStamp,
+      dominantSpeakers: dominantSpeakers,
+      dominantSpeakersModifiedTimestamp: dominantSpeakersModifiedTimestamp,
+      lobbyError: lobbyError)
+  }
 }

@@ -3,8 +3,8 @@
 //  Licensed under the MIT License.
 //
 
-import Foundation
 import Combine
+import Foundation
 
 class ParticipantGridViewModel: ObservableObject {
     @Published var shouldUseVerticalStyleGrid = true
@@ -17,14 +17,34 @@ class ParticipantGridViewModel: ObservableObject {
         return  self.visibilityStatus == .pipModeEntered ? 1 : isIpadInterface ? 9 : 6
     }
 
-    private var lastUpdateTimeStamp = Date()
-    private var lastDominantSpeakersUpdatedTimestamp = Date()
-    private var visibilityStatus: VisibilityStatus = .visible
-    private var appStatus: AppStatus = .foreground
-    private(set) var participantsCellViewModelArr: [ParticipantGridCellViewModel] = []
+    guard
+      lastUpdateTimeStamp != remoteParticipantsState.lastUpdateTimeStamp
+        || lastDominantSpeakersUpdatedTimestamp
+          != remoteParticipantsState.dominantSpeakersModifiedTimestamp
+        || visibilityStatus != visibilityState.currentStatus
+        || appStatus != lifeCycleState.currentStatus
+    else {
+      return
+    }
+    lastUpdateTimeStamp = remoteParticipantsState.lastUpdateTimeStamp
+    lastDominantSpeakersUpdatedTimestamp = remoteParticipantsState.dominantSpeakersModifiedTimestamp
+    visibilityStatus = visibilityState.currentStatus
+    appStatus = lifeCycleState.currentStatus
 
-    @Published var gridsCount: Int = 0
-    @Published var displayedParticipantInfoModelArr: [ParticipantInfoModel] = []
+    let remoteParticipants = remoteParticipantsState.participantInfoList
+      .filter { participanInfoModel in
+        participanInfoModel.status != .inLobby && participanInfoModel.status != .disconnected
+      }
+    let dominantSpeakers = remoteParticipantsState.dominantSpeakers
+    var newDisplayedInfoModelArr = getDisplayedInfoViewModels(
+      remoteParticipants, dominantSpeakers, visibilityState)
+    let removedModels = getRemovedInfoModels(for: newDisplayedInfoModelArr)
+    let addedModels = getAddedInfoModels(for: newDisplayedInfoModelArr)
+    let orderedInfoModelArr = sortDisplayedInfoModels(
+      newDisplayedInfoModelArr,
+      removedModels: removedModels,
+      addedModels: addedModels)
+    updateCellViewModel(for: orderedInfoModelArr, lifeCycleState: lifeCycleState)
 
     let rendererViewManager: RendererViewManager
 
@@ -150,52 +170,77 @@ class ParticipantGridViewModel: ObservableObject {
         return Array(newDisplayRemoteParticipant)
     }
 
-    private func getRemovedInfoModels(for newInfoModels: [ParticipantInfoModel]) -> [ParticipantInfoModel] {
-        return displayedParticipantInfoModelArr.filter { old in
-            !newInfoModels.contains(where: { new in
-                new.userIdentifier == old.userIdentifier
-            })
-        }
+    // To update existed participantInfoModel
+    for (index, item) in localCacheInfoModelArr.enumerated() {
+      if !replacedIndex.contains(index),
+        let newItem = newInfoModels.first(where: { $0.userIdentifier == item.userIdentifier })
+      {
+        localCacheInfoModelArr[index] = newItem
+      }
     }
 
-    private func getAddedInfoModels(for newInfoModels: [ParticipantInfoModel]) -> [ParticipantInfoModel] {
-        return newInfoModels.filter { new in
-            !displayedParticipantInfoModelArr.contains(where: { old in
-                new.userIdentifier == old.userIdentifier
-            })
-        }
+    return localCacheInfoModelArr
+  }
+
+  private func updateCellViewModel(
+    for displayedRemoteParticipants: [ParticipantInfoModel],
+    lifeCycleState: LifeCycleState
+  ) {
+    if participantsCellViewModelArr.count == displayedRemoteParticipants.count {
+      updateOrderedCellViewModels(for: displayedRemoteParticipants, lifeCycleState: lifeCycleState)
+    } else {
+      updateAndReorderCellViewModels(
+        for: displayedRemoteParticipants, lifeCycleState: lifeCycleState)
+    }
+  }
+
+  private func updateOrderedCellViewModels(
+    for displayedRemoteParticipants: [ParticipantInfoModel],
+    lifeCycleState: LifeCycleState
+  ) {
+    guard participantsCellViewModelArr.count == displayedRemoteParticipants.count else {
+      return
+    }
+    for (index, infoModel) in displayedRemoteParticipants.enumerated() {
+      let cellViewModel = participantsCellViewModelArr[index]
+      cellViewModel.update(participantModel: infoModel, lifeCycleState: lifeCycleState)
+    }
+  }
+
+  private func updateAndReorderCellViewModels(
+    for displayedRemoteParticipants: [ParticipantInfoModel],
+    lifeCycleState: LifeCycleState
+  ) {
+    var newCellViewModelArr = [ParticipantGridCellViewModel]()
+    for infoModel in displayedRemoteParticipants {
+      if let viewModel = participantsCellViewModelArr.first(where: {
+        $0.participantIdentifier == infoModel.userIdentifier
+      }) {
+        viewModel.update(participantModel: infoModel, lifeCycleState: lifeCycleState)
+        newCellViewModelArr.append(viewModel)
+      } else {
+        let cellViewModel =
+          compositeViewModelFactory
+          .makeParticipantCellViewModel(participantModel: infoModel, lifeCycleState: lifeCycleState)
+        newCellViewModelArr.append(cellViewModel)
+      }
     }
 
-    private func sortDisplayedInfoModels(_ newInfoModels: [ParticipantInfoModel],
-                                         removedModels: [ParticipantInfoModel],
-                                         addedModels: [ParticipantInfoModel]) -> [ParticipantInfoModel] {
-        var localCacheInfoModelArr = displayedParticipantInfoModelArr
-        guard removedModels.count == addedModels.count else {
-            // when there is a gridType change
-            // we just directly update the order based on the latest sorting
-            return newInfoModels
-        }
+    participantsCellViewModelArr = newCellViewModelArr
+  }
 
-        var replacedIndex = [Int]()
-        // Otherwise, we keep those existed participant in same position when there is any update
-        for (index, item) in removedModels.enumerated() {
-            if let removeIndex = localCacheInfoModelArr.firstIndex(where: {
-                $0.userIdentifier == item.userIdentifier
-            }) {
-                localCacheInfoModelArr[removeIndex] = addedModels[index]
-                replacedIndex.append(removeIndex)
-            }
-        }
-
-        // To update existed participantInfoModel
-        for (index, item) in localCacheInfoModelArr.enumerated() {
-            if !replacedIndex.contains(index),
-               let newItem = newInfoModels.first(where: {$0.userIdentifier == item.userIdentifier}) {
-                localCacheInfoModelArr[index] = newItem
-            }
-        }
-
-        return localCacheInfoModelArr
+  private func postParticipantsListUpdateAccessibilityAnnouncements(
+    removedModels: [ParticipantInfoModel],
+    addedModels: [ParticipantInfoModel]
+  ) {
+    if !removedModels.isEmpty {
+      if removedModels.count == 1 {
+        accessibilityProvider.postQueuedAnnouncement(
+          localizationProvider.getLocalizedString(.onePersonLeft, removedModels.first!.displayName))
+      } else {
+        accessibilityProvider.postQueuedAnnouncement(
+          localizationProvider.getLocalizedString(.multiplePeopleLeft, removedModels.count))
+      }
     }
 
     private func updateCellViewModel(for displayedRemoteParticipants: [ParticipantInfoModel],
@@ -258,4 +303,5 @@ class ParticipantGridViewModel: ObservableObject {
             }
         }
     }
+  }
 }

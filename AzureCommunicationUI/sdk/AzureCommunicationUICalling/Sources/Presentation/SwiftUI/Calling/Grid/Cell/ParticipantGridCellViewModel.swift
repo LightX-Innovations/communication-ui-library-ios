@@ -3,19 +3,19 @@
 //  Licensed under the MIT License.
 //
 
-import Foundation
 import Combine
+import Foundation
 
 struct ParticipantVideoViewInfoModel {
-    let videoStreamType: VideoStreamInfoModel.MediaStreamType?
-    let videoStreamId: String?
+  let videoStreamType: VideoStreamInfoModel.MediaStreamType?
+  let videoStreamId: String?
 }
 
 class ParticipantGridCellViewModel: ObservableObject, Identifiable {
-    private let localizationProvider: LocalizationProviderProtocol
-    private let accessibilityProvider: AccessibilityProviderProtocol
+  private let localizationProvider: LocalizationProviderProtocol
+  private let accessibilityProvider: AccessibilityProviderProtocol
 
-    let id = UUID()
+  let id = UUID()
 
     @Published var videoViewModel: ParticipantVideoViewInfoModel?
     @Published var accessibilityLabel: String = ""
@@ -149,8 +149,8 @@ class ParticipantGridCellViewModel: ObservableObject, Identifiable {
         self.avatarDisplayName = displayName
     }
 
-    func getOnHoldString() -> String {
-        localizationProvider.getLocalizedString(.onHold)
+    if self.isSpeaking != participantModel.isSpeaking {
+      self.isSpeaking = participantModel.isSpeaking
     }
 
     private func getAccessibilityLabel(participantModel: ParticipantInfoModel) -> String {
@@ -165,20 +165,10 @@ class ParticipantGridCellViewModel: ObservableObject, Identifiable {
                                                        participantModel.displayName, status, videoStatus)
     }
 
-    private func getDisplayingVideoStreamModel(_ participantModel: ParticipantInfoModel)
-    -> ParticipantVideoViewInfoModel {
-        let screenShareVideoStreamIdentifier = participantModel.screenShareVideoStreamModel?.videoStreamIdentifier
-        let cameraVideoStreamIdentifier = isCameraEnabled ?
-        participantModel.cameraVideoStreamModel?.videoStreamIdentifier :
-        nil
+    let isOnHold = participantModel.status == .hold
 
-        let screenShareVideoStreamType = participantModel.screenShareVideoStreamModel?.mediaStreamType
-        let cameraVideoStreamType = participantModel.cameraVideoStreamModel?.mediaStreamType
-        return screenShareVideoStreamIdentifier != nil ?
-        ParticipantVideoViewInfoModel(videoStreamType: screenShareVideoStreamType,
-                                      videoStreamId: screenShareVideoStreamIdentifier) :
-        ParticipantVideoViewInfoModel(videoStreamType: cameraVideoStreamType,
-                                      videoStreamId: cameraVideoStreamIdentifier)
+    if self.isHold != isOnHold {
+      self.isHold = isOnHold
     }
 
     private static func isOutgoingCallDialingInProgress(callType: CompositeCallType,

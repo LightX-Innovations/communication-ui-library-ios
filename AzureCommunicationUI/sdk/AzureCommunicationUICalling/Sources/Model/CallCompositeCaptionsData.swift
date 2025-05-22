@@ -3,8 +3,8 @@
 //  Licensed under the MIT License.
 //
 
-import Foundation
 import AzureCommunicationCalling
+import Foundation
 
 enum CallCompositeCaptionsType: Int {
     case none
@@ -90,7 +90,7 @@ extension AzureCommunicationCalling.TeamsCaptionsReceivedEventArgs {
     }
 }
 
- extension AzureCommunicationCalling.CommunicationCaptionsReceivedEventArgs {
+extension AzureCommunicationCalling.CommunicationCaptionsReceivedEventArgs {
     func toCallCompositeCaptionsData() -> CallCompositeCaptionsData {
         return CallCompositeCaptionsData(
             resultType: resultType.toCaptionsResultType(),
@@ -104,7 +104,7 @@ extension AzureCommunicationCalling.TeamsCaptionsReceivedEventArgs {
             displayText: nil
         )
     }
- }
+}
 
 extension AzureCommunicationCalling.CaptionsResultType {
     func toCaptionsResultType() -> CaptionsResultType {

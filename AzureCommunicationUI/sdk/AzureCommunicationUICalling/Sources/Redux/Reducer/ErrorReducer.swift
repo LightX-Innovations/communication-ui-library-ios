@@ -5,31 +5,34 @@
 
 import Combine
 
-extension Reducer where State == ErrorState,
-                        Actions == Action {
-    static var liveErrorReducer: Self = Reducer { state, action in
+extension Reducer
+where
+  State == ErrorState,
+  Actions == Action
+{
+  static var liveErrorReducer: Self = Reducer { state, action in
 
-        var errorType = state.internalError
-        var error = state.error
-        var errorCategory = state.errorCategory
+    var errorType = state.internalError
+    var error = state.error
+    var errorCategory = state.errorCategory
 
-        switch action {
-        case let .errorAction(.fatalErrorUpdated(internalError, rawError)):
-            errorType = internalError
-            error = rawError
-            errorCategory = .fatal
-        case let .errorAction(.statusErrorAndCallReset(internalError, rawError)):
-            errorType = internalError
-            error = rawError
-            errorCategory = .callState
-        case .callingAction(.callStartRequested):
-            errorType = nil
-            error = nil
-            errorCategory = .none
-        case .localUserAction(.cameraOnFailed):
-            errorType = .cameraOnFailed
-            error = nil
-            errorCategory = .callState
+    switch action {
+    case let .errorAction(.fatalErrorUpdated(internalError, rawError)):
+      errorType = internalError
+      error = rawError
+      errorCategory = .fatal
+    case let .errorAction(.statusErrorAndCallReset(internalError, rawError)):
+      errorType = internalError
+      error = rawError
+      errorCategory = .callState
+    case .callingAction(.callStartRequested):
+      errorType = nil
+      error = nil
+      errorCategory = .none
+    case .localUserAction(.cameraOnFailed):
+      errorType = .cameraOnFailed
+      error = nil
+      errorCategory = .callState
 
             // Exhaustive unimplemented actions
         case .audioSessionAction,
@@ -81,4 +84,10 @@ extension Reducer where State == ErrorState,
                           error: error,
                           errorCategory: errorCategory)
     }
+
+    return ErrorState(
+      internalError: errorType,
+      error: error,
+      errorCategory: errorCategory)
+  }
 }

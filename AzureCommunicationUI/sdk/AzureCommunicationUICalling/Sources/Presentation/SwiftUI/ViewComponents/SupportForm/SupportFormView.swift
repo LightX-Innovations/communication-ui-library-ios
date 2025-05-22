@@ -3,14 +3,14 @@
 //  Licensed under the MIT License.
 //
 
+import FluentUI
 import Foundation
 import SwiftUI
-import FluentUI
 
 internal struct SupportFormView: View {
-    @ObservedObject var viewModel: SupportFormViewModel
-    @ObservedObject var landscapeKeyboardWatcher: LandscapeAwareKeyboardWatcher
-        = LandscapeAwareKeyboardWatcher.shared
+  @ObservedObject var viewModel: SupportFormViewModel
+  @ObservedObject var landscapeKeyboardWatcher: LandscapeAwareKeyboardWatcher =
+    LandscapeAwareKeyboardWatcher.shared
 
     enum Constants {
         static let otherControlsHeightEstimate: CGFloat = 112
@@ -22,9 +22,9 @@ internal struct SupportFormView: View {
 
     let screenHeight: CGFloat = UIScreen.main.bounds.height
 
-    init(viewModel: SupportFormViewModel) {
-        self.viewModel = viewModel
-    }
+  init(viewModel: SupportFormViewModel) {
+    self.viewModel = viewModel
+  }
 
     var body: some View {
         VStack {
@@ -80,6 +80,7 @@ internal struct SupportFormView: View {
         .padding()
         .padding(.bottom, calculatedFormPadding())
     }
+  }
 
     func calculatedTextEditorHeight() -> CGFloat {
         let sh = screenHeight

@@ -3,10 +3,10 @@
 //  Licensed under the MIT License.
 //
 
-import Foundation
 import AzureCommunicationCommon
+import Foundation
 
-struct CallConfiguration {
+public struct CallConfiguration {
     let groupId: UUID?
     let meetingLink: String?
     let meetingId: String?
@@ -74,11 +74,11 @@ struct CallConfiguration {
             self.compositeCallType = .oneToOneIncoming
             self.callId = callId
         }
-        self.diagnosticConfig = DiagnosticConfig()
-    }
+    self.diagnosticConfig = DiagnosticConfig()
+  }
 }
 
-enum CompositeCallType {
+public enum CompositeCallType {
     case groupCall
     case teamsMeeting
     case oneToNOutgoing

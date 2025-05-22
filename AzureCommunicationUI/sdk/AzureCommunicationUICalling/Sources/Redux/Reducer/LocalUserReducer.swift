@@ -6,22 +6,26 @@
 import Combine
 import Foundation
 
-extension Reducer where State == LocalUserState,
-                        Actions == LocalUserAction {
-    static var liveLocalUserReducer: Self = Reducer { localUserState, action in
+extension Reducer
+where
+  State == LocalUserState,
+  Actions == LocalUserAction
+{
+  static var liveLocalUserReducer: Self = Reducer { localUserState, action in
 
-        var cameraStatus = localUserState.cameraState.operation
-        var cameraDeviceStatus = localUserState.cameraState.device
-        var cameraTransmissionStatus = localUserState.cameraState.transmission
-        var cameraError = localUserState.cameraState.error
+    var cameraStatus = localUserState.cameraState.operation
+    var cameraDeviceStatus = localUserState.cameraState.device
+    var cameraTransmissionStatus = localUserState.cameraState.transmission
+    var cameraError = localUserState.cameraState.error
 
-        var audioOperationStatus = localUserState.audioState.operation
-        var audioDeviceStatus = localUserState.audioState.device
-        var audioError = localUserState.audioState.error
+    var audioOperationStatus = localUserState.audioState.operation
+    var audioDeviceStatus = localUserState.audioState.device
+    var audioError = localUserState.audioState.error
 
         let displayName = localUserState.displayName
         var localVideoStreamIdentifier = localUserState.localVideoStreamIdentifier
         var participantRole = localUserState.participantRole
+        var rms = localUserState.transforms
         var capabilities = localUserState.capabilities
         var currentCapabilitiesAreDefault = localUserState.currentCapabilitiesAreDefault
 
@@ -82,6 +86,8 @@ extension Reducer where State == LocalUserState,
         case .setCapabilities(let newCapabilities):
             capabilities = newCapabilities
             currentCapabilitiesAreDefault = false
+        case .updateCameraTransforms(let newTransforms):
+            transforms = newTransforms
         case .onCapabilitiesChanged(event: let event):
             break
         }
@@ -99,34 +105,38 @@ extension Reducer where State == LocalUserState,
                               localVideoStreamIdentifier: localVideoStreamIdentifier,
                               participantRole: participantRole,
                               capabilities: capabilities,
-                              currentCapabilitiesAreDefault: currentCapabilitiesAreDefault)
+                              currentCapabilitiesAreDefault: currentCapabilitiesAreDefault
+                              transforms: transforms
+                              )
     }
 }
 
 private func getRequestedDeviceStatus(for audioDeviceType: AudioDeviceType)
--> LocalUserState.AudioDeviceSelectionStatus {
-    switch audioDeviceType {
-    case .speaker:
-        return .speakerRequested
-    case .receiver:
-        return .receiverRequested
-    case .bluetooth:
-        return .bluetoothRequested
-    case .headphones:
-        return .headphonesRequested
-    }
+  -> LocalUserState.AudioDeviceSelectionStatus
+{
+  switch audioDeviceType {
+  case .speaker:
+    return .speakerRequested
+  case .receiver:
+    return .receiverRequested
+  case .bluetooth:
+    return .bluetoothRequested
+  case .headphones:
+    return .headphonesRequested
+  }
 }
 
 private func getSelectedDeviceStatus(for audioDeviceType: AudioDeviceType)
--> LocalUserState.AudioDeviceSelectionStatus {
-    switch audioDeviceType {
-    case .speaker:
-        return .speakerSelected
-    case .receiver:
-        return .receiverSelected
-    case .bluetooth:
-        return .bluetoothSelected
-    case .headphones:
-        return .headphonesSelected
-    }
+  -> LocalUserState.AudioDeviceSelectionStatus
+{
+  switch audioDeviceType {
+  case .speaker:
+    return .speakerSelected
+  case .receiver:
+    return .receiverSelected
+  case .bluetooth:
+    return .bluetoothSelected
+  case .headphones:
+    return .headphonesSelected
+  }
 }
