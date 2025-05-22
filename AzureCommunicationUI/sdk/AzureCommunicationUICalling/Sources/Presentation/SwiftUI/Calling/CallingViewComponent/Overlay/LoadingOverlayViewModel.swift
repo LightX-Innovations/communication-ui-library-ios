@@ -97,5 +97,4 @@ class LoadingOverlayViewModel: OverlayViewModelProtocol {
       return
     }
   }
-
 }
