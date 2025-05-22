@@ -11,12 +11,15 @@ import XCTest
 
 class DiagnosticConfigTests: XCTestCase {
 
-  let expectedCompositeTag: String = "aci120/1.0.0-beta.4"
-  func test_init_when_init_then_returnExpectedTags() {
-    let sut = makeSUT()
-    guard let tag = sut.tags.first else {
-      XCTFail("Failed with empty array")
-      return
+    let expectedCompositeTag: String = "aci120/1.0.0-beta.5"
+    func test_init_when_init_then_returnExpectedTags() {
+        let sut = makeSUT()
+        guard let tag = sut.tags.first else {
+            XCTFail("Failed with empty array")
+            return
+        }
+
+        XCTAssertEqual(tag, expectedCompositeTag)
     }
 
     XCTAssertEqual(tag, expectedCompositeTag)

@@ -10,7 +10,12 @@ struct InfoHeaderView: View {
   @ObservedObject var viewModel: InfoHeaderViewModel
   @Environment(\.sizeCategory) var sizeCategory: ContentSizeCategory
   @State var participantsListButtonSourceView = UIView()
+  @State var participantMenuSourceView = UIView()
+  @State var customButton1SourceView = UIView()
+  @State var customButton2SourceView = UIView()
   @AccessibilityFocusState var focusedOnParticipantList: Bool
+  @AccessibilityFocusState var focusedOnCustomButton1: Bool
+  @AccessibilityFocusState var focusedOnCustomButton2: Bool
   let avatarViewManager: AvatarViewManagerProtocol
 
   private enum Constants {
@@ -52,6 +57,36 @@ struct InfoHeaderView: View {
     .accessibilityElement(children: .contain)
   }
 
+  var body: some View {
+    ZStack(
+      alignment: .leading
+    ) {
+      if viewModel.isInfoHeaderDisplayed {
+        infoHeader
+      } else {
+        EmptyView()
+      }
+    }
+    .onAppear(perform: {
+      viewModel.isPad = UIDevice.current.userInterfaceIdiom == .pad
+    })
+    /*
+    .modifier(PopupModalView(isPresented:
+                                viewModel.isParticipantsListDisplayed || viewModel.isParticipantMenuDisplayed) {
+        if viewModel.isParticipantsListDisplayed {
+            participantsListView
+                .accessibilityElement(children: .contain)
+                .accessibilityAddTraits(.isModal)
+        }
+        if viewModel.isParticipantMenuDisplayed {
+            participantMenuView
+                .accessibilityElement(children: .contain)
+                .accessibilityAddTraits(.isModal)
+        }
+    }) */
+    .accessibilityElement(children: .contain)
+  }
+
   var infoHeader: some View {
     HStack {
       // correct dismissButtonAccessibilityID
@@ -60,25 +95,43 @@ struct InfoHeaderView: View {
           .flipsForRightToLeftLayoutDirection(true)
           .accessibilityIdentifier(AccessibilityIdentifier.dismissButtonAccessibilityID.rawValue)
       }
-
-      Text(viewModel.infoLabel)
-        .padding(
-          EdgeInsets(
-            top: Constants.infoLabelHorizontalPadding,
-            leading: 0,
-            bottom: Constants.infoLabelHorizontalPadding,
-            trailing: 0)
-        )
-        .foregroundColor(Constants.foregroundColor)
-        .lineLimit(1)
-        .font(Fonts.caption1.font)
-        .accessibilityLabel(Text(viewModel.accessibilityLabel))
-        .accessibilitySortPriority(1)
-        .scaledToFit()
-        .minimumScaleFactor(
-          sizeCategory.isAccessibilityCategory
-            ? Constants.accessibilityFontScale : Constants.defaultFontScale)
+      VStack(alignment: .leading) {
+        Text(viewModel.title)
+          .alignmentGuide(.leading) { d in d[.leading] }
+          .foregroundColor(Constants.foregroundColor)
+          .lineLimit(1)
+          .font(Fonts.caption1.font)
+          .accessibilityLabel(Text(viewModel.accessibilityLabelTitle))
+          .accessibilitySortPriority(1)
+          .scaledToFit()
+          .minimumScaleFactor(
+            sizeCategory.isAccessibilityCategory
+              ? Constants.accessibilityFontScale : Constants.defaultFontScale)
+        if !viewModel.subtitle!.isEmpty {
+          Text(viewModel.subtitle!.trimmingCharacters(in: .whitespacesAndNewlines))
+            .alignmentGuide(.leading) { d in d[.leading] }
+            .foregroundColor(Constants.foregroundColor)
+            .lineLimit(1)
+            .font(Fonts.caption1.font)
+            .accessibilityLabel(Text(viewModel.accessibilityLabelSubtitle))
+            .accessibilitySortPriority(2)
+            .scaledToFit()
+            .minimumScaleFactor(
+              sizeCategory.isAccessibilityCategory
+                ? Constants.accessibilityFontScale : Constants.defaultFontScale)
+        }
+      }
       Spacer()
+      if let customButton1ViewModel = viewModel.customButton1ViewModel {
+        IconButton(viewModel: customButton1ViewModel)
+          .background(SourceViewSpace(sourceView: customButton1SourceView))
+          .accessibilityFocused($focusedOnCustomButton1, equals: true)
+      }
+      if let customButton2ViewModel = viewModel.customButton2ViewModel {
+        IconButton(viewModel: customButton2ViewModel)
+          .background(SourceViewSpace(sourceView: customButton2SourceView))
+          .accessibilityFocused($focusedOnCustomButton2, equals: true)
+      }
       participantListButton
     }
     .padding(
@@ -98,26 +151,5 @@ struct InfoHeaderView: View {
     IconButton(viewModel: viewModel.participantListButtonViewModel)
       .background(SourceViewSpace(sourceView: participantsListButtonSourceView))
       .accessibilityFocused($focusedOnParticipantList, equals: true)
-  }
-
-  var participantsListView: some View {
-    return Group {
-      if let avatarManager = avatarViewManager as? AvatarViewManager {
-        CompositeParticipantsList(
-          isPresented: $viewModel.isParticipantsListDisplayed,
-          viewModel: viewModel.participantsListViewModel,
-          avatarViewManager: avatarManager,
-          sourceView: participantsListButtonSourceView
-        )
-        .modifier(LockPhoneOrientation())
-        .onDisappear {
-          DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-            focusedOnParticipantList = true
-          }
-        }
-      } else {
-        EmptyView()
-      }
-    }
   }
 }

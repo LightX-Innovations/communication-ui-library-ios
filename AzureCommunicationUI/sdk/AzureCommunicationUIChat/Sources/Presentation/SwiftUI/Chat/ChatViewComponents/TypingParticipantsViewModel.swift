@@ -9,12 +9,12 @@ class TypingParticipantsViewModel: ObservableObject {
   private let logger: Logger
   private let localizationProvider: LocalizationProviderProtocol
 
-  private var participantsLastUpdatedTimestamp = Date()
-  private var typingIndicatorLastUpdatedTimestamp = Date()
-  var participants: [ParticipantInfoModel] = []
-  var avatarGroup = TypingParticipantAvatarGroup()
-  @Published var typingIndicatorLabel: String?
-  var shouldShowIndicator: Bool = false
+    private var participantsLastUpdatedTimestamp = Date()
+    private var typingIndicatorLastUpdatedTimestamp = Date()
+    var participants: [ParticipantInfoModel] = []
+    var avatarGroup = TypingParticipantAvatarGroup()
+    @Published var typingIndicatorLabel: String?
+    var shouldShowIndicator = false
 
   private enum Constants {
     static let defaultTimeInterval: TimeInterval = 8.0

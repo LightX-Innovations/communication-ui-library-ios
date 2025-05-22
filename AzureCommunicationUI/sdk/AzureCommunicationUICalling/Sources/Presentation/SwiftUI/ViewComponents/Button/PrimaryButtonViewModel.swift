@@ -14,6 +14,7 @@ class PrimaryButtonViewModel: ObservableObject {
   let buttonLabel: String
   let iconName: CompositeIcon?
   let paddings: CompositeButton.Paddings?
+  let themeOptions: ThemeOptions
   var action: (() -> Void)
 
   init(
@@ -22,6 +23,7 @@ class PrimaryButtonViewModel: ObservableObject {
     iconName: CompositeIcon? = nil,
     isDisabled: Bool = false,
     paddings: CompositeButton.Paddings? = nil,
+    themeOptions: ThemeOptions,
     action: @escaping (() -> Void) = {}
   ) {
     self.buttonStyle = buttonStyle
@@ -30,6 +32,7 @@ class PrimaryButtonViewModel: ObservableObject {
     self.isDisabled = isDisabled
     self.action = action
     self.paddings = paddings
+    self.themeOptions = themeOptions
   }
 
   func update(isDisabled: Bool) {

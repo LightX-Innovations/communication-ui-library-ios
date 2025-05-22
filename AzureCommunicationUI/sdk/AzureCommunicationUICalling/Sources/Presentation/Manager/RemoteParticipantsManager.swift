@@ -56,9 +56,10 @@ class RemoteParticipantsManager: RemoteParticipantsManagerProtocol {
     // check if participants were removed from a call
     guard !removedParticipantsIds.isEmpty else {
       return
+        postRemoteParticipantsJoinedEvent(joinedParticipantsIds)
+      postRemoteParticipantsRemovedEvent(removedParticipantsIds)
+      postRemoteParticipantsLeftEvent(removedParticipantsIds)
     }
-
-    avatarViewManager.updateStorage(with: Array(removedParticipantsIds))
   }
 
   private func postRemoteParticipantsJoinedEvent(_ joinedParticipantsIds: Set<String>) {
@@ -74,5 +75,18 @@ class RemoteParticipantsManager: RemoteParticipantsManagerProtocol {
       joinedParticipantsIds
       .compactMap { createCommunicationIdentifier(fromRawId: $0) }
     didRemoteParticipantsJoin(joinedParticipantsCommunicationIds)
+  }
+
+  private func postRemoteParticipantsLeftEvent(_ leftOrRemovedParticipantIds: Set<String>) {
+    guard !leftOrRemovedParticipantIds.isEmpty else {
+      return
+    }
+    guard let didRemoteParticipantsLeft = eventsHandler.onRemoteParticipantLeft else {
+      return
+    }
+    let leftParticipantsCommunicationIds: [CommunicationIdentifier] =
+      leftOrRemovedParticipantIds
+      .compactMap { createCommunicationIdentifier(fromRawId: $0) }
+    didRemoteParticipantsLeft(leftParticipantsCommunicationIds)
   }
 }

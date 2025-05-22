@@ -119,8 +119,22 @@ class CallingServiceTests: XCTestCase {
     let sut = makeSUT()
     _ = try await sut.resumeCall()
 
-    XCTAssertTrue(callingSDKWrapper.resumeCallCalled)
-  }
+        XCTAssertTrue(callingSDKWrapper.resumeCallCalled)
+    }
+
+    func test_callingService_removeParticipant_then_removeParticipantWasCalled() async throws {
+        let sut = makeSUT()
+        _ = try await sut.removeParticipant("id")
+
+        XCTAssertTrue(callingSDKWrapper.removeParticipantCalled)
+    }
+
+    func test_callingService_getCapabilities_then_getCapabilitiesCalled() async throws {
+        let sut = makeSUT()
+        _ = try await sut.getCapabilities()
+
+        XCTAssertTrue(callingSDKWrapper.getCapabilitiesCalled)
+    }
 }
 
 extension CallingServiceTests {

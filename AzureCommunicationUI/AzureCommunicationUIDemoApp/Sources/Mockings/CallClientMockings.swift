@@ -68,5 +68,5 @@ class VideoDeviceInfoMocking {
 }
 
 class AudioOptionsMocking {
-  var muted: Bool = false
+    var muted = false
 }

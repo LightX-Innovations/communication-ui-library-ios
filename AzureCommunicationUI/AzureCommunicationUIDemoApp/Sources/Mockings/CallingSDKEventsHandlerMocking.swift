@@ -20,49 +20,49 @@ import Foundation
       Task { @MainActor [weak self] in
         try await Task<Never, Never>.sleep(nanoseconds: 2 * Constants.nanosecondsInSecond)
 
-        self?.callInfoSubject.send(
-          CallInfoModel(
-            status: .connected,
-            internalError: nil))
-      }
+            self?.callInfoSubject.send(CallInfoModel(status: .connected,
+                                                    internalError: nil,
+                                                    callEndReasonCode: nil,
+                                                    callEndReasonSubCode: nil))
+        }
     }
 
     func joinLobby() {
       Task { @MainActor [weak self] in
         try await Task<Never, Never>.sleep(nanoseconds: 2 * Constants.nanosecondsInSecond)
 
-        self?.callInfoSubject.send(
-          CallInfoModel(
-            status: .inLobby,
-            internalError: nil))
-      }
+            self?.callInfoSubject.send(CallInfoModel(status: .inLobby,
+                                                    internalError: nil,
+                                                     callEndReasonCode: nil,
+                                                     callEndReasonSubCode: nil))
+        }
     }
 
     func endCall() {
-      Task { @MainActor [weak self] in
-        self?.callInfoSubject.send(
-          CallInfoModel(
-            status: .disconnected,
-            internalError: nil))
-      }
+        Task { @MainActor [weak self] in
+            self?.callInfoSubject.send(CallInfoModel(status: .disconnected,
+                                                    internalError: nil,
+                                                     callEndReasonCode: nil,
+                                                     callEndReasonSubCode: nil))
+        }
     }
 
     func holdCall() {
-      Task { @MainActor [weak self] in
-        self?.callInfoSubject.send(
-          CallInfoModel(
-            status: .localHold,
-            internalError: nil))
-      }
+        Task { @MainActor [weak self] in
+            self?.callInfoSubject.send(CallInfoModel(status: .localHold,
+                                                    internalError: nil,
+                                                     callEndReasonCode: nil,
+                                                     callEndReasonSubCode: nil))
+        }
     }
 
     func resumeCall() {
-      Task { @MainActor [weak self] in
-        self?.callInfoSubject.send(
-          CallInfoModel(
-            status: .connected,
-            internalError: nil))
-      }
+        Task { @MainActor [weak self] in
+            self?.callInfoSubject.send(CallInfoModel(status: .connected,
+                                                    internalError: nil,
+                                                     callEndReasonCode: nil,
+                                                     callEndReasonSubCode: nil))
+        }
     }
 
     func muteLocalMic() {
@@ -102,9 +102,22 @@ import Foundation
     }
 
     func addParticipant(status: ParticipantStatus = .connected) {
-      Task { @MainActor [weak self] in
-        guard let self else {
-          return
+        Task { @MainActor [weak self] in
+            guard let self else {
+                return
+            }
+            let participantNameIdentifier = "RM-\(self.remoteParticipantsMocking.count + 1)"
+            let newParticipant = ParticipantInfoModel(displayName: participantNameIdentifier,
+                                                      isSpeaking: false,
+                                                      isTypingRtt: false,
+                                                      isMuted: true,
+                                                      isRemoteUser: true,
+                                                      userIdentifier: participantNameIdentifier,
+                                                      status: status,
+                                                      screenShareVideoStreamModel: nil,
+                                                      cameraVideoStreamModel: nil)
+            self.remoteParticipantsMocking.append(newParticipant)
+            self.participantsInfoListSubject.send(self.remoteParticipantsMocking)
         }
         let participantNameIdentifier = "RM-\(self.remoteParticipantsMocking.count + 1)"
         let newParticipant = ParticipantInfoModel(
@@ -134,11 +147,23 @@ import Foundation
     }
 
     func unmuteParticipant() {
-      Task { @MainActor [weak self] in
-        guard let self,
-          !self.remoteParticipantsMocking.isEmpty
-        else {
-          return
+        Task { @MainActor [weak self] in
+            guard let self,
+                  !self.remoteParticipantsMocking.isEmpty else {
+                return
+            }
+            let last = self.remoteParticipantsMocking.removeLast()
+            let lastUnmuted = ParticipantInfoModel(displayName: last.displayName,
+                                                   isSpeaking: last.isSpeaking,
+                                                   isTypingRtt: last.isTypingRtt,
+                                                   isMuted: !last.isMuted,
+                                                   isRemoteUser: last.isRemoteUser,
+                                                   userIdentifier: last.userIdentifier,
+                                                   status: last.status,
+                                                   screenShareVideoStreamModel: last.screenShareVideoStreamModel,
+                                                   cameraVideoStreamModel: last.cameraVideoStreamModel)
+            self.remoteParticipantsMocking.append(lastUnmuted)
+            self.participantsInfoListSubject.send(self.remoteParticipantsMocking)
         }
         let last = self.remoteParticipantsMocking.removeLast()
         let lastUnmuted = ParticipantInfoModel(
@@ -156,11 +181,23 @@ import Foundation
     }
 
     func holdParticipant() {
-      Task { @MainActor [weak self] in
-        guard let self,
-          !self.remoteParticipantsMocking.isEmpty
-        else {
-          return
+        Task { @MainActor [weak self] in
+            guard let self,
+                  !self.remoteParticipantsMocking.isEmpty else {
+                return
+            }
+            let last = self.remoteParticipantsMocking.removeLast()
+            let lastUnmuted = ParticipantInfoModel(displayName: last.displayName,
+                                                   isSpeaking: last.isSpeaking,
+                                                   isTypingRtt: last.isTypingRtt,
+                                                   isMuted: !last.isMuted,
+                                                   isRemoteUser: last.isRemoteUser,
+                                                   userIdentifier: last.userIdentifier,
+                                                   status: .hold,
+                                                   screenShareVideoStreamModel: last.screenShareVideoStreamModel,
+                                                   cameraVideoStreamModel: last.cameraVideoStreamModel)
+            self.remoteParticipantsMocking.append(lastUnmuted)
+            self.participantsInfoListSubject.send(self.remoteParticipantsMocking)
         }
         let last = self.remoteParticipantsMocking.removeLast()
         let lastUnmuted = ParticipantInfoModel(
@@ -178,11 +215,34 @@ import Foundation
     }
 
     func admitAllLobbyParticipants() {
-      Task { @MainActor [weak self] in
-        guard let self,
-          !self.remoteParticipantsMocking.isEmpty
-        else {
-          return
+        Task { @MainActor [weak self] in
+            guard let self,
+                  !self.remoteParticipantsMocking.isEmpty else {
+                return
+            }
+
+            let inLobbyParticipants = self.remoteParticipantsMocking.filter { participantInfoModel in
+                participantInfoModel.status == .inLobby
+            }
+
+            self.remoteParticipantsMocking.removeAll { participantInfoModel in
+                participantInfoModel.status == .inLobby
+            }
+
+            let connectedParticipants = inLobbyParticipants.map { participantInfoModel in
+                ParticipantInfoModel(displayName: participantInfoModel.displayName,
+                                     isSpeaking: participantInfoModel.isSpeaking,
+                                     isTypingRtt: participantInfoModel.isTypingRtt,
+                                     isMuted: participantInfoModel.isMuted,
+                                     isRemoteUser: participantInfoModel.isRemoteUser,
+                                     userIdentifier: participantInfoModel.userIdentifier,
+                                     status: .connected,
+                                     screenShareVideoStreamModel: participantInfoModel.screenShareVideoStreamModel,
+                                     cameraVideoStreamModel: participantInfoModel.cameraVideoStreamModel)
+            }
+
+            self.remoteParticipantsMocking.append(contentsOf: connectedParticipants)
+            self.participantsInfoListSubject.send(self.remoteParticipantsMocking)
         }
 
         let inLobbyParticipants = self.remoteParticipantsMocking.filter { participantInfoModel in
@@ -211,11 +271,37 @@ import Foundation
     }
 
     func admitLobbyParticipant(_ participantId: String) {
-      Task { @MainActor [weak self] in
-        guard let self,
-          !self.remoteParticipantsMocking.isEmpty
-        else {
-          return
+        Task { @MainActor [weak self] in
+            guard let self,
+                  !self.remoteParticipantsMocking.isEmpty else {
+                return
+            }
+
+            let participantInfoModel = self.remoteParticipantsMocking.first { participantInfoModel in
+                participantInfoModel.userIdentifier == participantId
+            }
+
+            guard let participantInfoModel = participantInfoModel else {
+                return
+            }
+
+            self.remoteParticipantsMocking.removeAll { participantInfoModel in
+                participantInfoModel.userIdentifier == participantId
+            }
+
+            let connectedParticipant =
+                ParticipantInfoModel(displayName: participantInfoModel.displayName,
+                                     isSpeaking: participantInfoModel.isSpeaking,
+                                     isTypingRtt: participantInfoModel.isTypingRtt,
+                                     isMuted: participantInfoModel.isMuted,
+                                     isRemoteUser: participantInfoModel.isRemoteUser,
+                                     userIdentifier: participantInfoModel.userIdentifier,
+                                     status: .connected,
+                                     screenShareVideoStreamModel: participantInfoModel.screenShareVideoStreamModel,
+                                     cameraVideoStreamModel: participantInfoModel.cameraVideoStreamModel)
+
+            self.remoteParticipantsMocking.append(connectedParticipant)
+            self.participantsInfoListSubject.send(self.remoteParticipantsMocking)
         }
 
         let participantInfoModel = self.remoteParticipantsMocking.first { participantInfoModel in
@@ -261,10 +347,10 @@ import Foundation
       }
     }
 
-    func setParticipantRole(_ role: ParticipantRole) {
-      Task { @MainActor [weak self] in
-        self?.participantRoleSubject.send(role)
-      }
+    func setParticipantRole(_ role: ParticipantRoleEnum) {
+        Task { @MainActor [weak self] in
+            self?.participantRoleSubject.send(role)
+        }
     }
 
     func emitMediaDiagnostic(_ diagnostic: MediaCallDiagnostic, value: Bool) {

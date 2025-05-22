@@ -57,15 +57,16 @@ struct IconButton: View {
       .cameraSwitchButtonPip:
       return Color(StyleProvider.color.surfaceLightColor)
     }
-  }
-  var buttonForegroundColor: Color {
-    switch viewModel.buttonType {
-    case .controlButton:
-      return Color(StyleProvider.color.onSurfaceColor)
-    case .dismissButton:
-      return Color(StyleProvider.color.onBackground)
-    default:
-      return .white
+
+    var buttonForegroundColor: Color {
+      switch viewModel.buttonType {
+      case .controlButton:
+        return Color(StyleProvider.color.onSurfaceColor)
+      case .dismissButton:
+        return Color(StyleProvider.color.onBackground)
+      default:
+        return .white
+      }
     }
   }
 
@@ -111,34 +112,48 @@ struct IconButton: View {
   }
 
   var body: some View {
-    Group {
-      Button(action: viewModel.action) {
-        Icon(name: viewModel.iconName, size: iconImageSize)
-          .contentShape(Rectangle())
+    if viewModel.isVisible {
+      Group {
+        Button(action: viewModel.action) {
+          icon
+        }
+        .disabled(viewModel.isDisabled)
+        .foregroundColor(viewModel.isDisabled ? buttonDisabledColor : buttonForegroundColor)
+        .frame(width: width, height: height, alignment: .center)
+        .background(buttonBackgroundColor)
+        .clipShape(RoundedCornersShape(radius: shapeCornerRadius, corners: roundedCorners))
+        .accessibilityLabel(Text(viewModel.accessibilityLabel ?? ""))
+        .accessibilityValue(Text(viewModel.accessibilityValue ?? ""))
+        .accessibilityHint(Text(viewModel.accessibilityHint ?? ""))
       }
-      .disabled(viewModel.isDisabled)
-      .foregroundColor(viewModel.isDisabled ? buttonDisabledColor : buttonForegroundColor)
-      .frame(width: width, height: height, alignment: .center)
-      .background(buttonBackgroundColor)
-      .clipShape(RoundedCornersShape(radius: shapeCornerRadius, corners: roundedCorners))
-      .accessibilityLabel(Text(viewModel.accessibilityLabel ?? ""))
-      .accessibilityValue(Text(viewModel.accessibilityValue ?? ""))
-      .accessibilityHint(Text(viewModel.accessibilityHint ?? ""))
-    }
-    .frame(
-      width: tappableWidth,
-      height: tappableHeight,
-      alignment: .center
-    )
-    .contentShape(Rectangle())
-    .onTapGesture {
-      // ignore action in case if button is disabled
-      // .disabled(_) is not used because tap is passed to superview when it shouldn't
-      guard !viewModel.isDisabled else {
-        return
+      .frame(
+        width: tappableWidth,
+        height: tappableHeight,
+        alignment: .center
+      )
+      .contentShape(Rectangle())
+      .onTapGesture {
+        // ignore action in case if button is disabled
+        // .disabled(_) is not used because tap is passed to superview when it shouldn't
+        guard !viewModel.isDisabled else {
+          return
+        }
+        viewModel.action()
       }
-      viewModel.action()
     }
+  }
+
+  var icon: some View {
+    var icon = Icon(size: iconImageSize)
+    icon.contentShape(Rectangle())
+    if let uiImage = viewModel.icon {
+      icon.uiImage = uiImage
+    }
+    if let iconName = viewModel.iconName {
+      icon.name = iconName
+    }
+
+    return icon
   }
 }
 

@@ -29,6 +29,8 @@ public protocol ThemeOptions {
 
   /// Provide a getter to return a custom primary color tint30.
   var primaryColorTint30: UIColor { get }
+  /// Provide a getter to return a custom  onPrimaryColor color.
+  var foregroundOnPrimaryColor: UIColor { get }
 }
 
 extension ThemeOptions {
@@ -46,5 +48,8 @@ extension ThemeOptions {
   }
   public var primaryColorTint30: UIColor {
     return Colors.Palette.communicationBlueTint30.color
+  }
+  public var foregroundOnPrimaryColor: UIColor {
+    return UIColor.init(dynamicColor: Colors.surfacePrimary.dynamicColor!)
   }
 }

@@ -34,12 +34,37 @@ class AvatarManagerTests: XCTestCase {
     XCTAssertEqual(mockImageData, setAvatarImageData)
   }
 
-  func
-    test_avatarManager_setRemoteParticipantViewData_when_personeDataSet_then_participantViewDataDataUpdated()
-  {
-    guard let mockImage = UIImage.make(withColor: .red) else {
-      XCTFail("UIImage does not exist")
-      return
+    func test_avatarManager_setRemoteParticipantViewData_when_personeDataSet_then_participantViewDataDataUpdated() {
+        guard let mockImage = UIImage.make(withColor: .red) else {
+            XCTFail("UIImage does not exist")
+            return
+        }
+        let expectation = XCTestExpectation(description: "Update participant's view data completion called")
+        let participant = ParticipantInfoModel(
+            displayName: "Participant 1",
+            isSpeaking: false,
+            isTypingRtt: false,
+            isMuted: false,
+            isRemoteUser: true,
+            userIdentifier: "testUserIdentifier1",
+            status: .idle,
+            screenShareVideoStreamModel: nil,
+            cameraVideoStreamModel: nil)
+        let remoteParticipantsState = RemoteParticipantsState(participantInfoList: [participant],
+                                                              lastUpdateTimeStamp: Date())
+        mockStoreFactory.setState(AppState(remoteParticipantsState: remoteParticipantsState))
+        let sut = makeSUT()
+        let participantViewData = ParticipantViewData(avatar: mockImage)
+        sut.set(remoteParticipantViewData: participantViewData,
+                for: CommunicationUserIdentifier(participant.userIdentifier)) { result in
+            guard case .success = result else {
+                XCTFail("Failed with result validation")
+                return
+            }
+            XCTAssertEqual(sut.avatarStorage.value(forKey: participant.userIdentifier)?.avatarImage!, mockImage)
+            expectation.fulfill()
+        }
+        wait(for: [expectation], timeout: 1)
     }
     let expectation = XCTestExpectation(
       description: "Update participant's view data completion called")
@@ -101,20 +126,20 @@ class AvatarManagerTests: XCTestCase {
 }
 
 extension AvatarManagerTests {
-  private func makeSUT(_ image: UIImage) -> AvatarViewManager {
-    let mockParticipantViewData = ParticipantViewData(avatar: image, displayName: "")
-    let mockLocalOptions = LocalOptions(participantViewData: mockParticipantViewData)
-    return AvatarViewManager(
-      store: mockStoreFactory.store,
-      localParticipantViewData: mockLocalOptions.participantViewData)
+    private func makeSUT(_ image: UIImage) -> AvatarViewManager {
+        let mockParticipantViewData = ParticipantViewData(avatar: image, displayName: "")
+        let mockLocalOptions = LocalOptions(participantViewData: mockParticipantViewData)
+        return AvatarViewManager(store: mockStoreFactory.store,
+                                 localParticipantId: createCommunicationIdentifier(fromRawId: ""),
+                                 localParticipantViewData: mockLocalOptions.participantViewData)
 
   }
 
-  private func makeSUT() -> AvatarViewManager {
-    return AvatarViewManager(
-      store: mockStoreFactory.store,
-      localParticipantViewData: nil)
-  }
+    private func makeSUT() -> AvatarViewManager {
+       return AvatarViewManager(store: mockStoreFactory.store,
+                                 localParticipantId: createCommunicationIdentifier(fromRawId: ""),
+                                 localParticipantViewData: nil)
+    }
 }
 
 extension UIImage {

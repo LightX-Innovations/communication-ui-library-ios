@@ -36,10 +36,21 @@ class CallHistoryService {
     recordCallHistory(callStartedOn: callStartDate, callId: updatedCallId)
   }
 
-  func recordCallHistory(callStartedOn: Date, callId: String) {
-    Task { @MainActor in
-      let error = await self.callHistoryRepository.insert(
-        callStartedOn: callStartedOn, callId: callId)
+    func receive(_ state: AppState) {
+        guard let updatedCallId = state.callingState.callId,
+                !updatedCallId.isEmpty,
+              let callStartDate = state.callingState.callStartDate,
+              self.updatedCallId != updatedCallId else {
+            return
+        }
+        self.updatedCallId = updatedCallId
+        recordCallHistory(callStartedOn: callStartDate, callId: updatedCallId)
+    }
+
+    func recordCallHistory(callStartedOn: Date, callId: String) {
+        Task { @MainActor in
+            _ = await self.callHistoryRepository.insert(callStartedOn: callStartedOn, callId: callId)
+        }
     }
   }
 }

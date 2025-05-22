@@ -6,17 +6,26 @@
 import AzureCommunicationCommon
 import Foundation
 
-/// CallComposite Locator for locating call destination
+/// CallComposite Locator for locating call destination.
 public enum JoinLocator {
-  /// Group Call with UUID groupId
+  /// Group Call with UUID groupId.
   case groupCall(groupId: UUID)
-  /// Teams Meeting with string teamsLink URI
+  /// Teams Meeting with string teamsLink URI.
   case teamsMeeting(teamsLink: String)
-  /// Room Call with string roomId
+  /// Teams Meeting with id and passcode
+  case teamsMeetingId(meetingId: String, meetingPasscode: String)
+  /// Rooms Call with room ID.
   case roomCall(roomId: String)
 }
 
-/// Object for remote options for Call Composite
+/// Object for remote options for Call Composite.
+@available(
+  *, deprecated,
+  message: """
+    Use CallComposite init with CommunicationTokenCredential
+    and launch(locator: JoinLocator, localOptions: LocalOptions? = nil) instead.
+    """
+)
 public struct RemoteOptions {
   /// The unique identifier for the group conversation.
   public let locator: JoinLocator

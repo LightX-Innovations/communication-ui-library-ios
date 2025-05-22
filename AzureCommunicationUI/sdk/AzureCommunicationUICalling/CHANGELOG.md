@@ -1,12 +1,127 @@
 # Azure Communication UI Calling Release History
 
+## 1.14.1 (2025-05-02)
+
+### Bugfixes
+
+- Xcode 16.3 compiling issue
+
+## 1.14.0 (2025-04-17)
+
+### Features
+
+- Real Time Text Support
+
+## 1.14.0-beta.3 (2025-04-11)
+
+### Bugfixes
+
+- Fix microphone permission in fresh install
+
+## 1.14.0-beta.2 (2025-04-10)
+
+### Bugfixes
+
+- Accessibility bugfix
+
+## 1.14.0-beta.1 (2025-01-15)
+
+### Features
+
+- Real Time Text Support
+
+## 1.13.0 (2024-12-04)
+
+### Features
+
+- Call screen header custom button
+
+### Bugfixes
+
+- iOS18 and Xcode 16 bugfixes
+
+## 1.12.0 (2024-10-31)
+
+### Features
+
+- Color theming support for button font color.
+- Update min support version to iOS 16.
+- Video displays in the Picture-in-Picture when application is in background mode.
+
+## 1.12.0-beta.1 (2024-10-10)
+
+### Features
+
+- Call screen header custom button
+- Color theming support
+
+## 1.11.0 (2024-09-25)
+
+### Features
+
+- Call screen information header title/subtitle customization
+- Ability to hide or disable buttons and create custom buttons
+
+### Bugfixes
+
+- Camera button doesn't work on the Setup screen when the internet is off
+- On hold title is not centred in some conditions
+- Some labels not announces correctly via accessibility
+- Xcode 16 build issue
+
+## 1.11.0-beta.2 (2024-09-11)
+
+### Features
+
+- Call screen information header title/subtitle customization
+- Ability to hide or disable buttons and create custom buttons
+
+### Bugfixes
+
+- Camera button doesn't work on the Setup screen when the internet is off
+- On hold title is not centred in some conditions
+- Some labels not announces correctly via accessibility
+
+# 1.11.0-beta.1 (2024-08-28)
+
+### Features
+
+- Call screen control bar custom button support
+
+## 1.10.0 (2024-08-14)
+
+### Features
+
+- Captions support
+
+## 1.9.0 (2024-06-27)
+
+### Features
+
+- Rooms call
+
+## 1.8.0 (2024-05-20)
+
+### Features
+
+- 1 to N Calling with push notification support
+- CallKit Integration
+- Teams meeting join with meeting id
+
+## 1.7.0 (2024-05-29)
+
+### Features
+
+- Disable leave call confirmation dialog
+- Teams meeting short URL support
+
 ## 1.6.1 (2024-04-01)
 
 ### Bug Fixes
 
 - Accessibility bugs fixed for announcement for mic button, camera button, resume button, participant information
 - Accessibility bugs fixed for keyboard focus on device select button, more button, leave call button, participant button
-- Accessiblity bugs fixed for camera smart invert
+- Accessibility bugs fixed for camera smart invert
 
 ## 1.6.0 (2024-03-04)
 

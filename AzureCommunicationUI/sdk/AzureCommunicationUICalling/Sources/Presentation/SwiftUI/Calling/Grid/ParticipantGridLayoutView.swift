@@ -6,19 +6,38 @@
 import SwiftUI
 
 struct ParticipantGridLayoutView: View {
-  var cellViewModels: [ParticipantGridCellViewModel]
-  let rendererViewManager: RendererViewManager?
-  let avatarViewManager: AvatarViewManagerProtocol
-  let screenSize: ScreenSizeClassType
-  let gridsMargin: CGFloat = 3
-  @Orientation var orientation: UIDeviceOrientation
+    var cellViewModels: [ParticipantGridCellViewModel]
+    let rendererViewManager: RendererViewManager?
+    let avatarViewManager: AvatarViewManagerProtocol
+    let screenSize: ScreenSizeClassType
+    let shouldUseVerticalStyleGrid: Bool
+    let gridsMargin: CGFloat = 3
+    @Orientation var orientation: UIDeviceOrientation
 
-  var body: some View {
-    Group {
-      switch screenSize {
-      case .iphonePortraitScreenSize:
-        vGridLayout
-      default:
+    var body: some View {
+        Group {
+            if shouldUseVerticalStyleGrid {
+                vGridLayout
+            } else {
+                let cellCount = cellViewModels.count
+                let isPortrait = orientation.isPortrait
+                let isiPadLanscape = orientation.isLandscape && screenSize == .ipadScreenSize
+                let isiPadPortrait = isPortrait
+                    && (screenSize == .ipadScreenSize)
+                if (cellCount == 5 && isiPadLanscape)
+                    || (cellCount == 8 && isiPadPortrait)
+                    || (cellCount == 7 && isiPadPortrait)
+                    || (cellCount == 3 && isiPadLanscape) {
+                    vGridLayout
+                } else {
+                    hGridLayout
+                }
+
+            }
+        }
+    }
+
+    func getChunkedCellViewModelArray() -> [[ParticipantGridCellViewModel]] {
         let cellCount = cellViewModels.count
         let isPortrait = orientation.isPortrait
         let isiPadLanscape = orientation.isLandscape && screenSize == .ipadScreenSize

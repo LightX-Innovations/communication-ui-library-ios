@@ -20,6 +20,7 @@ class IconWithLabelButtonViewModel<T: ButtonState>: ObservableObject {
   @Published var accessibilityValue: String?
   @Published var accessibilityHint: String?
   @Published var isDisabled: Bool
+  @Published var isVisible: Bool
   var action: (() -> Void)
 
   init(
@@ -27,6 +28,7 @@ class IconWithLabelButtonViewModel<T: ButtonState>: ObservableObject {
     localizationProvider: LocalizationProviderProtocol,
     buttonTypeColor: ButtonTypeColor,
     isDisabled: Bool = false,
+    isVisible: Bool = true,
     action: @escaping (() -> Void) = {}
   ) {
     self.selectedButtonState = selectedButtonState
@@ -35,6 +37,7 @@ class IconWithLabelButtonViewModel<T: ButtonState>: ObservableObject {
     self.buttonTypeColor = buttonTypeColor
     self.buttonLabel = localizationProvider.getLocalizedString(selectedButtonState.localizationKey)
     self.isDisabled = isDisabled
+    self.isVisible = isVisible
     self.action = action
   }
 

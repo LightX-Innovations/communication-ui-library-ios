@@ -5,7 +5,7 @@
 
 import Foundation
 import XCTest
-
+import AzureCommunicationCommon
 @testable import AzureCommunicationUICalling
 
 class PreviewAreaViewModelTests: XCTestCase {
@@ -15,182 +15,16 @@ class PreviewAreaViewModelTests: XCTestCase {
   private var logger: LoggerMocking!
   private var factoryMocking: CompositeViewModelFactoryMocking!
 
-  override func setUp() {
-    super.setUp()
-    localizationProvider = LocalizationProviderMocking()
-    storeFactory = StoreFactoryMocking()
-    logger = LoggerMocking()
-    factoryMocking = CompositeViewModelFactoryMocking(logger: logger, store: storeFactory.store)
-  }
-
-  override func tearDown() {
-    super.tearDown()
-    localizationProvider = nil
-    storeFactory = nil
-    logger = nil
-    factoryMocking = nil
-  }
-
-  func test_previewAreaViewModel_when_audioPermissionDenied_then_shouldWarnAudioDisabled() {
-    let cameraState = LocalUserState.CameraState(
-      operation: .off,
-      device: .front,
-      transmission: .local)
-    let appState = AppState(
-      permissionState: PermissionState(
-        audioPermission: .denied,
-        cameraPermission: .notAsked),
-      localUserState: LocalUserState(cameraState: cameraState))
-    let visibilityState = VisibilityState(currentStatus: .visible)
-    let sut = makeSUT()
-    sut.update(
-      localUserState: appState.localUserState, permissionState: appState.permissionState,
-      visibilityState: visibilityState)
-
-    let expectedIcon = CompositeIcon.micOff
-    let expectedText =
-      "Your audio is disabled. To enable, please go to Settings to allow access. You must enable audio to start this call."
-
-    XCTAssertTrue(sut.isPermissionsDenied)
-    XCTAssertEqual(sut.getPermissionWarningIcon(), expectedIcon)
-    XCTAssertEqual(sut.getPermissionWarningText(), expectedText)
-  }
-
-  func test_previewAreaViewModel_when_cameraPermissionDenied_then_shouldWarnCameraDisabled() {
-    let cameraState = LocalUserState.CameraState(
-      operation: .off,
-      device: .front,
-      transmission: .local)
-    let appState = AppState(
-      permissionState: PermissionState(
-        audioPermission: .granted,
-        cameraPermission: .denied),
-      localUserState: LocalUserState(cameraState: cameraState))
-    let visibilityState = VisibilityState(currentStatus: .visible)
-    let sut = makeSUT()
-    sut.update(
-      localUserState: appState.localUserState, permissionState: appState.permissionState,
-      visibilityState: visibilityState)
-
-    let expectedIcon = CompositeIcon.videoOff
-    let expectedText = "Your camera is disabled. To enable, please go to Settings to allow access."
-
-    XCTAssertTrue(sut.isPermissionsDenied)
-    XCTAssertEqual(sut.getPermissionWarningIcon(), expectedIcon)
-    XCTAssertEqual(sut.getPermissionWarningText(), expectedText)
-  }
-
-  func
-    test_previewAreaViewModel_when_cameraAndAudioPermissionsDenied_then_shouldWarnCameraAudioDisabled()
-  {
-    let cameraState = LocalUserState.CameraState(
-      operation: .off,
-      device: .front,
-      transmission: .local)
-    let appState = AppState(
-      permissionState: PermissionState(
-        audioPermission: .denied,
-        cameraPermission: .denied),
-      localUserState: LocalUserState(cameraState: cameraState))
-    let visibilityState = VisibilityState(currentStatus: .visible)
-    let sut = makeSUT()
-    sut.update(
-      localUserState: appState.localUserState, permissionState: appState.permissionState,
-      visibilityState: visibilityState)
-
-    let expectedIcon = CompositeIcon.warning
-    let expectedText =
-      "Your camera and audio are disabled. To enable, please go to Settings to allow access. You must enable audio to start this call."
-
-    XCTAssertTrue(sut.isPermissionsDenied)
-    XCTAssertEqual(sut.getPermissionWarningIcon(), expectedIcon)
-    XCTAssertEqual(sut.getPermissionWarningText(), expectedText)
-  }
-
-  func
-    test_previewAreaViewModel_when_audioPermissionsGranted_cameraOff_then_shouldHideWarning_showAvatar()
-  {
-    let cameraState = LocalUserState.CameraState(
-      operation: .off,
-      device: .front,
-      transmission: .local)
-    let appState = AppState(
-      permissionState: PermissionState(
-        audioPermission: .granted,
-        cameraPermission: .notAsked),
-      localUserState: LocalUserState(cameraState: cameraState))
-    let visibilityState = VisibilityState(currentStatus: .visible)
-    let sut = makeSUT()
-    sut.update(
-      localUserState: appState.localUserState, permissionState: appState.permissionState,
-      visibilityState: visibilityState)
-
-    XCTAssertFalse(sut.isPermissionsDenied)
-  }
-
-  func test_previewAreaViewModel_when_cameraAndAudioPermissionsGranted_then_shouldHideWarning() {
-    let cameraState = LocalUserState.CameraState(
-      operation: .off,
-      device: .front,
-      transmission: .local)
-    let appState = AppState(
-      permissionState: PermissionState(
-        audioPermission: .granted,
-        cameraPermission: .granted),
-      localUserState: LocalUserState(cameraState: cameraState))
-    let visibilityState = VisibilityState(currentStatus: .visible)
-    let sut = makeSUT()
-    sut.update(
-      localUserState: appState.localUserState, permissionState: appState.permissionState,
-      visibilityState: visibilityState)
-
-    XCTAssertFalse(sut.isPermissionsDenied)
-  }
-
-  func test_previewAreaViewModel_when_permissionWarningHidden_cameraOff_then_showAvatar() {
-    let cameraState = LocalUserState.CameraState(
-      operation: .off,
-      device: .front,
-      transmission: .local)
-    let appState = AppState(
-      permissionState: PermissionState(
-        audioPermission: .granted,
-        cameraPermission: .granted),
-      localUserState: LocalUserState(cameraState: cameraState))
-    let visibilityState = VisibilityState(currentStatus: .visible)
-    let sut = makeSUT()
-    sut.update(
-      localUserState: appState.localUserState, permissionState: appState.permissionState,
-      visibilityState: visibilityState)
-
-    XCTAssertFalse(sut.isPermissionsDenied)
-  }
-
-  func test_previewAreaViewModel_when_permissionWarningHidden_cameraOn_then_showVideoRender() {
-    let cameraState = LocalUserState.CameraState(
-      operation: .on,
-      device: .front,
-      transmission: .local)
-    let appState = AppState(
-      permissionState: PermissionState(
-        audioPermission: .granted,
-        cameraPermission: .granted),
-      localUserState: LocalUserState(cameraState: cameraState))
-    let visibilityState = VisibilityState(currentStatus: .visible)
-    let sut = makeSUT()
-    sut.update(
-      localUserState: appState.localUserState, permissionState: appState.permissionState,
-      visibilityState: visibilityState)
-
-    XCTAssertFalse(sut.isPermissionsDenied)
-  }
-
-  func test_previewAreaViewModel_update_when_statesUpdated_then_localVideoViewModelUpdated() {
-    let expectation = XCTestExpectation(description: "LocalVideoViewModel is updated")
-    let localUserState = LocalUserState(displayName: "UpdatedDisplayName")
-    let updateState: (LocalUserState, VisibilityState) -> Void = { localState, _ in
-      XCTAssertEqual(localUserState.displayName, localState.displayName)
-      expectation.fulfill()
+    override func setUp() {
+        super.setUp()
+        localizationProvider = LocalizationProviderMocking()
+        storeFactory = StoreFactoryMocking()
+        logger = LoggerMocking()
+        factoryMocking = CompositeViewModelFactoryMocking(logger: logger, store: storeFactory.store,
+                                                          avatarManager: AvatarViewManagerMocking(store: storeFactory.store,
+                                                                                                  localParticipantId: createCommunicationIdentifier(fromRawId: ""),
+                                                                                                  localParticipantViewData: nil),
+                                                          updatableOptionsManager: UpdatableOptionsManager(store: storeFactory.store, setupScreenOptions: nil, callScreenOptions: nil))
     }
 
     factoryMocking.localVideoViewModel = LocalVideoViewModelMocking(

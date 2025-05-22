@@ -16,31 +16,27 @@ class ParticipantGridViewModelMocking: ParticipantGridViewModel {
       ) -> Void
     )?
 
-  init(
-    compositeViewModelFactory: CompositeViewModelFactoryProtocol,
-    localizationProvider: LocalizationProviderProtocol,
-    accessibilityProvider: AccessibilityProviderProtocol,
-    updateState: (
-      (
-        CallingState, RemoteParticipantsState,
-        VisibilityState, LifeCycleState
-      ) -> Void
-    )? = nil
-  ) {
-    self.updateState = updateState
-    super.init(
-      compositeViewModelFactory: compositeViewModelFactory,
-      localizationProvider: localizationProvider,
-      accessibilityProvider: accessibilityProvider,
-      isIpadInterface: false)
-  }
+    init(compositeViewModelFactory: CompositeViewModelFactoryProtocol,
+         localizationProvider: LocalizationProviderProtocol,
+         accessibilityProvider: AccessibilityProviderProtocol,
+         updateState: ((CallingState, RemoteParticipantsState,
+                        VisibilityState, LifeCycleState) -> Void)? = nil,
+         rendererViewManager: RendererViewManager) {
+        self.updateState = updateState
+        super.init(compositeViewModelFactory: compositeViewModelFactory,
+                   localizationProvider: localizationProvider,
+         		   accessibilityProvider: accessibilityProvider,
+                   isIpadInterface: false,
+                   callType: .groupCall,
+                   rendererViewManager: rendererViewManager)
+    }
 
-  override func update(
-    callingState: CallingState,
-    remoteParticipantsState: RemoteParticipantsState,
-    visibilityState: VisibilityState,
-    lifeCycleState: LifeCycleState
-  ) {
-    updateState?(callingState, remoteParticipantsState, visibilityState, lifeCycleState)
-  }
+    override func update(callingState: CallingState,
+                         captionsState: CaptionsState,
+                         rttState: RttState,
+                         remoteParticipantsState: RemoteParticipantsState,
+                         visibilityState: VisibilityState,
+                         lifeCycleState: LifeCycleState) {
+        updateState?(callingState, remoteParticipantsState, visibilityState, lifeCycleState)
+    }
 }

@@ -11,13 +11,13 @@ struct SharingActivityView: UIViewControllerRepresentable {
   let sourceView: UIView
   @Binding var isPresented: Bool
 
-  func makeUIViewController(context: Context) -> SharingActivityContainerController {
-    return SharingActivityContainerController(
-      viewModel: viewModel,
-      applicationActivities: applicationActivities,
-      sourceView: sourceView
-    ) {
-      self.isPresented = false
+    func makeUIViewController(context: Context) -> SharingActivityContainerController {
+        return SharingActivityContainerController(viewModel: viewModel,
+                                                  applicationActivities: applicationActivities,
+                                                  sourceView: sourceView) {
+            self.isPresented = false
+            viewModel.dismissDrawer()
+        }
     }
   }
 

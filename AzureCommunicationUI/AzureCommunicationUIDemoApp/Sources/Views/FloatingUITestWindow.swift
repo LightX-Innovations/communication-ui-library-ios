@@ -111,13 +111,16 @@ import UIKit
         accessibilityID: "changeNetworkDiagnostic-AID",
         selector: #selector(changeCurrentNetworkDiagnostic))
 
-      NSLayoutConstraint.activate([
-        stackView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20),
-        stackView.widthAnchor.constraint(equalToConstant: 120.0),
-        stackView.topAnchor.constraint(equalTo: topAnchor, constant: 120),
-        stackView.heightAnchor.constraint(
-          equalToConstant: CGFloat(stackView.arrangedSubviews.count) * 20.0),
-      ])
+        createButton(title: "Hide",
+                     accessibilityID: "hideCallComposite-AID",
+                     selector: #selector(hideCallComposite))
+
+        NSLayoutConstraint.activate([
+            stackView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20),
+            stackView.widthAnchor.constraint(equalToConstant: 120.0),
+            stackView.topAnchor.constraint(equalTo: topAnchor, constant: 120),
+            stackView.heightAnchor.constraint(equalToConstant: CGFloat(stackView.arrangedSubviews.count) * 20.0)
+        ])
     }
 
     private func createButton(
@@ -254,7 +257,13 @@ import UIKit
       debugPrint("UI Test:: changeCurrentNetworkDiagnostic")
       callingSDKWrapperMock?.changeCurrentNetworkDiagnostic()
     }
-  }
+
+    @objc func hideCallComposite(sender: UIButton) {
+        debugPrint("UI Test:: hideCallComposite")
+        callingSDKWrapperMock?.hide()
+
+    }
+}
 
   extension FloatingUITestWindow {
     // pass taps through window if not in stack view

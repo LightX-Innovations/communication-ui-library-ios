@@ -48,35 +48,46 @@ public struct CallState: Equatable, RequestStringConvertible {
         return value
       }
     }
-    init(rawValue: String) {
-      switch rawValue.lowercased() {
-      case "none":
-        self = .none
-      case "earlyMedia":
-        self = .earlyMedia
-      case "connecting":
-        self = .connecting
-      case "ringing":
-        self = .ringing
-      case "connected":
-        self = .connected
-      case "localHold":
-        self = .localHold
-      case "disconnecting":
-        self = .disconnecting
-      case "disconnected":
-        self = .disconnected
-      case "inLobby":
-        self = .inLobby
-      case "remoteHold":
-        self = .remoteHold
-      default:
-        self = .unknown(rawValue.lowercased())
-      }
+
+    private let value: CallStateKV
+    private let callEndReasonCode: Int?
+    private let callEndReasonSubCode: Int?
+    private let callIdInternal: String?
+
+    public var requestString: String {
+        return value.rawValue
     }
   }
 
-  private let value: CallStateKV
+    public var callEndReasonCodeInt: Int? {
+        return callEndReasonCode
+    }
+
+    public var callEndReasonSubCodeInt: Int? {
+        return callEndReasonSubCode
+    }
+
+    public var callId: String? {
+        return callIdInternal
+    }
+
+    private init(rawValue: String) {
+        self.value = CallStateKV(rawValue: rawValue)
+        let callEndSuccess = 0
+        self.callEndReasonCode = callEndSuccess
+        self.callEndReasonSubCode = callEndSuccess
+        self.callIdInternal = nil
+    }
+
+    init(rawValue: String,
+         callEndReasonCode: Int?,
+         callEndReasonSubCode: Int?,
+         callId: String) {
+        self.value = CallStateKV(rawValue: rawValue)
+        self.callEndReasonCode = callEndReasonCode
+        self.callEndReasonSubCode = callEndReasonSubCode
+        self.callIdInternal = callId
+    }
 
   public var requestString: String {
     return value.rawValue

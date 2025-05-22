@@ -33,29 +33,25 @@ final class RemoteParticipantsReducerTests: XCTestCase {
     let state = RemoteParticipantsState()
     let result = sut.reduce(state, action)
 
-    XCTAssertEqual(result.dominantSpeakers.count, 1)
-    XCTAssertEqual(result.dominantSpeakers.first, userId)
-  }
-  func
-    test_remoteParticipantsReducer_reduce_when_StatusErrorAndCallReset_then_remoteParticipantStateCleanup()
-  {
-    let userId = UUID().uuidString
-    let action = Action.errorAction(
-      .statusErrorAndCallReset(
-        internalError: .callJoinFailed,
-        error: nil))
-    let sut = makeSUT()
-    let participant = ParticipantInfoModel(
-      displayName: "displayname",
-      isSpeaking: false,
-      isMuted: true,
-      isRemoteUser: false,
-      userIdentifier: userId,
-      status: .idle,
-      screenShareVideoStreamModel: nil,
-      cameraVideoStreamModel: nil)
-    let remoteParticipantsState = RemoteParticipantsState(participantInfoList: [participant])
-    let result = sut.reduce(remoteParticipantsState, action)
+        XCTAssertEqual(result.dominantSpeakers.count, 1)
+        XCTAssertEqual(result.dominantSpeakers.first, userId)
+    }
+    func test_remoteParticipantsReducer_reduce_when_StatusErrorAndCallReset_then_remoteParticipantStateCleanup() {
+        let userId = UUID().uuidString
+        let action = Action.errorAction(.statusErrorAndCallReset(internalError: .callJoinFailed,
+                                                         error: nil))
+        let sut = makeSUT()
+        let participant = ParticipantInfoModel(displayName: "displayname",
+                                               isSpeaking: false,
+                                               isTypingRtt: false,
+                                               isMuted: true,
+                                               isRemoteUser: false,
+                                               userIdentifier: userId,
+                                               status: .idle,
+                                               screenShareVideoStreamModel: nil,
+                                               cameraVideoStreamModel: nil)
+        let remoteParticipantsState = RemoteParticipantsState(participantInfoList: [participant])
+        let result = sut.reduce(remoteParticipantsState, action)
 
     XCTAssertEqual(result.participantInfoList.count, 0)
   }

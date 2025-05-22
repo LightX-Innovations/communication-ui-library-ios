@@ -37,7 +37,8 @@ struct CompositeViewFactory: CompositeViewFactoryProtocol {
 
   func makeCallingView() -> CallingView {
     return CallingView(
-      viewModel: compositeViewModelFactory.getCallingViewModel(),
+      viewModel: compositeViewModelFactory.getCallingViewModel(
+        rendererViewManager: videoViewManager),
       avatarManager: avatarManager,
       viewManager: videoViewManager)
   }

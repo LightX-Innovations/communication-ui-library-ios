@@ -13,6 +13,7 @@ enum LocalizationKey: String {
   case iPad = "AzureCommunicationUICalling.AudioDevice.DeviceDrawer.iPad"
   case headphones = "AzureCommunicationUICalling.AudioDevice.DeviceDrawer.Headphones"
   case bluetooth = "AzureCommunicationUICalling.AudioDevice.DeviceDrawer.Bluetooth"
+  case selected = "AzureCommunicationUICalling.AudioDevice.Drawer.Selected.AccessibilityLabel"
 
   /* SetupView */
   case setupTitle = "AzureCommunicationUICalling.SetupView.Title"
@@ -20,6 +21,8 @@ enum LocalizationKey: String {
     "AzureCommunicationUICalling.SetupView.Button.Dismiss.AccessibilityLabel"
   case joinCall = "AzureCommunicationUICalling.SetupView.Button.JoinCall"
   case joiningCall = "AzureCommunicationUICalling.SetupView.Button.JoiningCall"
+  case startCall = "AzureCommunicationUICalling.SetupView.Button.StartCall"
+  case startingCall = "AzureCommunicationUICalling.SetupView.Button.StartingCall"
   case videoOff = "AzureCommunicationUICalling.SetupView.Button.VideoOff"
   case videoOffAccessibilityLabel =
     "AzureCommunicationUICalling.SetupView.Button.VideoOff.AccessibilityLabel"
@@ -37,6 +40,8 @@ enum LocalizationKey: String {
     "AzureCommunicationUICalling.SetupView.Button.Device.AccessibilityLabel"
   case joinCallDiableStateAccessibilityLabel =
     "AzureCommunicationUICalling.SetupView.Button.JoinCall.DisableState.AccessibilityLabel"
+  case startCallDiableStateAccessibilityLabel =
+    "AzureCommunicationUICalling.SetupView.Button.StartCall.DisableState.AccessibilityLabel"
   case goToSettings = "AzureCommunicationUICalling.SetupView.Button.GoToSettings"
   case cameraDisabled =
     "AzureCommunicationUICalling.SetupView.PreviewArea.AudioGrantedCameraDisabled"
@@ -61,6 +66,7 @@ enum LocalizationKey: String {
   case callWithNPerson = "AzureCommunicationUICalling.CallingView.InfoHeader.CallWithNPeople"
   case participantListAccessibilityLabel =
     "AzureCommunicationUICalling.CallingView.InfoHeader.ParticipantList.AccessibilityLabel"
+  case callingCallMessage = "AzureCommunicationUICalling.CallingView.GridView.Calling"
 
   /* Lobby waiting */
   case lobbyWaitingToJoin =
@@ -95,6 +101,10 @@ enum LocalizationKey: String {
   case unmuted = "AzureCommunicationUICalling.CallingView.ParticipantDrawer.IsUnmuted"
   case speaking = "AzureCommunicationUICalling.CallingView.ParticipantDrawer.IsSpeaking"
   case onHold = "AzureCommunicationUICalling.CallingView.ParticipantDrawer.OnHold"
+  case onHoldAccessibilityLabel =
+    "AzureCommunicationUICalling.CallingView.ParticipantDrawer.OnHold.AccessibilityLabel"
+  case participantResumeAccessibilityLabel =
+    "AzureCommunicationUICalling.CallingView.ParticipantDrawer.Resume.AccessibilityLabel"
   case participantListLobbyAction =
     "AzureCommunicationUICalling.CallingView.ParticipantDrawer.LobbyAction"
   case participantListWaitingInLobby =
@@ -111,6 +121,8 @@ enum LocalizationKey: String {
     "AzureCommunicationUICalling.CallingView.ParticipantDrawer.Confirm.Admit"
   case participantListConfirmDecline =
     "AzureCommunicationUICalling.CallingView.ParticipantDrawer.Confirm.Decline"
+  case participantListPlusMore =
+    "AzureCommunicationUICalling.CallingView.ParticipantDrawer.PlusMore"
 
   case frontCamera = "AzureCommunicationUICalling.CallingView.SwitchCamera.Front"
   case backCamera = "AzureCommunicationUICalling.CallingView.SwitchCamera.Back"
@@ -137,7 +149,6 @@ enum LocalizationKey: String {
     "AzureCommunicationUICalling.CallingView.Button.More.AccessibilityLabel"
   case shareDiagnosticsInfo =
     "AzureCommunicationUICalling.CallingView.MoreCallOptionsList.ShareDiagnosticsInfo"
-
   /* ComplianceBanner title */
   case bannerTitleRecordingAndTranscriptionStarted =
     "AzureCommunicationUICalling.CallingView.BannerTitle.RecordingAndTranscribingStarted"
@@ -226,4 +237,47 @@ enum LocalizationKey: String {
   case supportFormAttachScreenshot = "AzureCommunicationUICalling.Attach.Screenshot"
   case supportFormReportAProblemText = "AzureCommunicationUICalling.ReportAProblem.Text"
   case supportFormSendFeedbackText = "AzureCommunicationUICalling.SendFeedback.Text"
+
+  /* Captions */
+  case captionsListTitle = "AzureCommunicationUICalling.Captions.Text.LiveCaptions"
+  case captionsSpokenLanguage = "AzureCommunicationUICalling.Captions.Text.SpokenLanguage"
+  case captionsCaptionLanguage = "AzureCommunicationUICalling.Captions.Text.CaptionLanguage"
+  case captionsStartingCaptions = "AzureCommunicationUICalling.Captions.Text.StartingCaptions"
+  case captionsStartCaptionsError = "AzureCommunicationUICalling.Captions.ActionError.StartCaptions"
+  case captionsStopCaptionsError = "AzureCommunicationUICalling.Captions.ActionError.StopCaptions"
+  case captionsChangeCaptionsLanguageError =
+    "AzureCommunicationUICalling.Captions.ActionError.ChangeCaptionsLanguage"
+  case captionsChangeSpokenLanguageError =
+    "AzureCommunicationUICalling.Captions.ActionError.ChangeSpokenLanguage"
+  case captionsTurnOnCaptions = "AzureCommunicationUICalling.Captions.Text.TurnOnCaptions"
+  case captionsTurnOffCaptions = "AzureCommunicationUICalling.Captions.Text.TurnOffCaptions"
+
+  /* RTT */
+  case rttCaptionsListTitle = "AzureCommunicationUICalling.Captions.Text.LiveCaptionsAndRTT"
+  case rttListTitle = "AzureCommunicationUICalling.RTT.Title.RTT"
+  case rttTurnOn = "AzureCommunicationUICalling.RTT.TurnOn.Text"
+  case rttAlertTitle = "AzureCommunicationUICalling.RTT.Alert.Title"
+  case rttAlertMessage = "AzureCommunicationUICalling.RTT.Alert.Message"
+  case rttAlertTurnOn = "AzureCommunicationUICalling.RTT.Alert.TurnOn"
+  case rttAlertDismiss = "AzureCommunicationUICalling.RTT.Alert.Dismiss"
+  case rttWarningMessage = "AzureCommunicationUICalling.RTT.WarningMessage.Text"
+  case rttTextBoxHint = "AzureCommunicationUICalling.RTT.TextBox.Hint"
+  case rttTyping = "AzureCommunicationUICalling.RTT.Text.RTTTyping"
+  case rttLabel = "AzureCommunicationUICalling.RTT.RTTLable"
+  case rttLinkLearnMore = "AzureCommunicationUICalling.RTT.WarningMessage.LearnMore"
+  case maximizeCaptionsRtt = "AzureCommunicationUICalling.RTT.Maximize.CaptionsRTT"
+  case minimizeCaptionsRtt = "AzureCommunicationUICalling.RTT.Minimize.CaptionsRTT"
+
+  /* Remote participant menu */
+  case callingViewParticipantMenuMute =
+    "AzureCommunicationUICalling.CallingView.ParticipantMenu.Mute"
+  case callingViewParticipantMenuMuteAccessibilityLabel =
+    "AzureCommunicationUICalling.CallingView.ParticipantMenu.Mute.AccessibilityLabel"
+  case callingViewParticipantMenuRemove =
+    "AzureCommunicationUICalling.CallingView.ParticipantMenu.Remove"
+  case callingViewParticipantMenuRemoveAccessibilityLabel =
+    "AzureCommunicationUICalling.CallingView.ParticipantMenu.Remove.AccessibilityLabel"
+  case callingViewToastFeaturesLost = "AzureCommunicationUICalling.CallingView.Toast.FeaturesLost"
+  case callingViewToastFeaturesGained =
+    "AzureCommunicationUICalling.CallingView.Toast.FeaturesGained"
 }

@@ -13,19 +13,29 @@ parameters:
 
 steps:
   - task: CocoaPods@0
-    displayName: "pod install"
+    displayName: "pod install --repo-update"
     inputs:
       workingDirectory: ${{ parameters.workingDirectory }}
       forceRepoUpdate: true
       projectDirectory: ${{ parameters.workingDirectory }}
 
   - script: |
+      Pods/SwiftLint/swiftlint version
+    workingDirectory: AzureCommunicationUI
+    displayName: "SwiftLint Version Check"
+
+  - script: |
+      Pods/SwiftLint/swiftlint
+    workingDirectory: AzureCommunicationUI
+    displayName: "SwiftLint Manual Pre-Check"
+
+  - script: |
       swift build -v \
         -Xswiftc "-sdk" \
         -Xswiftc "`xcrun --sdk iphonesimulator --show-sdk-path`" \
         -Xswiftc "-target" \
-        -Xswiftc "x86_64-apple-ios15.6-simulator"
-      xcodebuild test -scheme AzureCommunicationUICommon -sdk "`xcrun --sdk iphonesimulator --show-sdk-path`" -destination "name=iPhone 14"
+        -Xswiftc "x86_64-apple-ios16.0-simulator"
+      xcodebuild test -scheme AzureCommunicationUICommon -sdk "`xcrun --sdk iphonesimulator --show-sdk-path`" -destination "name=iPhone 15"
     workingDirectory: AzureCommunicationUI/sdk/AzureCommunicationUICommon
     displayName: "Build and test AzureCommunicationUICommon"
 
@@ -65,7 +75,7 @@ steps:
       scheme: ${{ parameters.buildScheme }}
       xcodeVersion: default
       destinationPlatformOption: iOS
-      destinationSimulators: "iPhone 14"
+      destinationSimulators: "iPhone 15"
       publishJUnitResults: true
 
   - script: |

@@ -12,16 +12,20 @@ import Foundation
   struct CallConfigurationMocking {
     let groupId: UUID?
     let meetingLink: String?
+    let meetingId: String?
+    let meetingPasscode: String?
     let compositeCallType: CompositeCallTypeMocking
     let credential: CommunicationTokenCredential
     let displayName: String?
     let diagnosticConfig: DiagnosticConfig
 
     init() {
-      self.groupId = UUID()
-      self.meetingLink = nil
-      self.compositeCallType = .groupCall
-      let sampleToken =
+        self.groupId = UUID()
+        self.meetingLink = nil
+        self.meetingId = nil
+        self.meetingPasscode = nil
+        self.compositeCallType = .groupCall
+        let sampleToken =
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjMyNTAzNjgwMDAwfQ.9i7FNNHHJT8cOzo-yrAUJyBSfJ-tPPk2emcHavOEpWc"
       let communicationTokenCredential = try? CommunicationTokenCredential(token: sampleToken)
       self.credential = communicationTokenCredential!

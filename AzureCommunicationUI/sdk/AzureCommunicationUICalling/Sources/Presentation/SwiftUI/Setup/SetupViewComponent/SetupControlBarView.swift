@@ -15,27 +15,37 @@ struct SetupControlBarView: View {
   let horizontalPadding: CGFloat = 16
   let verticalPadding: CGFloat = 13
 
-  var body: some View {
-    GeometryReader { geometry in
-      VStack(alignment: .center) {
-        Spacer()
-        HStack(alignment: .center, spacing: layoutSpacing) {
-          if viewModel.isCameraDisplayed {
-            Spacer()
-            cameraButton
-          }
-          Spacer()
-          micButton
-          Spacer()
-          audioDeviceButton
-          Spacer()
+    var body: some View {
+        GeometryReader { geometry in
+            VStack(alignment: .center) {
+                Spacer()
+                HStack(alignment: .center, spacing: layoutSpacing) {
+                    if viewModel.isCameraButtonVisible {
+                        Spacer()
+                        cameraButton
+                    }
+                    if viewModel.isMicButtonVisible {
+                        Spacer()
+                        micButton
+                    }
+                    if viewModel.isAudioDeviceButtonVisible {
+                        Spacer()
+                        audioDeviceButton
+                    }
+                    Spacer()
+                }
+                .frame(width: getWidth(from: geometry), height: controlHeight)
+                .padding(.horizontal, getHorizontalPadding(from: geometry))
+                .padding(.vertical, verticalPadding)
+                .hidden(viewModel.isControlBarHidden())
+                .accessibilityElement(children: .contain)
+            }.accessibilityElement(children: .contain)
         }
-        .frame(width: getWidth(from: geometry), height: controlHeight)
-        .padding(.horizontal, getHorizontalPadding(from: geometry))
-        .padding(.vertical, verticalPadding)
-        .hidden(viewModel.isControlBarHidden())
-        .accessibilityElement(children: .contain)
-      }.accessibilityElement(children: .contain)
+    }
+    var cameraButton: some View {
+        IconWithLabelButton(viewModel: viewModel.cameraButtonViewModel)
+            .accessibility(identifier: AccessibilityIdentifier.toggleVideoAccessibilityID.rawValue)
+            .hidden(!viewModel.isCameraButtonVisible)
     }
     .modifier(
       PopupModalView(isPresented: viewModel.isAudioDeviceSelectionDisplayed) {
@@ -48,28 +58,18 @@ struct SetupControlBarView: View {
       .hidden(!viewModel.isCameraDisplayed)
   }
 
-  var micButton: some View {
-    IconWithLabelButton(viewModel: viewModel.micButtonViewModel)
-      .accessibility(identifier: AccessibilityIdentifier.toggleMicAccessibilityID.rawValue)
-  }
+    var micButton: some View {
+        IconWithLabelButton(viewModel: viewModel.micButtonViewModel)
+            .accessibility(identifier: AccessibilityIdentifier.toggleMicAccessibilityID.rawValue)
+            .hidden(!viewModel.isMicButtonVisible)
+    }
 
-  var audioDeviceButton: some View {
-    IconWithLabelButton(viewModel: viewModel.audioDeviceButtonViewModel)
-      .background(SourceViewSpace(sourceView: audioDeviceButtonSourceView))
-      .accessibility(identifier: AccessibilityIdentifier.toggleAudioDeviceAccessibilityID.rawValue)
-      .accessibilityFocused($focusedOnAudioButton, equals: true)
-  }
-
-  var audioDeviceSelectionListView: some View {
-    CompositeAudioDevicesList(
-      isPresented: $viewModel.isAudioDeviceSelectionDisplayed,
-      viewModel: viewModel.audioDevicesListViewModel,
-      sourceView: audioDeviceButtonSourceView
-    )
-    .onDisappear {
-      DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-        focusedOnAudioButton = true
-      }
+    var audioDeviceButton: some View {
+        IconWithLabelButton(viewModel: viewModel.audioDeviceButtonViewModel)
+            .background(SourceViewSpace(sourceView: audioDeviceButtonSourceView))
+            .accessibility(identifier: AccessibilityIdentifier.toggleAudioDeviceAccessibilityID.rawValue)
+            .accessibilityFocused($focusedOnAudioButton, equals: true)
+            .hidden(!viewModel.isAudioDeviceButtonVisible)
     }
   }
 

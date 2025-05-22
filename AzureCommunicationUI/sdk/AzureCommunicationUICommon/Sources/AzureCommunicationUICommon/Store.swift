@@ -40,7 +40,13 @@ public class Store<State, Action>: ObservableObject {
     }
   }
 
-  private func _dispatch(action: Action) {
-    state = reducer.reduce(state, action)
-  }
+    func dispatch(action: Action) {
+        actionDispatchQueue.async {
+            self.dispatchFunction(action)
+        }
+    }
+
+    private func _dispatch(action: Action) {
+        state = reducer.reduce(state, action)
+    }
 }

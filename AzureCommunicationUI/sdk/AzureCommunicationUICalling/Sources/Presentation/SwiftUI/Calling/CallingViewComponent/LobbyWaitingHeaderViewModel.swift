@@ -5,56 +5,48 @@
 
 import Foundation
 
-class LobbyWaitingHeaderViewModel: ObservableObject {
-  @Published var accessibilityLabel: String
-  @Published var title: String
-  @Published var isDisplayed: Bool = false
-  @Published var isParticipantsListDisplayed: Bool = false
-  @Published var isVoiceOverEnabled: Bool = false
+internal class LobbyWaitingHeaderViewModel: ObservableObject {
+    @Published var accessibilityLabel: String
+    @Published var title: String
+    @Published var isDisplayed = false
+    @Published var isVoiceOverEnabled = false
 
   private let logger: Logger
   private let accessibilityProvider: AccessibilityProviderProtocol
   private let localizationProvider: LocalizationProviderProtocol
   private var lobbyParticipantCount: Int = 0
 
-  let participantsListViewModel: ParticipantsListViewModel
-  var participantListButtonViewModel: PrimaryButtonViewModel!
-  var dismissButtonViewModel: IconButtonViewModel!
+    var participantListButtonViewModel: PrimaryButtonViewModel!
+    var dismissButtonViewModel: IconButtonViewModel!
 
-  var isPad: Bool = false
+    var isPad = false
 
-  init(
-    compositeViewModelFactory: CompositeViewModelFactoryProtocol,
-    logger: Logger,
-    localUserState: LocalUserState,
-    localizationProvider: LocalizationProviderProtocol,
-    accessibilityProvider: AccessibilityProviderProtocol,
-    dispatchAction: @escaping ActionDispatch
-  ) {
-    self.logger = logger
-    self.accessibilityProvider = accessibilityProvider
-    self.localizationProvider = localizationProvider
-    let title = localizationProvider.getLocalizedString(.lobbyWaitingToJoin)
-    self.title = title
-    self.accessibilityLabel = title
-    self.participantsListViewModel = compositeViewModelFactory.makeParticipantsListViewModel(
-      localUserState: localUserState,
-      dispatchAction: dispatchAction)
-    self.participantListButtonViewModel = compositeViewModelFactory.makePrimaryButtonViewModel(
-      buttonStyle: .primaryFilled,
-      buttonLabel: localizationProvider.getLocalizedString(.lobbyWaitingHeaderViewButton),
-      iconName: nil,
-      isDisabled: false,
-      paddings: CompositeButton.Paddings(horizontal: 10, vertical: 6)
-    ) { [weak self] in
-      guard let self = self else {
-        return
-      }
-      self.showParticipantListButtonTapped()
-    }
-    self.participantListButtonViewModel.accessibilityLabel = self.localizationProvider
-      .getLocalizedString(
-        .lobbyWaitingHeaderViewButtonAccessibilityLabel)
+    init(compositeViewModelFactory: CompositeViewModelFactoryProtocol,
+         logger: Logger,
+         localUserState: LocalUserState,
+         localizationProvider: LocalizationProviderProtocol,
+         accessibilityProvider: AccessibilityProviderProtocol,
+         dispatchAction: @escaping ActionDispatch) {
+        self.logger = logger
+        self.accessibilityProvider = accessibilityProvider
+        self.localizationProvider = localizationProvider
+        let title = localizationProvider.getLocalizedString(.lobbyWaitingToJoin)
+        self.title = title
+        self.accessibilityLabel = title
+
+        self.participantListButtonViewModel = compositeViewModelFactory.makePrimaryButtonViewModel(
+            buttonStyle: .primaryFilled,
+            buttonLabel: localizationProvider.getLocalizedString(.lobbyWaitingHeaderViewButton),
+            iconName: nil,
+            isDisabled: false,
+            paddings: CompositeButton.Paddings(horizontal: 10, vertical: 6)) { [weak self] in
+                guard self != nil else {
+                    return
+                }
+                dispatchAction(.showParticipants)
+        }
+        self.participantListButtonViewModel.accessibilityLabel = self.localizationProvider.getLocalizedString(
+            .lobbyWaitingHeaderViewButtonAccessibilityLabel)
 
     self.dismissButtonViewModel = compositeViewModelFactory.makeIconButtonViewModel(
       iconName: .dismiss,
@@ -99,36 +91,48 @@ class LobbyWaitingHeaderViewModel: ObservableObject {
       self.isDisplayed = isDisplayed
     }
 
-    self.lobbyParticipantCount = canShow ? newLobbyParticipantCount : 0
+    func update(localUserState: LocalUserState,
+                remoteParticipantsState: RemoteParticipantsState,
+                callingState: CallingState,
+                visibilityState: VisibilityState) {
+        let canShow = canShowLobby(callingState: callingState,
+                                   visibilityState: visibilityState,
+                                   participantRole: localUserState.participantRole)
 
-    participantsListViewModel.update(
-      localUserState: localUserState,
-      remoteParticipantsState: remoteParticipantsState)
-  }
+        let newLobbyParticipantCount = lobbyUsersCount(remoteParticipantsState)
+        let isDisplayed = canShow
+            && newLobbyParticipantCount > 0
+            && (isDisplayed || newLobbyParticipantCount > lobbyParticipantCount)
 
-  private func lobbyUsersCount(_ remoteParticipantsState: RemoteParticipantsState) -> Int {
-    return remoteParticipantsState.participantInfoList
-      .filter({ participantInfoModel in
-        participantInfoModel.status == .inLobby
-      })
-      .count
-  }
+        if self.isDisplayed != isDisplayed {
+            self.isDisplayed = isDisplayed
+        }
 
-  private func canShowLobby(
-    callingState: CallingState,
-    visibilityState: VisibilityState,
-    participantRole: ParticipantRole?
-  ) -> Bool {
-    guard callingState.status != .inLobby,
-      callingState.status != .localHold,
-      visibilityState.currentStatus == .visible,
-      let participantRole = participantRole
-    else {
-      return false
+        self.lobbyParticipantCount = canShow ? newLobbyParticipantCount : 0
     }
 
-    return participantRole == .organizer
-      || participantRole == .presenter
-      || participantRole == .coOrganizer
-  }
+    private func lobbyUsersCount(_ remoteParticipantsState: RemoteParticipantsState) -> Int {
+        return remoteParticipantsState.participantInfoList
+            .filter({ participantInfoModel in
+                participantInfoModel.status == .inLobby
+            })
+            .count
+    }
+
+    private func canShowLobby(
+        callingState: CallingState,
+        visibilityState: VisibilityState,
+        participantRole: ParticipantRoleEnum?
+    ) -> Bool {
+        guard callingState.status != .inLobby,
+              callingState.status != .localHold,
+              visibilityState.currentStatus == .visible,
+              let participantRole = participantRole else {
+            return false
+        }
+
+        return participantRole == .organizer
+                || participantRole == .presenter
+                || participantRole == .coOrganizer
+    }
 }

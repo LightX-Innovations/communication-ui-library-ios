@@ -156,18 +156,6 @@ extension PipManager: AVPictureInPictureControllerDelegate {
     logger.debug("testpip: pip Did Start")
     self.onPipStarted()
     self.store.dispatch(action: .visibilityAction(.pipModeEntered))
-
-    if turnCameraOffWhilePipIsStarting {
-      turnCameraOffWhilePipIsStarting = false
-
-      Task {
-        while self.store.state.localUserState.cameraState.operation == .pending {
-          logger.debug("testpip: camera operation is pending")
-          sleep(100)
-        }
-        self.store.dispatch(action: .localUserAction(.cameraOnTriggered))
-      }
-    }
   }
 
   public func pictureInPictureController(
@@ -178,11 +166,7 @@ extension PipManager: AVPictureInPictureControllerDelegate {
   ) {
 
     logger.debug("testpip: pip restoreUserInterfac")
-    //        guard let onAVKitPipTapped = onAVKitPipTapped else {
     completionHandler(true)
-    //            return
-    //        }
-    //        onAVKitPipTapped(completionHandler)
   }
 
   public func pictureInPictureController(

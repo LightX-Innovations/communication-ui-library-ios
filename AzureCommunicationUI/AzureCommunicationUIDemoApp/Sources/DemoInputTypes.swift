@@ -7,8 +7,10 @@ import AzureCommunicationUICalling
 import Foundation
 
 enum MeetingType: Int {
-  case groupCall
-  case teamsMeeting
+    case groupCall
+    case teamsMeeting
+    case oneToNCall
+    case roomCall
 }
 
 enum ChatType: Int {
@@ -22,12 +24,16 @@ enum ACSTokenType: Int {
 }
 
 enum DemoError: Error {
-  case invalidToken
+    case invalidToken
+    case invalidGroupCallId
 
-  func getErrorCode() -> String {
-    switch self {
-    case .invalidToken:
-      return CallCompositeErrorCode.tokenExpired
+    func getErrorCode() -> String {
+        switch self {
+        case .invalidToken:
+            return CallCompositeErrorCode.tokenExpired
+        case .invalidGroupCallId:
+            return CallCompositeErrorCode.callJoin
+        }
     }
   }
 }

@@ -134,51 +134,63 @@ class AppStateReducerTests: XCTestCase {
     let sut = getSUT(diagnosticsReducer: mockSubReducer)
     let result = sut.reduce(state, Action.callDiagnosticAction(.media(diagnostic: model)))
 
-    XCTAssertEqual(result.diagnosticsState, expectedState)
-  }
+        XCTAssertEqual(result.diagnosticsState, expectedState)
+    }
+
+    func test_appStateReducer_reduceToastNotificationState_then_toastNotificationState_stateUpdated() {
+        let oldState = ToastNotificationState()
+        let expectedState = ToastNotificationState(status: .cameraStartFailed)
+        let mockSubReducer: Reducer<ToastNotificationState, ToastNotificationAction> = .mockReducer(outputState: expectedState)
+
+        let state = getAppState(toastNotificationState: oldState)
+        let sut = getSUT(toastNotificationReducer: mockSubReducer)
+        let result = sut.reduce(state, Action.toastNotificationAction(.showNotification(kind: .cameraStartFailed)))
+
+        XCTAssertEqual(result.toastNotificationState, expectedState)
+    }
 }
 
 extension AppStateReducerTests {
-  func getSUT(
-    permissionReducer: Reducer<PermissionState, PermissionAction> = .mockReducer(),
-    localUserReducer: Reducer<LocalUserState, LocalUserAction> = .mockReducer(),
-    lifeCycleReducer: Reducer<LifeCycleState, LifecycleAction> = .mockReducer(),
-    audioSessionReducer: Reducer<AudioSessionState, AudioSessionAction> = .mockReducer(),
-    callingReducer: Reducer<CallingState, Action> = .mockReducer(),
-    navigationReducer: Reducer<NavigationState, Action> = .mockReducer(),
-    errorReducer: Reducer<ErrorState, Action> = .mockReducer(),
-    diagnosticsReducer: Reducer<CallDiagnosticsState, Action> = .mockReducer()
-  ) -> Reducer<AppState, Action> {
-    return Reducer<AppState, Action>.appStateReducer(
-      permissionsReducer: permissionReducer,
-      localUserReducer: localUserReducer,
-      lifeCycleReducer: lifeCycleReducer,
-      audioSessionReducer: audioSessionReducer,
-      callingReducer: callingReducer,
-      navigationReducer: navigationReducer,
-      errorReducer: errorReducer,
-      diagnosticsReducer: diagnosticsReducer
-    )
-  }
+    func getSUT(permissionReducer: Reducer<PermissionState, PermissionAction> = .mockReducer(),
+                localUserReducer: Reducer<LocalUserState, LocalUserAction> = .mockReducer(),
+                lifeCycleReducer: Reducer<LifeCycleState, LifecycleAction> = .mockReducer(),
+                audioSessionReducer: Reducer<AudioSessionState, AudioSessionAction> = .mockReducer(),
+                callingReducer: Reducer<CallingState, Action> = .mockReducer(),
+                navigationReducer: Reducer<NavigationState, Action> = .mockReducer(),
+                errorReducer: Reducer<ErrorState, Action> = .mockReducer(),
+                diagnosticsReducer: Reducer<CallDiagnosticsState, Action> = .mockReducer(),
+                toastNotificationReducer: Reducer<ToastNotificationState, ToastNotificationAction> = .mockReducer()
+    ) -> Reducer<AppState, Action> {
+        return Reducer<AppState, Action>.appStateReducer(
+            permissionsReducer: permissionReducer,
+            localUserReducer: localUserReducer,
+            lifeCycleReducer: lifeCycleReducer,
+            audioSessionReducer: audioSessionReducer,
+            callingReducer: callingReducer,
+            navigationReducer: navigationReducer,
+            errorReducer: errorReducer,
+            diagnosticsReducer: diagnosticsReducer,
+            toastNotificationReducer: toastNotificationReducer
+        )
+    }
 
-  func getAppState(
-    callingState: CallingState = .init(),
-    permissionState: PermissionState = .init(),
-    localUserState: LocalUserState = .init(),
-    lifeCycleState: LifeCycleState = .init(),
-    navigationState: NavigationState = .init(),
-    remoteParticipantsState: RemoteParticipantsState = .init(),
-    errorState: ErrorState = .init(),
-    diagnosticsState: CallDiagnosticsState = .init()
-  ) -> AppState {
-    return AppState(
-      callingState: callingState,
-      permissionState: permissionState,
-      localUserState: localUserState,
-      lifeCycleState: lifeCycleState,
-      navigationState: navigationState,
-      remoteParticipantsState: remoteParticipantsState,
-      errorState: errorState,
-      diagnosticsState: diagnosticsState)
-  }
+    func getAppState(callingState: CallingState = .init(),
+                     permissionState: PermissionState = .init(),
+                     localUserState: LocalUserState = .init(),
+                     lifeCycleState: LifeCycleState = .init(),
+                     navigationState: NavigationState = .init(),
+                     remoteParticipantsState: RemoteParticipantsState = .init(),
+                     errorState: ErrorState = .init(),
+                     diagnosticsState: CallDiagnosticsState = .init(),
+                     toastNotificationState: ToastNotificationState = .init()) -> AppState {
+        return AppState(callingState: callingState,
+                        permissionState: permissionState,
+                        localUserState: localUserState,
+                        lifeCycleState: lifeCycleState,
+                        navigationState: navigationState,
+                        remoteParticipantsState: remoteParticipantsState,
+                        errorState: errorState,
+                        diagnosticsState: diagnosticsState,
+                        toastNotificationState: toastNotificationState)
+    }
 }

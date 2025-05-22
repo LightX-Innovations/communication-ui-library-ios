@@ -6,4 +6,6 @@
 public struct CallInfoModel {
   let status: CallingStatus
   let internalError: CallCompositeInternalError?
+  let callEndReasonCode: Int?
+  let callEndReasonSubCode: Int?
 }

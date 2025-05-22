@@ -7,12 +7,25 @@ import AzureCommunicationCalling
 import Foundation
 
 extension AzureCommunicationCalling.RemoteParticipant {
-  func toParticipantInfoModel() -> ParticipantInfoModel {
-    let videoInfoModels: [VideoStreamInfoModel] = self.incomingVideoStreams.compactMap {
-      videoStream in
-      VideoStreamInfoModel(
-        videoStreamIdentifier: String(videoStream.id),
-        mediaStreamType: videoStream.sourceType.converted())
+    func toParticipantInfoModel() -> ParticipantInfoModel {
+        let videoInfoModels: [VideoStreamInfoModel] = self.incomingVideoStreams.compactMap { videoStream in
+            VideoStreamInfoModel(
+                videoStreamIdentifier: String(videoStream.id),
+                mediaStreamType: videoStream.sourceType.converted())
+        }
+
+        let cameraVideoStreamModel = videoInfoModels.first(where: {$0.mediaStreamType == .cameraVideo})
+        let screenShareVideoStreamModel = videoInfoModels.first(where: {$0.mediaStreamType == .screenSharing})
+
+        return ParticipantInfoModel(displayName: displayName,
+                                    isSpeaking: isSpeaking,
+                                    isTypingRtt: false,
+                                    isMuted: isMuted,
+                                    isRemoteUser: true,
+                                    userIdentifier: identifier.rawId,
+                                    status: state.toCompositeParticipantStatus(),
+                                    screenShareVideoStreamModel: screenShareVideoStreamModel,
+                                    cameraVideoStreamModel: cameraVideoStreamModel)
     }
 
     let cameraVideoStreamModel = videoInfoModels.first(where: { $0.mediaStreamType == .cameraVideo }

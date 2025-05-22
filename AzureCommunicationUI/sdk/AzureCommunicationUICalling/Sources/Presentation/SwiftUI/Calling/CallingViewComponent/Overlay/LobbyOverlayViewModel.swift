@@ -9,29 +9,28 @@ class LobbyOverlayViewModel: OverlayViewModelProtocol {
   private let localizationProvider: LocalizationProviderProtocol
   private let accessibilityProvider: AccessibilityProviderProtocol
 
-  init(
-    localizationProvider: LocalizationProviderProtocol,
-    accessibilityProvider: AccessibilityProviderProtocol
-  ) {
-    self.localizationProvider = localizationProvider
-    self.accessibilityProvider = accessibilityProvider
-  }
+    init(localizationProvider: LocalizationProviderProtocol,
+         accessibilityProvider: AccessibilityProviderProtocol) {
+        self.localizationProvider = localizationProvider
+        self.accessibilityProvider = accessibilityProvider
+    }
 
-  var title: String {
-    return localizationProvider.getLocalizedString(.waitingForHost)
-  }
+    var title: String {
+        return localizationProvider.getLocalizedString(.waitingForHost)
+    }
 
-  var subtitle: String? {
-    return localizationProvider.getLocalizedString(.waitingDetails)
-  }
+    var subtitle: String? {
+        return localizationProvider.getLocalizedString(.waitingDetails)
+    }
 
-  @Published var isDisplayed: Bool = false
+    @Published var isDisplayed = false
 
-  func update(callingStatus: CallingStatus) {
-    let shouldDisplay = callingStatus == .inLobby
-    if shouldDisplay != isDisplayed {
-      isDisplayed = shouldDisplay
-      accessibilityProvider.moveFocusToFirstElement()
+    func update(callingStatus: CallingStatus) {
+        let shouldDisplay = callingStatus == .inLobby
+        if shouldDisplay != isDisplayed {
+            isDisplayed = shouldDisplay
+            accessibilityProvider.moveFocusToFirstElement()
+        }
     }
   }
 }

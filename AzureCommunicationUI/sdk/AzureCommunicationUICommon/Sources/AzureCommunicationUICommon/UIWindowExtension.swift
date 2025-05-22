@@ -7,36 +7,11 @@ import UIKit
 
 extension UIWindow {
 
-  static var keyWindow: UIWindow? {
-    return UIApplication.shared.windows.filter { $0.isKeyWindow }.first
-  }
-
-  var topViewController: UIViewController? {
-    if var topViewController = self.rootViewController {
-      while let presentedViewController = topViewController.presentedViewController {
-        topViewController = presentedViewController
-      }
-
-      return topViewController
-    } else {
-      return nil
-    }
-  }
-
-  func hasViewController(ofKind kind: AnyClass) -> Bool {
-    if let rootViewController = self.rootViewController {
-      return UIWindow.hasViewController(ofKind: kind, fromViewController: rootViewController)
-    } else {
-      return false
-    }
-  }
-
-  static func hasViewController(
-    ofKind kind: AnyClass,
-    fromViewController viewController: UIViewController
-  ) -> Bool {
-    guard !viewController.isKind(of: kind) else {
-      return true
+    static var keyWindow: UIWindow? {
+        return UIApplication.shared.connectedScenes
+                .compactMap { $0 as? UIWindowScene }
+                .flatMap { $0.windows }
+                .first { $0.isKeyWindow }
     }
 
     var hasViewController = false

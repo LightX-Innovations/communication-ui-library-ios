@@ -5,11 +5,13 @@
 
 import Foundation
 
-public enum CallingAction: Equatable {
-  case callStartRequested
-  case callEndRequested
-  case callEnded
-  case stateUpdated(status: CallingStatus)
+enum CallingAction: Equatable {
+    case callStartRequested
+    case callEndRequested
+    case callEnded
+    case stateUpdated(status: CallingStatus,
+                      callEndReasonCode: Int?,
+                      callEndReasonSubCode: Int?)
 
   case callIdUpdated(callId: String)
 
@@ -18,9 +20,11 @@ public enum CallingAction: Equatable {
 
   case transcriptionStateUpdated(isTranscriptionActive: Bool)
 
-  case resumeRequested
-  case holdRequested
-  case requestFailed
+    case recordingUpdated(recordingStatus: RecordingStatus)
+    case transcriptionUpdated(transcriptionStatus: RecordingStatus)
+    case dismissRecordingTranscriptionBannedUpdated(isDismissed: Bool)
+    case callStartTimeUpdated(startTime: Date)
+    </CALL_START_TIME> */
 }
 
 public enum ErrorAction: Equatable {
@@ -28,7 +32,6 @@ public enum ErrorAction: Equatable {
     switch (lhs, rhs) {
     case let (
       .fatalErrorUpdated(internalError: lErr, error: _),
-      .fatalErrorUpdated(internalError: rErr, error: _)
     ):
       return lErr == rErr
     case let (

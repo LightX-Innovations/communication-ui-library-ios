@@ -6,38 +6,35 @@
 import AzureCommunicationCalling
 import Foundation
 
-public struct RemoteParticipantsState {
+struct RemoteParticipantsState {
   let participantInfoList: [ParticipantInfoModel]
   let lastUpdateTimeStamp: Date
   let dominantSpeakers: [String]
   let dominantSpeakersModifiedTimestamp: Date
   let lobbyError: LobbyError?
+  let totalParticipantCount: Int
 
   init(
     participantInfoList: [ParticipantInfoModel] = [],
     lastUpdateTimeStamp: Date = Date(),
     dominantSpeakers: [String] = [],
     dominantSpeakersModifiedTimestamp: Date = Date(),
-    lobbyError: LobbyError? = nil
+    lobbyError: LobbyError? = nil,
+    totalParticipantCount: Int = 0
   ) {
     self.participantInfoList = participantInfoList
     self.lastUpdateTimeStamp = lastUpdateTimeStamp
     self.dominantSpeakers = dominantSpeakers
     self.dominantSpeakersModifiedTimestamp = dominantSpeakersModifiedTimestamp
     self.lobbyError = lobbyError
+    self.totalParticipantCount = totalParticipantCount
   }
 
   public func toJson() -> [String: Any] {
-    var participantInfoListJson: [[String: Any]] = []
-    for participantInfo in self.participantInfoList {
-      participantInfoListJson.append(participantInfo.toJson())
-    }
-
     var dominantSpeakersJson: [String] = []
     for dominantSpeaker in self.dominantSpeakers {
       dominantSpeakersJson.append(dominantSpeaker)
     }
-
     return [
       "participantInfoList": participantInfoListJson,
       "lastUpdateTimeStamp": self.lastUpdateTimeStamp.formatted(

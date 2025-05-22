@@ -74,12 +74,20 @@ class CallingSDKWrapperMocking: CallingSDKWrapperProtocol {
     }.value
   }
 
-  func unmuteLocalMic() async throws {
-    unmuteLocalMicCalled = true
-    return try await possibleErrorTask { [self] in
-      isMuted = false
-    }.value
-  }
+    func dispose() {
+    }
+
+    /* <CALL_START_TIME>
+    func callStartTime() -> Date? {
+        return nil
+    }
+    </CALL_START_TIME> */
+
+    func startCallLocalVideoStream() async throws -> String {
+        return try await Task<String, Error> {
+            ""
+        }.value
+    }
 
   func getRemoteParticipant<ParticipantType, StreamType>(_ identifier: String)
     -> CompositeRemoteParticipant<ParticipantType, StreamType>?
@@ -100,9 +108,13 @@ class CallingSDKWrapperMocking: CallingSDKWrapperProtocol {
     try await Task<Void, Error> {}.value
   }
 
-  func setupCallWasCalled() -> Bool {
-    return setupCallCallCount > 0
-  }
+    var holdCallCalled = false
+    var resumeCallCalled = false
+    var muteLocalMicCalled = false
+    var unmuteLocalMicCalled = false
+    var startPreviewVideoStreamCalled = false
+    var removeParticipantCalled = false
+    var getCapabilitiesCalled = false
 
   func startCall(isCameraPreferred: Bool, isAudioPreferred: Bool) async throws {
     startCallCallCount += 1
@@ -160,7 +172,56 @@ class CallingSDKWrapperMocking: CallingSDKWrapperProtocol {
   func admitLobbyParticipant(_ participantId: String) async throws {
   }
 
-  func declineLobbyParticipant(_ participantId: String) async throws {
-  }
+    func endCallWasCalled() -> Bool {
+        return endCallCallCount > 0
+    }
 
+    func muteWasCalled() -> Bool {
+        return muteLocalMicCalled
+    }
+
+    func unmuteWasCalled() -> Bool {
+        return unmuteLocalMicCalled
+    }
+
+    func videoEnabledWhenJoinCall() -> Bool {
+        return isCameraPreferred ?? false
+    }
+
+    func mutedWhenJoinCall() -> Bool {
+        return !(isAudioPreferred ?? false)
+    }
+
+    func switchCameraWasCalled() -> Bool {
+        return switchCameraCallCount > 0
+    }
+
+    func admitAllLobbyParticipants() async throws {
+    }
+
+    func admitLobbyParticipant(_ participantId: String) async throws {
+    }
+
+    func declineLobbyParticipant(_ participantId: String) async throws {
+    }
+    func startCaptions(_ language: String) async throws {
+    }
+
+    func stopCaptions() async throws {
+    }
+
+    func setCaptionsSpokenLanguage(_ language: String) async throws {
+    }
+    func sendRttMessage(_ message: String, isFinal: Bool) async throws {
+    }
+
+    func setCaptionsCaptionLanguage(_ language: String) async throws {}
+    func removeParticipant(_ participantId: String) async throws {
+        removeParticipantCalled = true
+    }
+
+    func getCapabilities() async throws -> Set<AzureCommunicationUICalling.ParticipantCapabilityType> {
+        getCapabilitiesCalled = true
+        return [.unmuteMicrophone, .turnVideoOn]
+    }
 }

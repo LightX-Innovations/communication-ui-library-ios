@@ -39,7 +39,9 @@ public enum LocalUserAction: Equatable {
   case audioDeviceChangeSucceeded(device: AudioDeviceType)
   case audioDeviceChangeFailed(error: Error)
 
-  case participantRoleChanged(participantRole: ParticipantRole)
+    case participantRoleChanged(participantRole: ParticipantRoleEnum)
+    case setCapabilities(capabilities: Set<ParticipantCapabilityType>)
+    case onCapabilitiesChanged(event: CapabilitiesChangedEvent)
 
   case updateCameraTransforms(transforms: [CameraTransforms<Any>])
 
@@ -80,13 +82,14 @@ public enum LocalUserAction: Equatable {
     case let (.cameraSwitchSucceeded(lDev), .cameraSwitchSucceeded(rDev)):
       return lDev == rDev
 
-    case let (
-      .cameraSwitchFailed(lPreviousDevice, lErr), .cameraSwitchFailed(rPreviousDevice, rErr)
-    ):
-      return lPreviousDevice == rPreviousDevice && (lErr as NSError).code == (rErr as NSError).code
+        case let (.setCapabilities(lCapabilities), .setCapabilities(rCapabilities)):
+            return lCapabilities == rCapabilities
+        case let (.onCapabilitiesChanged(lEvent), .onCapabilitiesChanged(rEvent)):
+            return lEvent == rEvent
 
-    default:
-      return false
+        default:
+            return false
+        }
     }
   }
 }

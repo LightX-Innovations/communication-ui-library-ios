@@ -34,29 +34,55 @@ where
       error = nil
       errorCategory = .callState
 
-    // Exhaustive unimplemented actions
-    case .audioSessionAction(_),
-      .callingAction(.callIdUpdated(callId: _)),
-      .callingAction(.callEndRequested),
-      .callingAction(.callEnded),
-      .callingAction(.requestFailed),
-      .callingAction(.stateUpdated(status: _)),
-      .callingAction(.setupCall),
-      .callingAction(.recordingStateUpdated(isRecordingActive: _)),
-      .callingAction(.transcriptionStateUpdated(isTranscriptionActive: _)),
-      .callingAction(.resumeRequested),
-      .callingAction(.holdRequested),
-      .lifecycleAction(_),
-      .localUserAction(_),
-      .permissionAction(_),
-      .remoteParticipantsAction(_),
-      .callDiagnosticAction(_),
-      .compositeExitAction,
-      .callingViewLaunched,
-      .hideSupportForm,
-      .showSupportForm,
-      .visibilityAction(_):
-      return state
+            // Exhaustive unimplemented actions
+        case .audioSessionAction,
+                .callingAction(.callIdUpdated),
+                .callingAction(.callEndRequested),
+                .callingAction(.callEnded),
+                .callingAction(.requestFailed),
+                .callingAction(.stateUpdated),
+                .callingAction(.setupCall),
+                .callingAction(.recordingStateUpdated),
+                .callingAction(.transcriptionStateUpdated),
+                .callingAction(.resumeRequested),
+                .callingAction(.holdRequested),
+                .callingAction(.recordingUpdated),
+                .callingAction(.transcriptionUpdated),
+                .callingAction(.dismissRecordingTranscriptionBannedUpdated),
+                /* <CALL_START_TIME>
+                .callingAction(.callStartTimeUpdated),
+                </CALL_START_TIME> */
+                .lifecycleAction,
+                .localUserAction,
+                .permissionAction,
+                .remoteParticipantsAction,
+                .callDiagnosticAction,
+                .compositeExitAction,
+                .callingViewLaunched,
+                .showSupportForm,
+                .showCaptionsRttListView,
+                .showSpokenLanguageView,
+                .showCaptionsLanguageView,
+                .captionsAction,
+                .rttAction,
+                .showEndCallConfirmation,
+                .showMoreOptions,
+                .showAudioSelection,
+                .showSupportShare,
+                .showParticipants,
+                .showParticipantActions,
+                .hideDrawer,
+                .visibilityAction,
+                .toastNotificationAction,
+                .callScreenInfoHeaderAction,
+                .setTotalParticipantCount,
+                .buttonViewDataAction:
+            return state
+        }
+
+        return ErrorState(internalError: errorType,
+                          error: error,
+                          errorCategory: errorCategory)
     }
 
     return ErrorState(

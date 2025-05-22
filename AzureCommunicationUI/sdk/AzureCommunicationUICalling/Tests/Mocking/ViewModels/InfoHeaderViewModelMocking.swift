@@ -11,34 +11,34 @@ class InfoHeaderViewModelMocking: InfoHeaderViewModel {
   private let updateState:
     ((LocalUserState, RemoteParticipantsState, CallingState, VisibilityState) -> Void)?
 
-  init(
-    compositeViewModelFactory: CompositeViewModelFactoryProtocol,
-    logger: Logger,
-    localUserState: LocalUserState,
-    accessibilityProvider: AccessibilityProviderProtocol,
-    dispatchAction: @escaping ActionDispatch,
-    updateState: (
-      (LocalUserState, RemoteParticipantsState, CallingState, VisibilityState) -> Void
-    )? = nil
-  ) {
-    self.updateState = updateState
-    super.init(
-      compositeViewModelFactory: compositeViewModelFactory,
-      logger: logger,
-      localUserState: localUserState,
-      localizationProvider: LocalizationProviderMocking(),
-      accessibilityProvider: accessibilityProvider,
-      dispatchAction: dispatchAction,
-      enableMultitasking: true,
-      enableSystemPipWhenMultitasking: true)
-  }
+    init(compositeViewModelFactory: CompositeViewModelFactoryProtocol,
+         logger: Logger,
+         localUserState: LocalUserState,
+         accessibilityProvider: AccessibilityProviderProtocol,
+         dispatchAction: @escaping ActionDispatch,
+         updateState: ((LocalUserState, RemoteParticipantsState, CallingState, VisibilityState) -> Void)? = nil) {
+        self.updateState = updateState
+        super.init(compositeViewModelFactory: compositeViewModelFactory,
+                   logger: logger,
+                   localUserState: localUserState,
+                   localizationProvider: LocalizationProviderMocking(),
+                   accessibilityProvider: accessibilityProvider,
+                   dispatchAction: dispatchAction,
+                   enableMultitasking: true,
+                   enableSystemPipWhenMultitasking: true,
+                   callScreenInfoHeaderState: CallScreenInfoHeaderState(),
+                   buttonViewDataState: ButtonViewDataState(),
+                   controlHeaderViewData: nil
+        )
+    }
 
-  override func update(
-    localUserState: LocalUserState,
-    remoteParticipantsState: RemoteParticipantsState,
-    callingState: CallingState,
-    visibilityState: VisibilityState
-  ) {
-    updateState?(localUserState, remoteParticipantsState, callingState, visibilityState)
-  }
+    override func update(localUserState: LocalUserState,
+                         remoteParticipantsState: RemoteParticipantsState,
+                         callingState: CallingState,
+                         visibilityState: VisibilityState,
+                         callScreenInfoHeaderState: CallScreenInfoHeaderState?,
+                         buttonViewDataState: ButtonViewDataState
+    ) {
+        updateState?(localUserState, remoteParticipantsState, callingState, visibilityState)
+    }
 }

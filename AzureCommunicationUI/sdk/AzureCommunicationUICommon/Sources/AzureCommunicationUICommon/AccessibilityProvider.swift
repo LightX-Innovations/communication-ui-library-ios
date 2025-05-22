@@ -43,15 +43,11 @@ struct AccessibilityProvider: AccessibilityProviderProtocol {
       object: nil)
   }
 
-  func subscribeToUIFocusDidUpdateNotification(
-    _ observer: AccessibilityProviderNotificationsObserver
-  ) {
-    let selector = #selector(
-      AccessibilityProviderNotificationsObserver.didUIFocusUpdateNotification)
-    NotificationCenter.default.addObserver(
-      observer,
-      selector: selector,
-      name: UIFocusSystem.didUpdateNotification,
-      object: nil)
-  }
+    func subscribeToUIFocusDidUpdateNotification(_ observer: AccessibilityProviderNotificationsObserver) {
+        let selector = #selector(AccessibilityProviderNotificationsObserver.didUIFocusUpdateNotification)
+        NotificationCenter.default.addObserver(observer,
+                                               selector: selector,
+                                               name: UIFocusSystem.didUpdateNotification,
+                                               object: nil)
+    }
 }

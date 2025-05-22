@@ -8,7 +8,7 @@ import Foundation
 ///
 /// Action for the entire library. All actions are defined here as a hierarchy of enum types
 ///
-public enum Action: Equatable {
+enum Action: Equatable {
   case audioSessionAction(AudioSessionAction)
   case callingAction(CallingAction)
   case errorAction(ErrorAction)
@@ -21,5 +21,22 @@ public enum Action: Equatable {
   case compositeExitAction
   case callingViewLaunched
   case showSupportForm
-  case hideSupportForm
+  case showCaptionsRttListView
+  case showSpokenLanguageView
+  case showCaptionsLanguageView
+  case captionsAction(CaptionsAction)
+  case rttAction(RttAction)
+  case showEndCallConfirmation
+  case showAudioSelection
+  case showMoreOptions
+  case showSupportShare
+  case showParticipants
+  case showParticipantActions(ParticipantInfoModel)
+  // Since we only show one drawer at a time, we can have one hide
+  case hideDrawer
+
+  case toastNotificationAction(ToastNotificationAction)
+  case setTotalParticipantCount(Int)
+  case callScreenInfoHeaderAction(CallScreenInfoHeaderAction)
+  case buttonViewDataAction(ButtonViewDataAction)
 }

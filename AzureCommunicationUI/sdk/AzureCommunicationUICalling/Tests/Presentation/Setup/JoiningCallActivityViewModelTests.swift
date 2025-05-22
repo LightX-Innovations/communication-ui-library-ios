@@ -17,8 +17,7 @@ class JoiningCallActivityViewModelTests: XCTestCase {
 }
 
 extension JoiningCallActivityViewModelTests {
-  func makeSUT() -> JoiningCallActivityViewModel {
-    let localizationProvider = LocalizationProviderMocking()
-    return JoiningCallActivityViewModel(localizationProvider: localizationProvider)
-  }
+    func makeSUT() -> JoiningCallActivityViewModel {
+        return JoiningCallActivityViewModel(title: "AzureCommunicationUICalling.SetupView.Button.JoiningCall")
+    }
 }

@@ -32,7 +32,15 @@ class AzureCommunicationUIDemoAppE2ETests: XCUITestBase {
     e2eTest()
   }
 
-  // MARK: Private / helper functions
+    func testWhenLeaveCallConfirmationDisabled() {
+        tapInterfaceFor(.callUIKit)
+        tapMeetingType(.teamsCall)
+        disableLeaveCallConfirmationToggle()
+        joinCall()
+        leaveCallWithoutConfirmation()
+    }
+
+    // MARK: Private / helper functions
 
   /// Toggles the leave call overlay  in the calling screen and triggers call end
   private func leaveCall() {
@@ -43,9 +51,15 @@ class AzureCommunicationUIDemoAppE2ETests: XCUITestBase {
     wait(for: app.buttons[AccessibilityId.startExperienceAccessibilityID.rawValue])
   }
 
-  private func e2eTest() {
-    startExperience()
-    joinCall()
-    leaveCall()
-  }
+    private func leaveCallWithoutConfirmation() {
+        tapButton(accessibilityIdentifier: AccessibilityIdentifier.hangupAccessibilityID.rawValue,
+                  shouldWait: true)
+        wait(for: app.buttons[AccessibilityId.startExperienceAccessibilityID.rawValue])
+    }
+
+    private func e2eTest() {
+        startExperience()
+        joinCall()
+        leaveCall()
+    }
 }

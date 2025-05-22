@@ -8,26 +8,38 @@ import Foundation
 @testable import AzureCommunicationUICalling
 
 class CallingMiddlewareHandlerMocking: CallingMiddlewareHandling {
-  var setupCallWasCalled: ((Bool) -> Void)?
-  var startCallWasCalled: ((Bool) -> Void)?
-  var endCallWasCalled: ((Bool) -> Void)?
-  var enterBackgroundCalled: ((Bool) -> Void)?
-  var enterForegroundCalled: ((Bool) -> Void)?
-  var cameraPermissionSetCalled: ((Bool) -> Void)?
-  var cameraPermissionGrantedCalled: ((Bool) -> Void)?
-  var requestCameraPreviewOnCalled: ((Bool) -> Void)?
-  var requestCameraOnCalled: ((Bool) -> Void)?
-  var requestCameraOffCalled: ((Bool) -> Void)?
-  var requestCameraSwitchCalled: ((Bool) -> Void)?
-  var requestMicMuteCalled: ((Bool) -> Void)?
-  var requestMicUnmuteCalled: ((Bool) -> Void)?
-  var requestHoldCalled: ((Bool) -> Void)?
-  var requestResumeCalled: ((Bool) -> Void)?
-  var willTerminateCalled: ((Bool) -> Void)?
-  var admitAllLobbyParticipants: ((Bool) -> Void)?
-  var declineAllLobbyParticipants: ((Bool) -> Void)?
-  var admitLobbyParticipant: ((Bool) -> Void)?
-  var declineLobbyParticipant: ((Bool) -> Void)?
+    var setupCallWasCalled: ((Bool) -> Void)?
+    var startCallWasCalled: ((Bool) -> Void)?
+    var endCallWasCalled: ((Bool) -> Void)?
+    var enterBackgroundCalled: ((Bool) -> Void)?
+    var enterForegroundCalled: ((Bool) -> Void)?
+    var cameraPermissionSetCalled: ((Bool) -> Void)?
+    var cameraPermissionGrantedCalled: ((Bool) -> Void)?
+    var micPermissionGrantedCalled: ((Bool) -> Void)?
+    var requestCameraPreviewOnCalled: ((Bool) -> Void)?
+    var requestCameraOnCalled: ((Bool) -> Void)?
+    var requestCameraOffCalled: ((Bool) -> Void)?
+    var requestCameraSwitchCalled: ((Bool) -> Void)?
+    var requestMicMuteCalled: ((Bool) -> Void)?
+    var requestMicUnmuteCalled: ((Bool) -> Void)?
+    var requestHoldCalled: ((Bool) -> Void)?
+    var requestResumeCalled: ((Bool) -> Void)?
+    var willTerminateCalled: ((Bool) -> Void)?
+    var admitAllLobbyParticipants: ((Bool) -> Void)?
+    var declineAllLobbyParticipants: ((Bool) -> Void)?
+    var admitLobbyParticipant: ((Bool) -> Void)?
+    var declineLobbyParticipant: ((Bool) -> Void)?
+    var startCaptions: ((Bool) -> Void)?
+    var stopCaptions: ((Bool) -> Void)?
+    var setCaptionsSpokenLanguage: ((Bool) -> Void)?
+    var setCaptionsLangue: ((Bool) -> Void)?
+    var onNetworkQualityCallDiagnosticsUpdated: ((Bool) -> Void)?
+    var onNetworkCallDiagnosticsUpdated: ((Bool) -> Void)?
+    var onMediaCallDiagnosticsUpdated: ((Bool) -> Void)?
+    var dismissNotification: ((Bool) -> Void)?
+    var setCapabilities: ((Bool) -> Void)?
+    var removeParticipant: ((Bool) -> Void)?
+    var onCapabilitiesChanged: ((CapabilitiesChangedEvent) -> Void)?
 
   func setupCall(state: AppState, dispatch: @escaping ActionDispatch) -> Task<Void, Never> {
     Task {
@@ -75,11 +87,16 @@ class CallingMiddlewareHandlerMocking: CallingMiddlewareHandling {
     }
   }
 
-  func requestCameraPreviewOn(state: AppState, dispatch: @escaping ActionDispatch) -> Task<
-    Void, Never
-  > {
-    Task {
-      requestCameraPreviewOnCalled?(true)
+    func onMicPermissionIsGranted(state: AppState, dispatch: @escaping ActionDispatch) -> Task<Void, Never> {
+        Task {
+            micPermissionGrantedCalled?(true)
+        }
+    }
+
+    func requestCameraPreviewOn(state: AppState, dispatch: @escaping ActionDispatch) -> Task<Void, Never> {
+        Task {
+            requestCameraPreviewOnCalled?(true)
+        }
     }
   }
 
@@ -172,14 +189,83 @@ class CallingMiddlewareHandlerMocking: CallingMiddlewareHandling {
     Task {
       admitLobbyParticipant?(true)
     }
-  }
 
-  func declineLobbyParticipant(
-    state: AzureCommunicationUICalling.AppState,
-    dispatch: @escaping AzureCommunicationUICalling.ActionDispatch, participantId: String
-  ) -> Task<Void, Never> {
-    Task {
-      declineLobbyParticipant?(true)
+    func startCaptions(state: AzureCommunicationUICalling.AppState, dispatch: @escaping AzureCommunicationUICalling.ActionDispatch, language: String) -> Task<Void, Never> {
+        Task {
+            startCaptions?(true)
+        }
     }
-  }
+
+    func sendRttMessage(message: String, isFinal: Bool) -> Task<Void, Never> {
+        Task {
+            sendRttMessage(message: message, isFinal: isFinal)
+        }
+    }
+    func stopCaptions(state: AzureCommunicationUICalling.AppState, dispatch: @escaping AzureCommunicationUICalling.ActionDispatch) -> Task<Void, Never> {
+        Task {
+            stopCaptions?(true)
+        }
+    }
+
+    func setCaptionsSpokenLanguage(state: AzureCommunicationUICalling.AppState, dispatch: @escaping AzureCommunicationUICalling.ActionDispatch, language: String) -> Task<Void, Never> {
+        Task {
+            setCaptionsSpokenLanguage?(true)
+        }
+    }
+
+    func setCaptionsLanguage(state: AzureCommunicationUICalling.AppState, dispatch: @escaping AzureCommunicationUICalling.ActionDispatch, language: String) -> Task<Void, Never> {
+        Task {
+            setCaptionsLangue?(true)
+        }
+    }
+
+    func onNetworkQualityCallDiagnosticsUpdated(state: AzureCommunicationUICalling.AppState, dispatch: @escaping AzureCommunicationUICalling.ActionDispatch, diagnisticModel: AzureCommunicationUICalling.NetworkQualityDiagnosticModel) -> Task<Void, Never> {
+        Task {
+            onNetworkQualityCallDiagnosticsUpdated?(true)
+        }
+    }
+
+    func onNetworkCallDiagnosticsUpdated(state: AzureCommunicationUICalling.AppState, dispatch: @escaping AzureCommunicationUICalling.ActionDispatch, diagnisticModel: AzureCommunicationUICalling.NetworkDiagnosticModel) -> Task<Void, Never> {
+        Task {
+            onNetworkCallDiagnosticsUpdated?(true)
+        }
+    }
+
+    func onMediaCallDiagnosticsUpdated(state: AzureCommunicationUICalling.AppState, dispatch: @escaping AzureCommunicationUICalling.ActionDispatch, diagnisticModel: AzureCommunicationUICalling.MediaDiagnosticModel) -> Task<Void, Never> {
+        Task {
+            onMediaCallDiagnosticsUpdated?(true)
+        }
+    }
+
+    func dismissNotification(state: AzureCommunicationUICalling.AppState, dispatch: @escaping AzureCommunicationUICalling.ActionDispatch) -> Task<Void, Never> {
+        Task {
+            dismissNotification?(true)
+        }
+    }
+
+    func setCapabilities(capabilities: Set<AzureCommunicationUICalling.ParticipantCapabilityType>, state: AzureCommunicationUICalling.AppState, dispatch: @escaping AzureCommunicationUICalling.ActionDispatch) -> Task<Void, Never> {
+        Task {
+            setCapabilities?(true)
+        }
+    }
+
+    func removeParticipant(state: AzureCommunicationUICalling.AppState, dispatch: @escaping AzureCommunicationUICalling.ActionDispatch, participantId: String) -> Task<Void, Never> {
+        Task {
+            removeParticipant?(true)
+        }
+    }
+
+    func onCapabilitiesChanged(event: AzureCommunicationUICalling.CapabilitiesChangedEvent, state: AzureCommunicationUICalling.AppState, dispatch: @escaping AzureCommunicationUICalling.ActionDispatch) -> Task<Void, Never> {
+        Task {
+            onCapabilitiesChanged?(event)
+        }
+    }
+
+    func recordingStateUpdated(state: AzureCommunicationUICalling.AppState, dispatch: @escaping AzureCommunicationUICalling.ActionDispatch, isRecordingActive: Bool) -> Task<Void, Never> {
+        Task {}
+    }
+
+    func transcriptionStateUpdated(state: AzureCommunicationUICalling.AppState, dispatch: @escaping AzureCommunicationUICalling.ActionDispatch, isTranscriptionActive: Bool) -> Task<Void, Never> {
+        Task {}
+    }
 }

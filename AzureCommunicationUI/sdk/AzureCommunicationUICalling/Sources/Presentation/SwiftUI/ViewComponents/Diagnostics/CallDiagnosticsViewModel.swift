@@ -12,8 +12,7 @@ final class CallDiagnosticsViewModel: ObservableObject {
   private let accessibilityProvider: AccessibilityProviderProtocol
   private let dispatch: ActionDispatch
 
-  @Published var currentBottomToastDiagnostic: BottomToastDiagnosticViewModel?
-  @Published var messageBarStack: [MessageBarDiagnosticViewModel] = []
+    @Published var messageBarStack: [MessageBarDiagnosticViewModel] = []
 
   init(
     localizationProvider: LocalizationProviderProtocol,
@@ -109,65 +108,41 @@ final class CallDiagnosticsViewModel: ObservableObject {
     }
   }
 
-  private func updateBottomToast(
-    isBadState: Bool,
-    viewModel: @autoclosure () -> BottomToastDiagnosticViewModel,
-    dismissAfterInterval: Bool,
-    where compare: (BottomToastDiagnosticViewModel) -> Bool
-  ) {
-    if isBadState {
-      if let bottomToast = currentBottomToastDiagnostic, compare(bottomToast) {
-        invalidateTimer()
-      } else {
-        // If is a different diagnostic, override previous bottom toast if is being presented.
-        dispatchBottomToastDismissAction()
-        dismissDiagnosticCurrentBottomToastDiagnostic()
-        // Make this now current diagnostic.
-        currentBottomToastDiagnostic = viewModel()
-      }
-
-      // Restart timer for interval dismiss.
-      if dismissAfterInterval {
-        bottomToastDismissTimer =
-          Timer.scheduledTimer(
-            withTimeInterval:
-              BottomToastDiagnosticViewModel.bottomToastBannerDismissInterval,
-            repeats: false
-          ) { [weak self] _ in
-            self?.dispatchBottomToastDismissAction()
-            self?.dismissDiagnosticCurrentBottomToastDiagnostic()
-          }
-      } else {
-        invalidateTimer()
-      }
-    } else if let bottomToast = currentBottomToastDiagnostic, compare(bottomToast) {
-      dispatchBottomToastDismissAction()
-      dismissDiagnosticCurrentBottomToastDiagnostic()
-    }
-  }
-
-  private func dismissDiagnosticCurrentBottomToastDiagnostic() {
-    guard currentBottomToastDiagnostic != nil else {
-      return
+    func update(diagnosticsState: CallDiagnosticsState) {
+        if let mediaDiagnostic = diagnosticsState.mediaDiagnostic {
+            update(diagnosticModel: mediaDiagnostic)
+        }
     }
 
-    currentBottomToastDiagnostic = nil
-    invalidateTimer()
-  }
+    private func update(diagnosticModel: MediaDiagnosticModel) {
+        if MessageBarDiagnosticViewModel.handledMediaDiagnostics.contains(diagnosticModel.diagnostic) {
+            updateMessageBarList(diagnosticModel: diagnosticModel)
+        }
+    }
 
-  private func invalidateTimer() {
-    bottomToastDismissTimer?.invalidate()
-    bottomToastDismissTimer = nil
-  }
+    private func updateMessageBarList(diagnosticModel: MediaDiagnosticModel) {
+        guard let messageDiagnosticViewModel = messageBarStack
+            .first(where: { $0.mediaDiagnostic == diagnosticModel.diagnostic }) else {
+            return
+        }
 
-  private func dispatchBottomToastDismissAction() {
-    if let networkDiagnostic = currentBottomToastDiagnostic?.networkDiagnostic {
-      dispatch(.callDiagnosticAction(.dismissNetwork(diagnostic: networkDiagnostic)))
-    } else if let networkQualityDiagnostic = currentBottomToastDiagnostic?.networkQualityDiagnostic
-    {
-      dispatch(.callDiagnosticAction(.dismissNetworkQuality(diagnostic: networkQualityDiagnostic)))
-    } else if let mediaDiagnostic = currentBottomToastDiagnostic?.mediaDiagnostic {
-      dispatch(.callDiagnosticAction(.dismissMedia(diagnostic: mediaDiagnostic)))
+        if diagnosticModel.value {
+            messageDiagnosticViewModel.show()
+        } else if messageDiagnosticViewModel.isDisplayed {
+            messageDiagnosticViewModel.dismiss()
+            // Clean up the diagnostic state when dismiss.
+            dispatch(.callDiagnosticAction(.dismissMedia(diagnostic: diagnosticModel.diagnostic)))
+        }
+    }
+
+    func dismissMessageBar(diagnostic: MediaCallDiagnostic) {
+        guard let messageDiagnosticViewModel = messageBarStack
+            .first(where: { $0.mediaDiagnostic == diagnostic }) else {
+            return
+        }
+        messageDiagnosticViewModel.dismiss()
+        // Clean up the diagnostic state when dismiss.
+        dispatch(.callDiagnosticAction(.dismissMedia(diagnostic: diagnostic)))
     }
   }
 

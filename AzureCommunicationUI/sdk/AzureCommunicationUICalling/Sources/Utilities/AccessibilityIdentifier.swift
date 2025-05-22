@@ -13,6 +13,8 @@ enum AccessibilityIdentifier: String {
     "AzureCommunicationUICalling.CallingView.ParticipantGridLayoutView.AccessibilityID"
   case draggablePipViewAccessibilityID =
     "AzureCommunicationUICalling.CallingView.DraggablePipView.AccessibilityID"
+  case leaveCallConfirmTitleAccessibilityID =
+    "AzureCommunicationUICalling.CallingView.Overlay.LeaveCallConfirmTitle.AccessibilityID"
   case leaveCallAccessibilityID =
     "AzureCommunicationUICalling.CallingView.Overlay.LeaveCall.AccessibilityID"
   case joinCallAccessibilityID =
@@ -53,8 +55,8 @@ enum AccessibilityIdentifier: String {
     "AzureCommunicationUICalling.CallingView.LobbyActionError.Dismiss.AccessibilityID"
   case participantListLobbyActionID =
     "AzureCommunicationUICalling.CallingView.ParticipantDrawer.LobbyAction.AccessibilityID"
-  case callDiagnosticBottomToastAccessibilityID =
-    "AzureCommunicationUICalling.CallingView.Diagnostics.BottomToast.AccessibilityID"
+  case callBottomToastAccessibilityID =
+    "AzureCommunicationUICalling.CallingView.BottomToast.AccessibilityID"
   case callDiagnosticMessageBarAccessibilityID =
     "AzureCommunicationUICalling.CallingView.Diagnostics.MessageBar.AccessibilityID"
   case reportIssueAccessibilityID =
@@ -65,4 +67,8 @@ enum AccessibilityIdentifier: String {
     "AzureCommunicationUICalling.CallingView.SupportForm.Submit.AccessibilityID"
   case supportFormTextFieldAccessibilityId =
     "AzureCommunicationUICalling.CallingView.SupportForm.TextField.AccessibilityID"
+  case callingViewParticipantMenuMuteAccessibilityId =
+    "AzureCommunicationUICalling.CallingView.ParticipantMenu.Mute.AccessibilityID"
+  case callingViewParticipantMenuRemoveAccessibilityId =
+    "AzureCommunicationUICalling.CallingView.ParticipantMenu.Remove.AccessibilityID"
 }

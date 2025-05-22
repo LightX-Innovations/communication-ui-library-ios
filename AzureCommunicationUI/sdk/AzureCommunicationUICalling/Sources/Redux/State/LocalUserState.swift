@@ -205,7 +205,46 @@ public struct LocalUserState {
         "transmission": self.transmission.description,
         "error": self.error?.localizedDescription ?? "",
       ]
+
     }
+  }
+
+  let cameraState: CameraState
+  let audioState: AudioState
+  let displayName: String?
+  let userId: String?
+  let localVideoStreamIdentifier: String?
+  let participantRole: ParticipantRoleEnum?
+  let capabilities: Set<ParticipantCapabilityType>
+  let currentCapabilitiesAreDefault: Bool
+  let transforms: [CameraTransforms<Any>]?
+
+  init(
+    cameraState: CameraState = CameraState(
+      operation: .off,
+      device: .front,
+      transmission: .local),
+    audioState: AudioState = AudioState(
+      operation: .off,
+      device: .receiverSelected),
+    displayName: String? = nil,
+    userId: String? = nil,
+    localVideoStreamIdentifier: String? = nil,
+    participantRole: ParticipantRoleEnum? = nil,
+    capabilities: Set<ParticipantCapabilityType> = [.unmuteMicrophone, .turnVideoOn],
+    transforms: [CameraTransforms<Any>]? = nil,
+    currentCapabilitiesAreDefault: Bool = true
+  ) {
+    self.cameraState = cameraState
+    self.audioState = audioState
+    self.displayName = displayName
+    self.userId = userId
+    self.localVideoStreamIdentifier = localVideoStreamIdentifier
+    self.participantRole = participantRole
+    self.capabilities = capabilities
+    self.currentCapabilitiesAreDefault = currentCapabilitiesAreDefault
+    self.transforms = transforms
+
   }
 
   public struct AudioState {
@@ -220,34 +259,6 @@ public struct LocalUserState {
         "error": self.error?.localizedDescription ?? "",
       ]
     }
-  }
-
-  let cameraState: CameraState
-  let audioState: AudioState
-  let displayName: String?
-  let localVideoStreamIdentifier: String?
-  let participantRole: ParticipantRole?
-  let transforms: [CameraTransforms<Any>]?
-
-  init(
-    cameraState: CameraState = CameraState(
-      operation: .off,
-      device: .front,
-      transmission: .local),
-    audioState: AudioState = AudioState(
-      operation: .off,
-      device: .receiverSelected),
-    displayName: String? = nil,
-    localVideoStreamIdentifier: String? = nil,
-    participantRole: ParticipantRole? = nil,
-    transforms: [CameraTransforms<Any>]? = nil
-  ) {
-    self.cameraState = cameraState
-    self.audioState = audioState
-    self.displayName = displayName
-    self.localVideoStreamIdentifier = localVideoStreamIdentifier
-    self.participantRole = participantRole
-    self.transforms = transforms
   }
 
   public func toJson() -> [String: Any] {

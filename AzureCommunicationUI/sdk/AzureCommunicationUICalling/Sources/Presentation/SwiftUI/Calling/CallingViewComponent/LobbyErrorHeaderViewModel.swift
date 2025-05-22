@@ -8,8 +8,8 @@ import Foundation
 class LobbyErrorHeaderViewModel: ObservableObject {
   @Published var accessibilityLabel: String
   @Published var title: String
-  @Published var isDisplayed: Bool = false
-  @Published var isVoiceOverEnabled: Bool = false
+  @Published var isDisplayed = false
+  @Published var isVoiceOverEnabled = false
 
   private let logger: Logger
   private let accessibilityProvider: AccessibilityProviderProtocol
@@ -18,7 +18,7 @@ class LobbyErrorHeaderViewModel: ObservableObject {
 
   var dismissButtonViewModel: IconButtonViewModel!
 
-  var isPad: Bool = false
+  var isPad = false
 
   init(
     compositeViewModelFactory: CompositeViewModelFactoryProtocol,
@@ -69,9 +69,30 @@ class LobbyErrorHeaderViewModel: ObservableObject {
       isDisplayed = true
       lastErrorTimestamp = lobbyError.errorTimeStamp
 
-      let title = getErrorText(lobbyError.lobbyErrorCode)
-      self.title = title
-      self.accessibilityLabel = title
+      guard canShow else {
+        isDisplayed = false
+        return
+      }
+
+      var isDisplayed = false
+      var lastErrorTimestamp: Date?
+      if let lobbyError = remoteParticipantsState.lobbyError,
+        self.lastErrorTimestamp != lobbyError.errorTimeStamp
+      {
+        isDisplayed = true
+        lastErrorTimestamp = lobbyError.errorTimeStamp
+
+        let title = getErrorText(lobbyError.lobbyErrorCode)
+        self.title = title
+        self.accessibilityLabel = title
+      }
+
+      if self.isDisplayed != isDisplayed {
+        self.isDisplayed = isDisplayed
+      }
+      if self.lastErrorTimestamp != lastErrorTimestamp {
+        self.lastErrorTimestamp = lastErrorTimestamp
+      }
     }
 
     if self.isDisplayed != isDisplayed {

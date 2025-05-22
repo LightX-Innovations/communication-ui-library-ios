@@ -28,6 +28,7 @@ class AvatarViewManager: AvatarViewManagerProtocol, ObservableObject {
 
   init(
     store: Store<AppState, Action>,
+    localParticipantId: CommunicationIdentifier,
     localParticipantViewData: ParticipantViewData?
   ) {
     self.store = store
@@ -37,15 +38,12 @@ class AvatarViewManager: AvatarViewManagerProtocol, ObservableObject {
       .sink { [weak self] state in
         self?.receive(state: state)
       }.store(in: &cancellables)
-  }
-
-  private func receive(state: AppState) {
-    guard state.callingState.status == .disconnected || state.errorState.errorCategory == .callState
-    else {
+    guard let participantViewData = localParticipantViewData else {
       return
     }
-
-    avatarStorage = MappedSequence<String, ParticipantViewData>()
+    avatarStorage.append(
+      forKey: localParticipantId.rawId,
+      value: participantViewData)
   }
 
   func updateStorage(with removedParticipantsIds: [String]) {

@@ -38,20 +38,21 @@ class CompositeStateManagerTests: XCTestCase {
     callStateManager = nil
   }
 
-  private func testCallingStatus(_ status: CallingStatus) {
-    let callState = CallingState(
-      status: status,
-      operationStatus: OperationStatus.callEnded,
-      callId: "123",
-      isRecordingActive: false,
-      isTranscriptionActive: false,
-      callStartDate: Date()
-    )
-    let newState = getAppState(callingState: callState)
-    expectedCallStateCode = status.toCallCompositeCallState()
-    mockStoreFactory.setState(newState)
-    wait(for: [handlerCallExpectation], timeout: 1)
-  }
+    private func testCallingStatus(_ status: CallingStatus) {
+        let callState = CallingState(status: status,
+                                     operationStatus: OperationStatus.callEnded,
+                                     callId: "123",
+                                     isRecordingActive: false,
+                                     isTranscriptionActive: false,
+                                     callStartDate: Date(),
+                                     callEndReasonCode: 123,
+                                     callEndReasonSubCode: 567
+        )
+        let newState = getAppState(callingState: callState)
+        expectedCallStateCode = status.toCallCompositeCallState()
+        mockStoreFactory.setState(newState)
+        wait(for: [handlerCallExpectation], timeout: 1)
+    }
 
   func
     test_callStateManager_when_reduxStateChangedToNone_then_stateEventHandlerCalledWithNoneState()
@@ -125,13 +126,18 @@ class CompositeStateManagerTests: XCTestCase {
     testCallingStatus(status)
   }
 
-  func
-    test_callStateManager_when_reduxStateChangedToRinging_then_stateEventHandlerCalledWithRingingState()
-  {
-    let status = CallingStatus.ringing
-    expectedStateChangeCount = 2
-    testCallingStatus(status)
-  }
+    func test_callStateManager_when_reduxStateChangedToRinging_then_stateEventHandlerCalledWithRingingState() {
+        let status = CallingStatus.ringing
+        expectedStateChangeCount = 2
+        testCallingStatus(status)
+    }
+
+    func test_callState_options() {
+        XCTAssertEqual(CallState.earlyMedia.requestString, "earlymedia")
+        XCTAssertEqual(CallState.localHold.requestString, "localhold")
+        XCTAssertEqual(CallState.remoteHold.requestString, "remotehold")
+        XCTAssertEqual(CallState.remoteHold.callId, nil)
+    }
 }
 
 extension CompositeStateManagerTests {
@@ -157,19 +163,28 @@ extension CompositeStateManagerTests {
       errorState: ErrorState())
   }
 
-  func getEventsHandler() -> CallComposite.Events {
-    let handler = CallComposite.Events()
-    handler.onCallStateChanged = { [weak self] callState in
-      guard let self = self else {
-        return
-      }
-      self.stateChangeCount += 1
-      if self.stateChangeCount == self.expectedStateChangeCount {
-        XCTAssertEqual(callState, self.expectedCallStateCode)
-        self.handlerCallExpectation.fulfill()
-      } else {
-        XCTAssertEqual(callState, CallState.none)
-      }
+    func getEventsHandler() -> CallComposite.Events {
+        let handler = CallComposite.Events()
+        handler.onCallStateChanged = { [weak self] callState in
+            guard let self = self else {
+                return
+            }
+            self.stateChangeCount += 1
+            if self.stateChangeCount == self.expectedStateChangeCount {
+                XCTAssertEqual(callState, self.expectedCallStateCode)
+                if callState != .none {
+                    XCTAssertEqual(callState.callEndReasonCodeInt, 123)
+                    XCTAssertEqual(callState.callEndReasonSubCodeInt, 567)
+                } else {
+                    XCTAssertEqual(callState.callEndReasonCodeInt, nil)
+                    XCTAssertEqual(callState.callEndReasonSubCodeInt, nil)
+                }
+                self.handlerCallExpectation.fulfill()
+            } else {
+                XCTAssertEqual(callState, CallState.none)
+            }
+        }
+        return handler
     }
     return handler
   }

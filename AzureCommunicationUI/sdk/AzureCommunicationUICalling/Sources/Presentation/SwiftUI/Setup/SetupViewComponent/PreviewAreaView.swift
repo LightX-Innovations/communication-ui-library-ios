@@ -44,30 +44,33 @@ struct PermissionWarningView: View {
     static var iconSize: CGFloat = 50
   }
 
-  var body: some View {
-    GeometryReader { geometry in
-      VStack(spacing: Constants.verticalSpacing) {
-        Spacer()
-        GeometryReader { scrollViewGeometry in
-          ScrollView {
-            VStack {
-              Icon(name: displayIcon, size: Constants.iconSize)
-                .foregroundColor(Color(StyleProvider.color.onSurface))
-              Text(displayText)
-                .padding(.horizontal, Constants.horizontalSpacing)
-                .font(Fonts.subhead.font)
-                .multilineTextAlignment(.center)
-                .foregroundColor(Color(StyleProvider.color.onSurface))
-              PrimaryButton(viewModel: goToSettingsButtonViewModel)
-                .accessibilityIdentifier(
-                  AccessibilityIdentifier.goToSettingsAccessibilityID.rawValue
-                )
-                .padding()
-            }
-            .frame(width: scrollViewGeometry.size.width)
-            .frame(minHeight: scrollViewGeometry.size.height)
-          }
-          .frame(height: scrollViewGeometry.size.height - Constants.horizontalSpacing * 2)
+    var body: some View {
+        GeometryReader { geometry in
+            VStack(spacing: Constants.verticalSpacing) {
+                Spacer()
+                GeometryReader { scrollViewGeometry in
+                    ScrollView {
+                        VStack {
+                            Icon(name: displayIcon, size: Constants.iconSize)
+                                .foregroundColor(Color(StyleProvider.color.onSurface))
+                            Text(displayText)
+                                .padding(.horizontal, Constants.horizontalSpacing)
+                                .font(Fonts.subhead.font)
+                                .multilineTextAlignment(.center)
+                                .foregroundColor(Color(StyleProvider.color.onSurface))
+                            PrimaryButton(viewModel: goToSettingsButtonViewModel)
+                                .accessibilityIdentifier(AccessibilityIdentifier.goToSettingsAccessibilityID.rawValue)
+                                .padding()
+                                .frame(height: 52)
+                        }
+                        .frame(width: scrollViewGeometry.size.width)
+                        .frame(minHeight: scrollViewGeometry.size.height)
+                    }
+                    .frame(height: scrollViewGeometry.size.height - Constants.horizontalSpacing * 2)
+                }
+            }.frame(width: geometry.size.width,
+                    height: geometry.size.height)
+            .accessibilityElement(children: .contain)
         }
       }.frame(
         width: geometry.size.width,

@@ -23,22 +23,19 @@ class ContainerUIHostingController: UIHostingController<ContainerUIHostingContro
   private let environmentProperties: EnvironmentProperty
   private let cancelBag = CancelBag()
 
-  init(
-    rootView: ContainerView,
-    callComposite: CallComposite,
-    isRightToLeft: Bool
-  ) {
-    let environmentProperties = EnvironmentProperty()
-    let environmentRoot = Root(
-      containerView: rootView,
-      environmentProperties: environmentProperties)
-    self.callComposite = callComposite
-    self.environmentProperties = environmentProperties
-    super.init(rootView: environmentRoot)
-    self.view.semanticContentAttribute = isRightToLeft ? .forceRightToLeft : .forceLeftToRight
-    subscribeEnvironmentProperties(containerView: rootView)
-    haltSetupViewOrientation(containerView: rootView)
-  }
+    init(rootView: ContainerView,
+         callComposite: CallComposite,
+         isRightToLeft: Bool) {
+        let environmentProperties = EnvironmentProperty()
+        let environmentRoot = Root(containerView: rootView,
+                                   environmentProperties: environmentProperties)
+        self.callComposite = callComposite
+        self.environmentProperties = environmentProperties
+        super.init(rootView: environmentRoot)
+        self.view.semanticContentAttribute = isRightToLeft ?
+            .forceRightToLeft : .forceLeftToRight
+        subscribeEnvironmentProperties(containerView: rootView)
+    }
 
   @objc required dynamic init?(coder aDecoder: NSCoder) {
     fatalError("init(coder:) has not been implemented")
@@ -59,33 +56,59 @@ class ContainerUIHostingController: UIHostingController<ContainerUIHostingContro
     self.environmentProperties.supportedOrientations
   }
 
-  private func subscribeEnvironmentProperties(containerView: ContainerView) {
-    environmentProperties
-      .$supportedOrientations
-      .receive(on: RunLoop.main)
-      .removeDuplicates()
-      .sink(receiveValue: { [weak self] _ in
-        switch containerView.router.currentView {
-        case .setupView:
-          guard let self = self,
-            self.traitCollection.userInterfaceIdiom == .phone
-          else {
-            return
-          }
-          if UIDevice.current.isGeneratingDeviceOrientationNotifications {
-            // This work-around is to make sure the setup view rotates back to portrait if the previous
-            // screen was on a different orientation.
-            // The 0.35s delay here is to wait for any orientation switch animation that happends at
-            // the same time with the steup view navigation.
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-              if UIDevice.current.orientation != .portrait {
-                UIDevice.current.rotateTo(orientation: .portrait)
-              }
-              UIDevice.current.endGeneratingDeviceOrientationNotifications()
-            }
-          }
-        default:
-          if !UIDevice.current.isGeneratingDeviceOrientationNotifications {
+    private func subscribeEnvironmentProperties(containerView: ContainerView) {
+        environmentProperties
+            .$supportedOrientations
+            .receive(on: RunLoop.main)
+            .removeDuplicates()
+            .sink(receiveValue: { [weak self] _ in
+                switch containerView.router.currentView {
+                case .setupView:
+                    guard let self = self,
+                          self.traitCollection.userInterfaceIdiom == .phone else {
+                        return
+                    }
+                    if UIDevice.current.isGeneratingDeviceOrientationNotifications {
+                        // This work-around is to make sure the setup view rotates back to portrait if the previous
+                        // screen was on a different orientation.
+                        // The 0.35s delay here is to wait for any orientation switch animation that happends at
+                        // the same time with the steup view navigation.
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                            if UIDevice.current.orientation != .portrait {
+                                UIDevice.current.rotateTo(orientation: .portrait)
+                            }
+                        }
+                    }
+                default:
+                    if !UIDevice.current.isGeneratingDeviceOrientationNotifications {
+                        UIDevice.current.beginGeneratingDeviceOrientationNotifications()
+                    }
+                }
+            }).store(in: cancelBag)
+
+        environmentProperties
+            .$isProximitySensorOn
+            .receive(on: RunLoop.main)
+            .removeDuplicates()
+            .sink(receiveValue: { isEnable in
+                UIDevice.current.toggleProximityMonitoringStatus(isEnabled: isEnable)
+            }).store(in: cancelBag)
+
+        environmentProperties
+            .$prefersHomeIndicatorAutoHidden
+            .receive(on: RunLoop.main)
+            .sink(receiveValue: { [weak self] shouldHide in
+                guard let strongSelf = self else {
+                    return
+                }
+                strongSelf._prefersHomeIndicatorAutoHidden = shouldHide
+            }).store(in: cancelBag)
+    }
+
+    private func resetUIDeviceSetup() {
+        UIDevice.current.toggleProximityMonitoringStatus(isEnabled: false)
+
+        if !UIDevice.current.isGeneratingDeviceOrientationNotifications {
             UIDevice.current.beginGeneratingDeviceOrientationNotifications()
           }
         }
@@ -152,7 +175,13 @@ class ContainerUIHostingController: UIHostingController<ContainerUIHostingContro
     didSet { setNeedsUpdateOfHomeIndicatorAutoHidden() }
   }
 
-  override var prefersHomeIndicatorAutoHidden: Bool {
-    _prefersHomeIndicatorAutoHidden
-  }
+    // MARK: Prefers Home Indicator Auto Hidden
+
+    private var _prefersHomeIndicatorAutoHidden = false {
+        didSet { setNeedsUpdateOfHomeIndicatorAutoHidden() }
+    }
+
+    override var prefersHomeIndicatorAutoHidden: Bool {
+        _prefersHomeIndicatorAutoHidden
+    }
 }

@@ -83,11 +83,11 @@ class ChatDemoViewController: UIViewController {
     fatalError("init(coder:) has not been implemented")
   }
 
-  override func viewDidLoad() {
-    super.viewDidLoad()
-    setupUI()
-    registerNotifications()
-  }
+    // The space needed to fill the top part of the stack view,
+    // in order to make the stackview content centered
+    private var spaceToFullInStackView: CGFloat?
+    private var userIsEditing = false
+    private var isKeyboardShowing = false
 
   override func viewWillLayoutSubviews() {
     super.viewWillLayoutSubviews()
@@ -173,60 +173,19 @@ class ChatDemoViewController: UIViewController {
     setupErrorHandler()
   }
 
-  private func setupErrorHandler() {
-    guard let adapter = self.chatAdapter else {
-      return
-    }
-    adapter.events.onError = { [weak self] chatCompositeError in
-      guard let self else {
-        return
-      }
-      print("::::UIKitChatDemoView::setupErrorHandler::onError \(chatCompositeError)")
-      print("::::UIKitChatDemoView error.code \(chatCompositeError.code)")
-      print(
-        "Error - \(chatCompositeError.code): "
-          + "\(chatCompositeError.error?.localizedDescription ?? chatCompositeError.localizedDescription)"
-      )
-      self.showError(errorCode: chatCompositeError.code)
-    }
-  }
-
-  private func onDisconnectFromChat(with result: Result<Void, ChatCompositeError>) {
-    switch result {
-    case .success:
-      self.chatAdapter = nil
-      self.updateExperieceButton()
-      self.startExperienceButton.isEnabled = true
-    case .failure(let error):
-      print("disconnect error \(error)")
-    }
-  }
-
-  private func showError(errorCode: String) {
-    var errorMessage = ""
-    switch errorCode {
-    case ChatCompositeErrorCode.joinFailed:
-      errorMessage = "Connection Failed"
-    case ChatCompositeErrorCode.disconnectFailed:
-      errorMessage = "Disconnect Failed"
-    case ChatCompositeErrorCode.sendMessageFailed,
-      ChatCompositeErrorCode.fetchMessagesFailed,
-      ChatCompositeErrorCode.requestParticipantsFetchFailed,
-      ChatCompositeErrorCode.sendReadReceiptFailed,
-      ChatCompositeErrorCode.sendTypingIndicatorFailed,
-      ChatCompositeErrorCode.disconnectFailed:
-      // no alert
-      return
-    default:
-      errorMessage = "Unknown error"
-    }
-    let errorAlert = UIAlertController(
-      title: "Error", message: errorMessage, preferredStyle: .alert)
-    errorAlert.addAction(
-      UIAlertAction(
-        title: "Dismiss", style: .cancel,
-        handler: { [weak self] _ in
-          guard let self else {
+    private func showError(errorCode: String) {
+        var errorMessage = ""
+        switch errorCode {
+        case ChatCompositeErrorCode.joinFailed:
+            errorMessage = "Connection Failed"
+        case ChatCompositeErrorCode.disconnectFailed:
+            errorMessage = "Disconnect Failed"
+        case ChatCompositeErrorCode.sendMessageFailed,
+            ChatCompositeErrorCode.fetchMessagesFailed,
+            ChatCompositeErrorCode.requestParticipantsFetchFailed,
+            ChatCompositeErrorCode.sendReadReceiptFailed,
+            ChatCompositeErrorCode.sendTypingIndicatorFailed:
+            // no alert
             return
           }
           self.chatAdapter?.disconnect(completionHandler: { [weak self] result in

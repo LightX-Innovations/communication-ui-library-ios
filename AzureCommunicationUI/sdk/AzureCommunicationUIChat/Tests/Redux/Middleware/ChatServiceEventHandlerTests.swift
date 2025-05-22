@@ -292,20 +292,30 @@ class ChatServiceEventHandlerTests: XCTestCase {
     wait(for: [expectation], timeout: 1)
   }
 
-  func
-    test_chatServiceEventHandler_subscription_when_receiveParticipantsRemovedEvent_where_localParticipantIncluded_then_dispatchLocalUserRemovedAction()
-  {
-    let expectation = XCTestExpectation(description: "Dispatch the new action")
-    let userId = "identifier"
-    func dispatch(action: Action) {
-      switch action {
-      case .chatAction(.chatMessageLocalUserRemoved):
-        expectation.fulfill()
-      case .participantsAction(.participantsRemoved(_)):
-        break
-      default:
-        XCTExpectFailure("Should not reach default case.")
-      }
+    func test_chatServiceEventHandler_subscription_when_receiveParticipantsRemovedEvent_where_localParticipantIncluded_then_dispatchLocalUserRemovedAction() {
+        let expectation = XCTestExpectation(description: "Dispatch the new action")
+        let userId = "identifier"
+        func dispatch(action: Action) {
+            switch action {
+            case .chatAction(.chatMessageLocalUserRemoved):
+                expectation.fulfill()
+            case .participantsAction(.participantsRemoved):
+                break
+            default:
+                XCTExpectFailure("Should not reach default case.")
+            }
+        }
+        chatServiceEventHandler.subscription(dispatch: dispatch)
+        let participant = ParticipantInfoModel(
+            identifier: CommunicationUserIdentifier(userId),
+            displayName: "DisplayName",
+            isLocalParticipant: true)
+        let chatEventModel = ChatEventModel(
+            eventType: .participantsRemoved,
+            infoModel: ParticipantsInfoModel(participants: [participant],
+                                             createdOn: Iso8601Date()))
+        mockChatService.chatEventSubject.send(chatEventModel)
+        wait(for: [expectation], timeout: 1)
     }
     chatServiceEventHandler.subscription(dispatch: dispatch)
     let participant = ParticipantInfoModel(

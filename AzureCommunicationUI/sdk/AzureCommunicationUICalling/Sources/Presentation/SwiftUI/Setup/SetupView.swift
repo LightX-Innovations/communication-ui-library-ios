@@ -25,24 +25,34 @@ struct SetupView: View {
     static let iPadLargeHeightWithMargin: CGFloat = iPadLarge + spacingLarge + startCallButtonHeight
   }
 
-  var body: some View {
-    ZStack {
-      VStack(spacing: LayoutConstant.spacing) {
-        SetupTitleView(viewModel: viewModel)
-        GeometryReader { geometry in
-          ZStack(alignment: .bottomLeading) {
-            VStack(
-              alignment: .center,
-              spacing: getSizeClass() == .ipadScreenSize
-                ? LayoutConstant.spacingLarge : LayoutConstant.spacing
-            ) {
-              ZStack(alignment: .center) {
-                PreviewAreaView(
-                  viewModel: viewModel.previewAreaViewModel,
-                  viewManager: viewManager,
-                  avatarManager: avatarManager)
-                if viewModel.shouldShowSetupControlBarView() {
-                  SetupControlBarView(viewModel: viewModel.setupControlBarViewModel)
+    var body: some View {
+        ZStack {
+            VStack(spacing: LayoutConstant.spacing) {
+                SetupTitleView(viewModel: viewModel)
+                GeometryReader { geometry in
+                    ZStack(alignment: .bottomLeading) {
+                        VStack(alignment: .center,
+                               spacing: getSizeClass() == .ipadScreenSize ?
+                               LayoutConstant.spacingLarge : LayoutConstant.spacing) {
+                            ZStack(alignment: .center) {
+                                PreviewAreaView(viewModel: viewModel.previewAreaViewModel,
+                                                viewManager: viewManager,
+                                                avatarManager: avatarManager)
+                                if viewModel.shouldShowSetupControlBarView() {
+                                    SetupControlBarView(viewModel: viewModel.setupControlBarViewModel)
+                                }
+                            }
+                            .background(Color(StyleProvider.color.surface))
+                            .cornerRadius(4)
+                            .accessibilityElement(children: .contain)
+                            joinCallView
+                                .padding(.bottom)
+                        }
+                        .padding(.vertical, setupViewVerticalPadding(parentSize: geometry.size))
+                        errorInfoView
+                            .padding(.bottom, setupViewVerticalPadding(parentSize: geometry.size))
+                    }
+                    .padding(.horizontal, setupViewHorizontalPadding(parentSize: geometry.size))
                 }
               }
               .background(Color(StyleProvider.color.surface))
@@ -51,12 +61,11 @@ struct SetupView: View {
               joinCallView
                 .padding(.bottom)
             }
-            .padding(.vertical, setupViewVerticalPadding(parentSize: geometry.size))
-            errorInfoView
-              .padding(.bottom, setupViewVerticalPadding(parentSize: geometry.size))
-          }
-          .padding(.horizontal, setupViewHorizontalPadding(parentSize: geometry.size))
-          .accessibilityElement(children: .contain)
+            BottomDrawer(isPresented: viewModel.audioDeviceListViewModel.isDisplayed,
+                         hideDrawer: viewModel.dismissAudioDevicesDrawer) {
+                AudioDevicesListView(viewModel: viewModel.audioDeviceListViewModel,
+                avatarManager: avatarManager)
+            }
         }
       }
     }

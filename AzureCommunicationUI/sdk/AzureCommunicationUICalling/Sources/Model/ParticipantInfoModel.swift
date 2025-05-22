@@ -40,6 +40,7 @@ public enum ParticipantStatus: Int {
 public struct ParticipantInfoModel: Hashable, Equatable {
   let displayName: String
   let isSpeaking: Bool
+  var isTypingRtt: Bool
   let isMuted: Bool
 
   let isRemoteUser: Bool

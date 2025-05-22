@@ -8,175 +8,136 @@ import SwiftUI
 struct ControlBarView: View {
   @ObservedObject var viewModel: ControlBarViewModel
 
-  // anchor views for drawer views on (iPad)
-  @State var audioDeviceButtonSourceView = UIView()
-  @State var leaveCallConfirmationListSourceView = UIView()
-  @State var moreListSourceView = UIView()
-  @State var debugInfoSourceView = UIView()
-  @AccessibilityFocusState var focusedOnAudioDeviceButton: Bool
-  @AccessibilityFocusState var focusedOnHangUpButton: Bool
-  @AccessibilityFocusState var focusedOnMoreButton: Bool
-  @Environment(\.screenSizeClass) var screenSizeClass: ScreenSizeClassType
+    // anchor views for drawer views on (iPad)
+    @State var audioDeviceButtonSourceView = UIView()
+    @State var moreListSourceView = UIView()
+    @State var debugInfoSourceView = UIView()
+    @AccessibilityFocusState var focusedOnAudioDeviceButton: Bool
+    @AccessibilityFocusState var focusedOnHangUpButton: Bool
+    @AccessibilityFocusState(for: .voiceOver) var focusedOnMoreButton: Bool
+    @Environment(\.screenSizeClass) var screenSizeClass: ScreenSizeClassType
 
-  var body: some View {
-    if viewModel.isDisplayed {
-      Group {
-        if screenSizeClass == .ipadScreenSize {
-          centeredStack
-        } else {
-          nonCenteredStack
+    var body: some View {
+        if viewModel.isDisplayed {
+            Group {
+                if screenSizeClass == .ipadScreenSize || viewModel.totalButtonCount < 5 {
+                    centeredStack
+                } else {
+                    nonCenteredStack
+                }
+            }
+            .padding()
+            .background(Color(StyleProvider.color.backgroundColor))
+            .shadow(radius: 2)
+            .onAppear {
+                viewModel.onDrawerViewDidDisappearBlock = {
+                    self.focusedOnMoreButton = true
+                }
+            }
+            .onDisappear {
+                NotificationCenter.default.removeObserver(
+                    self,
+                    name: Notification.Name(NotificationCenterName.drawerViewDidDisappear.rawValue),
+                    object: nil)
+            }
+            .modifier(PopupModalView(isPresented: viewModel.isShareActivityDisplayed) {
+                shareActivityView
+                    .accessibilityElement(children: .contain)
+                    .accessibilityAddTraits(.isModal)
+            })
         }
-      }
-
-      .padding()
-      .background(Color(StyleProvider.color.backgroundColor))
-      .modifier(
-        PopupModalView(isPresented: viewModel.isAudioDeviceSelectionDisplayed) {
-          audioDeviceSelectionListView
-            .accessibilityElement(children: .contain)
-            .accessibilityAddTraits(.isModal)
-        }
-      )
-      .modifier(
-        PopupModalView(isPresented: viewModel.isConfirmLeaveListDisplayed) {
-          exitConfirmationDrawer
-            .accessibility(hidden: !viewModel.isConfirmLeaveListDisplayed)
-            .accessibilityElement(children: .contain)
-            .accessibility(addTraits: .isModal)
-        }
-      )
-      .modifier(
-        PopupModalView(isPresented: viewModel.isMoreCallOptionsListDisplayed) {
-          moreCallOptionsList
-            .accessibilityElement(children: .contain)
-            .accessibilityAddTraits(.isModal)
-        }
-      )
-      .modifier(
-        PopupModalView(
-          isPresented: !viewModel.isMoreCallOptionsListDisplayed
-            && viewModel.isShareActivityDisplayed
-        ) {
-          shareActivityView
-            .accessibilityElement(children: .contain)
-            .accessibilityAddTraits(.isModal)
-        })
     }
-  }
-
-  /// A stack view that has items centered aligned horizontally in its stack view
-  var centeredStack: some View {
-    Group {
-      if screenSizeClass != .iphoneLandscapeScreenSize {
-        HStack {
-          Spacer()
-          videoButton
-          micButton
-          audioDeviceButton
-          moreButton
-          hangUpButton
-          Spacer()
+    /// A stack view that has items centered aligned horizontally in its stack view
+    var centeredStack: some View {
+        Group {
+            if screenSizeClass != .iphoneLandscapeScreenSize {
+                HStack {
+                    Spacer()
+                    cameraButton
+                    micButton
+                    audioDeviceButton
+                    moreButton
+                    hangUpButton
+                    Spacer()
+                }
+            } else {
+                VStack {
+                    Spacer()
+                    hangUpButton
+                    moreButton
+                    audioDeviceButton
+                    micButton
+                    cameraButton
+                    Spacer()
+                }
+            }
         }
-      } else {
-        VStack {
-          Spacer()
-          hangUpButton
-          moreButton
-          audioDeviceButton
-          micButton
-          videoButton
-          Spacer()
-        }
-      }
     }
-  }
-
-  /// A stack view that has items that take the stackview space evenly
-  var nonCenteredStack: some View {
-    Group {
-      if screenSizeClass != .iphoneLandscapeScreenSize {
-        HStack {
-          if viewModel.isCameraDisplayed {
-            videoButton
-            Spacer(minLength: 0)
-          }
-          micButton
-          Spacer(minLength: 0)
-          audioDeviceButton
-          Spacer(minLength: 0)
-          moreButton
-          Spacer(minLength: 0)
-          hangUpButton
+    /// A stack view that has items that take the stackview space evenly
+    var nonCenteredStack: some View {
+        Group {
+            if screenSizeClass != .iphoneLandscapeScreenSize {
+                HStack {
+                    cameraButton
+                    Spacer(minLength: 0)
+                    micButton
+                    Spacer(minLength: 0)
+                    audioDeviceButton
+                    Spacer(minLength: 0)
+                    moreButton
+                    Spacer(minLength: 0)
+                    hangUpButton
+                }
+            } else {
+                VStack {
+                    hangUpButton
+                    Spacer(minLength: 0)
+                    moreButton
+                    Spacer(minLength: 0)
+                    audioDeviceButton
+                    Spacer(minLength: 0)
+                    micButton
+                    Spacer(minLength: 0)
+                    cameraButton
+                }
+            }
         }
-      } else {
-        VStack {
-          hangUpButton
-          Spacer(minLength: 0)
-          moreButton
-          Spacer(minLength: 0)
-          audioDeviceButton
-          Spacer(minLength: 0)
-          micButton
-          if viewModel.isCameraDisplayed {
-            Spacer(minLength: 0)
-            videoButton
-          }
+    }
+    var cameraButton: some View {
+        IconButton(viewModel: viewModel.cameraButtonViewModel)
+            .accessibility(identifier: AccessibilityIdentifier.videoAccessibilityID.rawValue)
+    }
+    var micButton: some View {
+        IconButton(viewModel: viewModel.micButtonViewModel)
+            .accessibility(identifier: AccessibilityIdentifier.micAccessibilityID.rawValue)
+    }
+    var audioDeviceButton: some View {
+        IconButton(viewModel: viewModel.audioDeviceButtonViewModel)
+            .background(SourceViewSpace(sourceView: audioDeviceButtonSourceView))
+            .accessibility(identifier: AccessibilityIdentifier.audioDeviceAccessibilityID.rawValue)
+            .accessibilityFocused($focusedOnAudioDeviceButton, equals: true)
+    }
+    var hangUpButton: some View {
+        IconButton(viewModel: viewModel.hangUpButtonViewModel)
+            .accessibilityIdentifier(AccessibilityIdentifier.hangupAccessibilityID.rawValue)
+            .accessibilityFocused($focusedOnHangUpButton, equals: true)
+    }
+    var moreButton: some View {
+        IconButton(viewModel: viewModel.moreButtonViewModel)
+            .background(SourceViewSpace(sourceView: moreListSourceView))
+            .background(SourceViewSpace(sourceView: debugInfoSourceView))
+            .accessibilityIdentifier(AccessibilityIdentifier.moreAccessibilityID.rawValue)
+            .accessibilityFocused($focusedOnMoreButton, equals: true)
+    }
+    var shareActivityView: some View {
+        return Group {
+            SharingActivityView(viewModel: viewModel.debugInfoSharingActivityViewModel,
+                                applicationActivities: nil,
+                                sourceView: debugInfoSourceView,
+                                isPresented: $viewModel.isShareActivityDisplayed)
+            .edgesIgnoringSafeArea(.all)
+            .modifier(LockPhoneOrientation())
         }
-      }
-    }
-  }
-
-  var videoButton: some View {
-    IconButton(viewModel: viewModel.cameraButtonViewModel)
-      .accessibility(identifier: AccessibilityIdentifier.videoAccessibilityID.rawValue)
-  }
-
-  var micButton: some View {
-    IconButton(viewModel: viewModel.micButtonViewModel)
-      .disabled(viewModel.isMicDisabled())
-      .accessibility(identifier: AccessibilityIdentifier.micAccessibilityID.rawValue)
-  }
-
-  var audioDeviceButton: some View {
-    IconButton(viewModel: viewModel.audioDeviceButtonViewModel)
-      .background(SourceViewSpace(sourceView: audioDeviceButtonSourceView))
-      .accessibility(identifier: AccessibilityIdentifier.audioDeviceAccessibilityID.rawValue)
-      .accessibilityFocused($focusedOnAudioDeviceButton, equals: true)
-
-  }
-
-  var hangUpButton: some View {
-    IconButton(viewModel: viewModel.hangUpButtonViewModel)
-      .background(SourceViewSpace(sourceView: leaveCallConfirmationListSourceView))
-      .accessibilityIdentifier(AccessibilityIdentifier.hangupAccessibilityID.rawValue)
-      .accessibilityFocused($focusedOnHangUpButton, equals: true)
-  }
-
-  var audioDeviceSelectionListView: some View {
-    CompositeAudioDevicesList(
-      isPresented: $viewModel.isAudioDeviceSelectionDisplayed,
-      viewModel: viewModel.audioDevicesListViewModel,
-      sourceView: audioDeviceButtonSourceView
-    )
-    .modifier(LockPhoneOrientation())
-    .onDisappear {
-      DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-        focusedOnAudioDeviceButton = true
-      }
-    }
-  }
-
-  var exitConfirmationDrawer: some View {
-    CompositeLeaveCallConfirmationList(
-      isPresented: $viewModel.isConfirmLeaveListDisplayed,
-      viewModel: viewModel.getLeaveCallConfirmationListViewModel(),
-      sourceView: leaveCallConfirmationListSourceView
-    )
-    .modifier(LockPhoneOrientation())
-    .onDisappear {
-      DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-        focusedOnHangUpButton = true
-      }
     }
   }
 
@@ -218,6 +179,6 @@ struct ControlBarView: View {
 }
 
 struct LeaveCallConfirmationListViewModel {
-  let headerName: String
-  let listItemViewModel: [DrawerListItemViewModel]
+    let headerName: String
+    let listItemViewModel: [DrawerGenericItemViewModel]
 }

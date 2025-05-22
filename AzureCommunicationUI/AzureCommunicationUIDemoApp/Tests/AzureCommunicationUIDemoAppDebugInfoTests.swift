@@ -8,29 +8,32 @@ import XCTest
 @testable import AzureCommunicationUICalling
 
 class AzureCommunicationUIDemoAppDebugInfoTests: XCUITestBase {
-  func testCallCompositeShareDiagnosticInfo() {
-    startCall()
-    openShareDiagnosticsInfoMenu()
-    if UIDevice.current.userInterfaceIdiom == .pad {
-      let popoverDismissRegion = app.otherElements["PopoverDismissRegion"]
-      wait(for: popoverDismissRegion)
-      popoverDismissRegion.tap()
-    } else if UIDevice.current.userInterfaceIdiom == .phone {
-      tapButton(
-        accessibilityIdentifier: AccessibilityIdentifier
-          .activityViewControllerCloseButtonAccessibilityID.rawValue)
+    func testCallCompositeShareDiagnosticInfo() {
+        startCall()
+        openShareDiagnosticsInfoMenu()
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            let popoverDismissRegion = app.otherElements["PopoverDismissRegion"]
+            wait(for: popoverDismissRegion)
+            popoverDismissRegion.tap()
+        } else if UIDevice.current.userInterfaceIdiom == .phone {
+            tapButton(accessibilityIdentifier:
+                        AccessibilityIdentifier
+                .activityViewControllerCloseButtonAccessibilityID
+                .rawValue)
+        }
+        checkActivityViewControllerDismissed()
     }
     checkActivityViewControllerDismissed()
   }
 
-  func testCallCompositeCopyDiagnosticInfo() {
-    startCall()
-    openShareDiagnosticsInfoMenu()
-    tapButton(
-      accessibilityIdentifier: AccessibilityIdentifier
-        .activityViewControllerCopyButtonAccessibilityID.rawValue)
-    checkActivityViewControllerDismissed()
-  }
+    func testCallCompositeCopyDiagnosticInfo() {
+        startCall()
+        openShareDiagnosticsInfoMenu()
+        tapButton(accessibilityIdentifier:
+                    AccessibilityIdentifier
+            .activityViewControllerCopyButtonAccessibilityID.rawValue)
+        checkActivityViewControllerDismissed()
+    }
 
   func testCallCompositeSupportForm() {
     startCall()
@@ -41,14 +44,15 @@ class AzureCommunicationUIDemoAppDebugInfoTests: XCUITestBase {
       accessibilityIdentifier: AccessibilityIdentifier.supportFormSubmitAccessibilityId.rawValue)
     hangupCall()
 
-    let userReportedOutput = app.staticTexts[
-      AccessibilityId.userReportedIssueAccessibilityID.rawValue]
-    wait(for: userReportedOutput)
-    XCTAssertTrue(userReportedOutput.exists)
-    XCTAssertEqual(
-      userReportedOutput.label, "Sample Message",
-      "The user reported output does not match the expected text.")
-  }
+        let userReportedOutput =
+        app.staticTexts[AccessibilityId
+            .userReportedIssueAccessibilityID.rawValue]
+        wait(for: userReportedOutput)
+        XCTAssertTrue(userReportedOutput.exists)
+        XCTAssertEqual(userReportedOutput.label,
+                       "Sample Message",
+                       "The user reported output does not match the expected text.")
+    }
 }
 
 extension AzureCommunicationUIDemoAppDebugInfoTests {

@@ -7,6 +7,7 @@ import Combine
 import Foundation
 
 protocol CallStateManagerProtocol {
+  func onCompositeExit()
 }
 
 class CallStateManager: CallStateManagerProtocol {
@@ -38,10 +39,33 @@ class CallStateManager: CallStateManagerProtocol {
     updateEventHandler(state.callingState.status)
   }
 
-  private func updateEventHandler(_ callingStatus: CallingStatus) {
+  // to handle race condition where disconnected is notified after exit
+  // fixing race condition requires call state manager to not depend on store state change
+  // the easiest way to handle is to notify state before exit
+  // does not seems to have any side effect as state is compared
+  func onCompositeExit() {
+    receive(self.store.state)
+  }
+
+  private func receive(_ state: AppState) {
+    let callingStatus = state.callingState.status
+    guard previousCallingStatus != callingStatus else {
+      return
+    }
+    previousCallingStatus = callingStatus
+    updateEventHandler(state.callingState)
+  }
+
+  private func updateEventHandler(_ callingState: CallingState) {
     guard let onCallStateChanged = eventsHandler.onCallStateChanged else {
       return
     }
-    onCallStateChanged(callingStatus.toCallCompositeCallState())
+    onCallStateChanged(
+      CallState(
+        rawValue: callingState.status.toCallCompositeCallState().requestString,
+        callEndReasonCode: callingState.callEndReasonCode,
+        callEndReasonSubCode: callingState.callEndReasonSubCode,
+        callId: callingState.callId ?? ""))
   }
+
 }

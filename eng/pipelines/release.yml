@@ -23,10 +23,10 @@ parameters:
   - name: pools
     type: object
     default:
-      - name: vsts-mac-131-xcode-142
+      - name: vsts-mac-146-xcode-160
         os: macos
 extends:
-  template: v1/1ES.Unofficial.PipelineTemplate.yml@1esPipelines
+  template: v1/1ES.Official.PipelineTemplate.yml@1esPipelines
   parameters:
     pool:
       os: windows
@@ -46,7 +46,7 @@ extends:
                   targetPath: $(build.artifactstagingdirectory)
             pool:
               os: macos
-              name: vsts-mac-131-xcode-142
+              name: vsts-mac-146-xcode-160
             steps:
               - checkout: self
                 clean: true
@@ -55,7 +55,7 @@ extends:
                 displayName: "ServiceTree: [$(BuildOutputUsage)] "
                 condition: always()
                 inputs:
-                  ServiceTreeGateway: c29e963a-8ea3-4e6a-b28f-a035eaff83ab
+                  ServiceTreeGateway: ServiceTree Gateway
                   Service: 5b23174b-8c6d-467d-862d-a3f24958fb74
               - task: CmdLine@2
                 displayName: Command Line Script
@@ -65,6 +65,12 @@ extends:
                     git config --global user.name $nativeCallingSDKPrivateRepoUsername
 
                     git config --global user. password $nativeCallingSDKPrivateRepoToken
+              - task: AzureKeyVault@2
+                inputs:
+                  azureSubscription: "$(ACSSUBSCRIPTION)"
+                  KeyVaultName: "$(ACSKEYVAULT)"
+                  SecretsFilter: "$(SecretsFilterValue)"
+                  RunAsPreJob: true
               - task: CmdLine@2
                 displayName: Edit Info.plist CFBundleShortVersionString
                 inputs:
@@ -72,83 +78,83 @@ extends:
                     export INFO_PLIST_FILE=$(system.defaultWorkingDirectory)/AzureCommunicationUI/AzureCommunicationUIDemoApp/Sources/Info.plist
 
 
-                    plutil -replace appCenterSecret -string $(appCenterSecret) $INFO_PLIST_FILE
+                          plutil -replace appCenterSecret -string $(appCenterSecret) $INFO_PLIST_FILE
 
 
-                    export PROJECT_PBPROJ_FILE=$(system.defaultWorkingDirectory)/AzureCommunicationUI/AzureCommunicationUIDemoApp/AzureCommunicationUIDemoApp.xcodeproj/project.pbxproj
+                          export PROJECT_PBPROJ_FILE=$(system.defaultWorkingDirectory)/AzureCommunicationUI/AzureCommunicationUIDemoApp/AzureCommunicationUIDemoApp.xcodeproj/project.pbxproj
 
-                    export COMPOSITE_INFO_PLIST_FILE=$(system.defaultWorkingDirectory)/AzureCommunicationUI/sdk/AzureCommunicationUICalling/Sources/Info.plist
+                          export COMPOSITE_INFO_PLIST_FILE=$(system.defaultWorkingDirectory)/AzureCommunicationUI/sdk/AzureCommunicationUICalling/Sources/Info.plist
 
-                    export COMPOSITE_VERSION=$(plutil -extract UILibrarySemVersion raw $COMPOSITE_INFO_PLIST_FILE)
-
-
-                    echo "Adding version $COMPOSITE_VERSION"
-
-                    /usr/libexec/PlistBuddy -c "set :objects:A8C69FC52728AE1C00143DB7:buildSettings:MARKETING_VERSION $COMPOSITE_VERSION" $PROJECT_PBPROJ_FILE
-
-                    /usr/libexec/PlistBuddy -c "set :objects:A8C69FC62728AE1C00143DB7:buildSettings:MARKETING_VERSION $COMPOSITE_VERSION" $PROJECT_PBPROJ_FILE
+                          export COMPOSITE_VERSION=$(plutil -extract UILibrarySemVersion raw $COMPOSITE_INFO_PLIST_FILE)
 
 
-                    echo "Adding build number $(Build.BuildId)"
+                          echo "Adding version $COMPOSITE_VERSION"
 
-                    /usr/libexec/PlistBuddy -c "set :objects:A8C69FC52728AE1C00143DB7:buildSettings:CURRENT_PROJECT_VERSION $(Build.BuildId)" $PROJECT_PBPROJ_FILE
+                          /usr/libexec/PlistBuddy -c "set :objects:A8C69FC52728AE1C00143DB7:buildSettings:MARKETING_VERSION $COMPOSITE_VERSION" $PROJECT_PBPROJ_FILE
 
-                    /usr/libexec/PlistBuddy -c "set :objects:A8C69FC62728AE1C00143DB7:buildSettings:CURRENT_PROJECT_VERSION $(Build.BuildId)" $PROJECT_PBPROJ_FILE
-
-
-
-                    cat $INFO_PLIST_FILE
-              - task: CmdLine@2
-                displayName: Edit project.pbxproj
-                inputs:
-                  script: >-
-                    export PROJECT_PBPROJ_FILE=$(system.defaultWorkingDirectory)/AzureCommunicationUI/AzureCommunicationUIDemoApp/AzureCommunicationUIDemoApp.xcodeproj/project.pbxproj
+                          /usr/libexec/PlistBuddy -c "set :objects:A8C69FC62728AE1C00143DB7:buildSettings:MARKETING_VERSION $COMPOSITE_VERSION" $PROJECT_PBPROJ_FILE
 
 
-                    /usr/libexec/PlistBuddy -c "set :objects:A8C69FC52728AE1C00143DB7:buildSettings:PRODUCT_BUNDLE_IDENTIFIER com.microsoft.azure.communication.ui.calling-df" $PROJECT_PBPROJ_FILE
+                          echo "Adding build number $(Build.BuildId)"
 
-                    /usr/libexec/PlistBuddy -c "set :objects:A8C69FC62728AE1C00143DB7:buildSettings:PRODUCT_BUNDLE_IDENTIFIER com.microsoft.azure.communication.ui.calling-df" $PROJECT_PBPROJ_FILE
+                          /usr/libexec/PlistBuddy -c "set :objects:A8C69FC52728AE1C00143DB7:buildSettings:CURRENT_PROJECT_VERSION $(Build.BuildId)" $PROJECT_PBPROJ_FILE
+
+                          /usr/libexec/PlistBuddy -c "set :objects:A8C69FC62728AE1C00143DB7:buildSettings:CURRENT_PROJECT_VERSION $(Build.BuildId)" $PROJECT_PBPROJ_FILE
 
 
 
-                    export PROJ_FILE_COMPOSITE=$(system.defaultWorkingDirectory)/AzureCommunicationUI/sdk/AzureCommunicationUICalling/AzureCommunicationUICalling.xcodeproj/project.pbxproj
+                          cat $INFO_PLIST_FILE
+                    - task: CmdLine@2
+                      displayName: Edit project.pbxproj
+                      inputs:
+                        script: >-
+                          export PROJECT_PBPROJ_FILE=$(system.defaultWorkingDirectory)/AzureCommunicationUI/AzureCommunicationUIDemoApp/AzureCommunicationUIDemoApp.xcodeproj/project.pbxproj
 
 
-                    sed -i -e '/PRODUCT_BUNDLE_IDENTIFIER =/ s/= .*/= "277WSW7QTT.com.microsoft.azure.communication.ui.calling-df"; CODE_SIGNING_REQUIRED = "NO"; CODE_SIGNING_ALLOWED = "NO";/' $PROJ_FILE_COMPOSITE
-              - task: CmdLine@2
-                displayName: Edit project.pbxproj chat
-                inputs:
-                  script: >-
-                    export CHAT_PROJ_FILE_COMPOSITE=$(system.defaultWorkingDirectory)/AzureCommunicationUI/sdk/AzureCommunicationUIChat/AzureCommunicationUIChat.xcodeproj/project.pbxproj
+                          /usr/libexec/PlistBuddy -c "set :objects:A8C69FC52728AE1C00143DB7:buildSettings:PRODUCT_BUNDLE_IDENTIFIER com.microsoft.azure.communication.ui.calling-df" $PROJECT_PBPROJ_FILE
+
+                          /usr/libexec/PlistBuddy -c "set :objects:A8C69FC62728AE1C00143DB7:buildSettings:PRODUCT_BUNDLE_IDENTIFIER com.microsoft.azure.communication.ui.calling-df" $PROJECT_PBPROJ_FILE
 
 
-                    sed -i -e '/PRODUCT_BUNDLE_IDENTIFIER =/ s/= .*/= "277WSW7QTT.com.microsoft.azure.communication.ui.chat-df"; CODE_SIGNING_REQUIRED = "NO"; CODE_SIGNING_ALLOWED = "NO";/' $CHAT_PROJ_FILE_COMPOSITE
+
+                          export PROJ_FILE_COMPOSITE=$(system.defaultWorkingDirectory)/AzureCommunicationUI/sdk/AzureCommunicationUICalling/AzureCommunicationUICalling.xcodeproj/project.pbxproj
 
 
-                    #sed -i -e '/PRODUCT_BUNDLE_IDENTIFIER =/ s/= .*/= #"277WSW7QTT.com.microsoft.azure.communication.ui.calling-df"; CODE_SIGNING_REQUIRED = #"NO"; CODE_SIGNING_ALLOWED = "NO";/' $CHAT_PROJ_FILE_COMPOSITE
-              - task: CmdLine@2
-                displayName: Edit Pod File
-                inputs:
-                  script: >-
-                    export POD_FILE=$(system.defaultWorkingDirectory)/AzureCommunicationUI/Podfile
-
-                    sed -i '' '/post_install do |installer|/,$d' $POD_FILE
+                          sed -i -e '/PRODUCT_BUNDLE_IDENTIFIER =/ s/= .*/= "277WSW7QTT.com.microsoft.azure.communication.ui.calling-df"; CODE_SIGNING_REQUIRED = "NO"; CODE_SIGNING_ALLOWED = "NO";/' $PROJ_FILE_COMPOSITE
+                    - task: CmdLine@2
+                      displayName: Edit project.pbxproj chat
+                      inputs:
+                        script: >-
+                          export CHAT_PROJ_FILE_COMPOSITE=$(system.defaultWorkingDirectory)/AzureCommunicationUI/sdk/AzureCommunicationUIChat/AzureCommunicationUIChat.xcodeproj/project.pbxproj
 
 
-                    cat << 'EOF' | tee -a $POD_FILE
+                          sed -i -e '/PRODUCT_BUNDLE_IDENTIFIER =/ s/= .*/= "277WSW7QTT.com.microsoft.azure.communication.ui.chat-df"; CODE_SIGNING_REQUIRED = "NO"; CODE_SIGNING_ALLOWED = "NO";/' $CHAT_PROJ_FILE_COMPOSITE
 
-                    post_install do |installer|
-                      installer.pods_project.build_configurations.each do |config|
-                        config.build_settings['CODE_SIGNING_REQUIRED'] = "NO"
-                        config.build_settings['CODE_SIGNING_ALLOWED'] = "NO"
-                      end
-                    end
+
+                          #sed -i -e '/PRODUCT_BUNDLE_IDENTIFIER =/ s/= .*/= #"277WSW7QTT.com.microsoft.azure.communication.ui.calling-df"; CODE_SIGNING_REQUIRED = #"NO"; CODE_SIGNING_ALLOWED = "NO";/' $CHAT_PROJ_FILE_COMPOSITE
+                    - task: CmdLine@2
+                      displayName: Edit Pod File
+                      inputs:
+                        script: >-
+                          export POD_FILE=$(system.defaultWorkingDirectory)/AzureCommunicationUI/Podfile
+
+                          sed -i '' '/post_install do |installer|/,$d' $POD_FILE
+
+
+                          cat << 'EOF' | tee -a $POD_FILE
+
+                          post_install do |installer|
+                            installer.pods_project.build_configurations.each do |config|
+                              config.build_settings['CODE_SIGNING_REQUIRED'] = "NO"
+                              config.build_settings['CODE_SIGNING_ALLOWED'] = "NO"
+                            end
+                          end
 
                     EOF
               - task: InstallAppleCertificate@2
                 displayName: Install an Apple certificate
                 inputs:
-                  certSecureFile: 0886d993-75dc-43c4-a847-f98b3291b908
+                  certSecureFile: $(appleCertSecureFile)
                   certPwd: $(P12password)
                   deleteCert: false
                   deleteCustomKeychain: false
@@ -156,14 +162,14 @@ extends:
               - task: InstallAppleProvisioningProfile@1
                 displayName: Install an Apple provisioning profile
                 inputs:
-                  provProfileSecureFile: 870f3211-2074-4688-a4e0-d5fd2eebc685
+                  provProfileSecureFile: $(provProfileSecureFile)
               - task: CmdLine@2
                 displayName: Pod cleanup
                 inputs:
                   script: >-
                     pod deintegrate sdk/AzureCommunicationUICalling/AzureCommunicationUICalling.xcodeproj
 
-                    pod deintegrate AzureCommunicationUIDemoApp/AzureCommunicationUIDemoApp.xcodeproj
+                          pod deintegrate AzureCommunicationUIDemoApp/AzureCommunicationUIDemoApp.xcodeproj
 
                     # pod repo remove trunk
                   workingDirectory: AzureCommunicationUI
@@ -199,13 +205,13 @@ extends:
                   signingIdentity: $(APPLE_CERTIFICATE_SIGNING_IDENTITY)
                   provisioningProfileUuid: $(APPLE_PROV_PROFILE_UUID)
                   provisioningProfileName: Azure communication UI calling Dogfood Dev
-                  destinationSimulators: iPhone 12 Pro
+                  destinationSimulators: iPhone 14 Pro
                   args: '"DEVELOPMENT_TEAM=9KBH5RKYEW"'
                   cwd: AzureCommunicationUI
               - task: DownloadSecureFile@1
                 displayName: Download Distribution Profile from Azure secure files storage copy
                 inputs:
-                  secureFile: 6fe44d7c-8eb3-4b6b-b348-a80fea81ecc0
+                  secureFile: $(APPPROFILEDIST)
                   retryCount: 5
               - task: DownloadSecureFile@1
                 displayName: Download ExportOptions.plist from Azure secure files storage copy copy
@@ -216,7 +222,7 @@ extends:
                 displayName: Copy distribution provisioning profile
                 inputs:
                   SourceFolder: $(Agent.TempDirectory)
-                  Contents: Azure_communication_UI_calling_Dogfood_Dist_exp241129.mobileprovision
+                  Contents: $(APPPROFILEDIST)
                   TargetFolder: $(archivePath)
                   flattenFolders: true
               - task: CopyFiles@2
@@ -234,7 +240,7 @@ extends:
 
 
 
-                    echo "List files to zip"
+                          echo "List files to zip"
 
                     ls $(archivePath)
               - task: ArchiveFiles@2
@@ -247,12 +253,18 @@ extends:
                 displayName: Use .NET Core sdk 6.0.x
                 inputs:
                   version: 6.0.x
-              - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@4
+              - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@5
                 displayName: Dogfood ESRP CodeSigning
                 inputs:
-                  ConnectedServiceName: cb3d1f72-016c-4cee-80b5-33219b645283
+                  AppRegistrationClientId: "a40e733c-485b-405f-b787-dcd0f09184f6"
+                  AppRegistrationTenantId: "cdc5aeea-15c5-4db6-b079-fcadd2505dc2"
+                  AuthAKVName: "esrpintegrationsecrets"
+                  AuthSignCertName: "ESRPSkypeADOIntegrationTRS"
+                  UseMSIAuthentication: true
+                  ConnectedServiceName: "ESRP CodeSign Global ARM Torus"
                   FolderPath: $(archivePath)
                   Pattern: "*.zip"
+                  UseMinimatch: true
                   signConfigType: inlineSignParams
                   inlineOperation: >-
                     [
@@ -275,58 +287,58 @@ extends:
                   script: >-
                     echo "ls system.defaultworkingdirectory"
 
-                    ls $(system.defaultworkingdirectory)
+                          ls $(system.defaultworkingdirectory)
 
 
-                    echo "ls signedExtractedPath"
+                          echo "ls signedExtractedPath"
 
-                    ls $(signedExtractedPath)
-
-
-                    echo "ls archivePath"
-
-                    ls $(archivePath)
+                          ls $(signedExtractedPath)
 
 
-                    export INFO_PLIST_FILE=$(system.defaultWorkingDirectory)/AzureCommunicationUI/AzureCommunicationUIDemoApp/Sources/Info.plist
+                          echo "ls archivePath"
 
-                    cat $INFO_PLIST_FILE
-              - task: CopyFiles@2
-                displayName: "Copy dSYMs Files to: $(archivePath)"
-                inputs:
-                  SourceFolder: $(archivePath)
-                  Contents: "**/*.dSYM/**"
-                  TargetFolder: $(build.sourcesdirectory)
-              - task: CopyFiles@2
-                displayName: "Copy Signed Files to: $(build.sourcesdirectory)"
-                inputs:
-                  SourceFolder: $(signedExtractedPath)
-                  Contents: "**/*.ipa"
-                  TargetFolder: $(build.sourcesdirectory)
-              - task: CopyFiles@2
-                displayName: "Copy dSYMs Files to: $(archivePath) for artifact"
-                inputs:
-                  SourceFolder: $(archivePath)
-                  Contents: "**/*.dSYM/**"
-                  TargetFolder: $(build.artifactstagingdirectory)
-              - task: CopyFiles@2
-                displayName: "Copy Signed Files to: $(build.artifactstagingdirectory) for artifact"
-                inputs:
-                  SourceFolder: $(signedExtractedPath)
-                  Contents: "**/*.ipa"
-                  TargetFolder: $(build.artifactstagingdirectory)
-              - task: AppCenterDistribute@3
-                displayName: Deploy **/*.ipa to Visual Studio App Center
-                inputs:
-                  serverEndpoint: ae07945f-5fbf-4973-92c9-d00a5f696121
-                  appSlug: Azure-Communication-Services/Azure-Communication-Services-Call-UI-Library-Sample-iOS-Internal
-                  app: "**/*.ipa"
-                  dsymPath: "**/*.dSYM/**"
-                  packParentFolder: false
-                  releaseNotesInput: >-
-                    CI pipeline release
+                          ls $(archivePath)
 
-                    Source branch: $(Build.SourceBranch)
+
+                          export INFO_PLIST_FILE=$(system.defaultWorkingDirectory)/AzureCommunicationUI/AzureCommunicationUIDemoApp/Sources/Info.plist
+
+                          cat $INFO_PLIST_FILE
+                    - task: CopyFiles@2
+                      displayName: "Copy dSYMs Files to: $(archivePath)"
+                      inputs:
+                        SourceFolder: $(archivePath)
+                        Contents: "**/*.dSYM/**"
+                        TargetFolder: $(build.sourcesdirectory)
+                    - task: CopyFiles@2
+                      displayName: "Copy Signed Files to: $(build.sourcesdirectory)"
+                      inputs:
+                        SourceFolder: $(signedExtractedPath)
+                        Contents: "**/*.ipa"
+                        TargetFolder: $(build.sourcesdirectory)
+                    - task: CopyFiles@2
+                      displayName: "Copy dSYMs Files to: $(archivePath) for artifact"
+                      inputs:
+                        SourceFolder: $(archivePath)
+                        Contents: "**/*.dSYM/**"
+                        TargetFolder: $(build.artifactstagingdirectory)
+                    - task: CopyFiles@2
+                      displayName: "Copy Signed Files to: $(build.artifactstagingdirectory) for artifact"
+                      inputs:
+                        SourceFolder: $(signedExtractedPath)
+                        Contents: "**/*.ipa"
+                        TargetFolder: $(build.artifactstagingdirectory)
+                    - task: AppCenterDistribute@3
+                      displayName: Deploy **/*.ipa to Visual Studio App Center
+                      inputs:
+                        serverEndpoint: ae07945f-5fbf-4973-92c9-d00a5f696121
+                        appSlug: Azure-Communication-Services/Azure-Communication-Services-Call-UI-Library-Sample-iOS-Internal
+                        app: "**/*.ipa"
+                        dsymPath: "**/*.dSYM/**"
+                        packParentFolder: false
+                        releaseNotesInput: >-
+                          CI pipeline release
+
+                          Source branch: $(Build.SourceBranch)
 
                     Build commit: $(Build.Repository.Uri)/commit/$(Build.SourceVersion)
                   isSilent: true

@@ -6,11 +6,11 @@
 import FluentUI
 import SwiftUI
 
-struct LobbyWaitingHeaderView: View {
-  @ObservedObject var viewModel: LobbyWaitingHeaderViewModel
-  @Environment(\.sizeCategory) var sizeCategory: ContentSizeCategory
-  @State var participantsListButtonSourceView = UIView()
-  let avatarViewManager: AvatarViewManagerProtocol
+internal struct LobbyWaitingHeaderView: View {
+    @ObservedObject var viewModel: LobbyWaitingHeaderViewModel
+    @Environment(\.sizeCategory) var sizeCategory: ContentSizeCategory
+    @State var participantsListButtonSourceView = UIView()
+    let avatarViewManager: AvatarViewManagerProtocol
 
   private enum Constants {
     static let shapeCornerRadius: CGFloat = 5
@@ -49,24 +49,17 @@ struct LobbyWaitingHeaderView: View {
       })
   }
 
-  var lobbyHeader: some View {
-    HStack(alignment: .center) {
-      addParticipantIcon
-      Text(viewModel.title)
-        .padding(
-          EdgeInsets(
-            top: Constants.infoLabelHorizontalPadding,
-            leading: 0,
-            bottom: Constants.infoLabelHorizontalPadding,
-            trailing: 0)
-        )
-        .foregroundColor(Constants.foregroundColor)
-        .font(Fonts.caption1.font)
-        .accessibilityLabel(Text(viewModel.accessibilityLabel))
-        .accessibilitySortPriority(1)
-      Spacer()
-      participantListButton
-      dismissButton
+    var body: some View {
+        ZStack {
+            if viewModel.isDisplayed {
+                lobbyHeader
+            } else {
+                EmptyView()
+            }
+        }
+        .onAppear(perform: {
+            viewModel.isPad = UIDevice.current.userInterfaceIdiom == .pad
+        })
     }
     .padding(
       EdgeInsets(
@@ -99,19 +92,9 @@ struct LobbyWaitingHeaderView: View {
       .accessibilityIdentifier(AccessibilityIdentifier.lobbyWaitingDismissID.rawValue)
   }
 
-  var participantsListView: some View {
-    return Group {
-      if let avatarManager = avatarViewManager as? AvatarViewManager {
-        CompositeParticipantsList(
-          isPresented: $viewModel.isParticipantsListDisplayed,
-          viewModel: viewModel.participantsListViewModel,
-          avatarViewManager: avatarManager,
-          sourceView: participantsListButtonSourceView
-        )
-        .modifier(LockPhoneOrientation())
-      } else {
-        EmptyView()
-      }
+    var dismissButton: some View {
+        IconButton(viewModel: viewModel.dismissButtonViewModel)
+            .background(SourceViewSpace(sourceView: participantsListButtonSourceView))
+            .accessibilityIdentifier(AccessibilityIdentifier.lobbyWaitingDismissID.rawValue)
     }
-  }
 }

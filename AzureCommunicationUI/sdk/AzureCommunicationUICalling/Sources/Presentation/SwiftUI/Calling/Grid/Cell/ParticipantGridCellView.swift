@@ -8,34 +8,36 @@ import FluentUI
 import SwiftUI
 
 struct ParticipantGridCellView: View {
-  @ObservedObject var viewModel: ParticipantGridCellViewModel
-  let rendererViewManager: RendererViewManager?
-  let avatarViewManager: AvatarViewManagerProtocol
-  @State var avatarImage: UIImage?
-  @State var displayedVideoStreamId: String?
-  @State var isVideoChanging: Bool = false
-  let avatarSize: CGFloat = 56
+    @ObservedObject var viewModel: ParticipantGridCellViewModel
+    let rendererViewManager: RendererViewManager?
+    let avatarViewManager: AvatarViewManagerProtocol
+    @State var avatarImage: UIImage?
+    @State var displayedVideoStreamId: String?
+    @State var isVideoChanging = false
+    let avatarSize: CGFloat = 56
 
-  var body: some View {
-    Group {
-      GeometryReader { geometry in
-        if !viewModel.isInBackground,
-          let videoStreamId = displayedVideoStreamId,
-          let rendererViewInfo = getRendererViewInfo(for: videoStreamId)
-        {
-          let zoomable = viewModel.videoViewModel?.videoStreamType == .screenSharing
-          ParticipantGridCellVideoView(
-            videoRendererViewInfo: rendererViewInfo,
-            rendererViewManager: rendererViewManager,
-            zoomable: zoomable,
-            isSpeaking: $viewModel.isSpeaking,
-            displayName: $viewModel.displayName,
-            isMuted: $viewModel.isMuted)
-        } else {
-          avatarView
-            .frame(
-              width: geometry.size.width,
-              height: geometry.size.height)
+    var body: some View {
+        Group {
+            GeometryReader { geometry in
+                if let videoStreamId = displayedVideoStreamId,
+                   let rendererViewInfo = getRendererViewInfo(for: videoStreamId) {
+                    let zoomable = viewModel.videoViewModel?.videoStreamType == .screenSharing
+                    ParticipantGridCellVideoView(videoRendererViewInfo: rendererViewInfo,
+                                                 rendererViewManager: rendererViewManager,
+                                                 zoomable: zoomable,
+                                                 isSpeaking: $viewModel.isSpeaking,
+                                                 displayName: $viewModel.displayName,
+                                                 isMuted: $viewModel.isMuted,
+                                                 isTypingRtt: $viewModel.isTypingRtt)
+                } else {
+                    avatarView
+                        .frame(width: geometry.size.width,
+                               height: geometry.size.height)
+                }
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel(Text(viewModel.accessibilityLabel))
+            .accessibilityIdentifier(AccessibilityIdentifier.participantGridCellViewAccessibilityID.rawValue)
         }
       }
       .accessibilityElement(children: .combine)
@@ -87,46 +89,49 @@ struct ParticipantGridCellView: View {
     viewModel.updateParticipantNameIfNeeded(with: participantViewData.displayName)
   }
 
-  var avatarView: some View {
-    return VStack(alignment: .center, spacing: 5) {
-      CompositeAvatar(
-        displayName: $viewModel.displayName,
-        avatarImage: $avatarImage,
-        isSpeaking: viewModel.isSpeaking && !viewModel.isMuted
-      )
-      .frame(width: avatarSize, height: avatarSize)
-      .opacity(viewModel.isHold ? 0.6 : 1)
-      Spacer().frame(height: 10)
-      ParticipantTitleView(
-        displayName: $viewModel.displayName,
-        isMuted: $viewModel.isMuted,
-        isHold: $viewModel.isHold,
-        titleFont: Fonts.caption1.font,
-        mutedIconSize: 16
-      )
-      .opacity(viewModel.isHold ? 0.6 : 1)
-      if viewModel.isHold {
-        Text(viewModel.getOnHoldString())
-          .font(Fonts.caption1.font)
-          .lineLimit(1)
-          .foregroundColor(Color(StyleProvider.color.onBackground))
-          .padding(.top, 8)
-      }
+        if avatarImage !== participantViewData.avatarImage {
+            avatarImage = participantViewData.avatarImage
+        }
+
+        viewModel.updateParticipantNameIfNeeded(with: participantViewData.displayName)
+    }
+
+    var avatarView: some View {
+        return VStack(alignment: .center, spacing: 5) {
+            CompositeAvatar(displayName: $viewModel.avatarDisplayName,
+                            avatarImage: $avatarImage,
+                            isSpeaking: (viewModel.isSpeaking && !viewModel.isMuted) || viewModel.isTypingRtt)
+            .frame(width: avatarSize, height: avatarSize)
+            Spacer().frame(height: 10)
+            ParticipantTitleView(displayName: $viewModel.displayName,
+                                 isMuted: $viewModel.isMuted,
+                                 isHold: $viewModel.isHold,
+                                 titleFont: Fonts.caption1.font,
+                                 mutedIconSize: 16)
+            if viewModel.isHold {
+                Text(viewModel.getOnHoldString())
+                    .font(Fonts.caption1.font)
+                    .lineLimit(1)
+                    .foregroundColor(Color(StyleProvider.color.onBackground))
+                    .padding(.top, 8)
+            }
+        }
     }
   }
 
 }
 
 struct ParticipantTitleView: View {
-  @Binding var displayName: String?
-  @Binding var isMuted: Bool
-  @Binding var isHold: Bool
-  @Environment(\.sizeCategory) var sizeCategory: ContentSizeCategory
-  let titleFont: Font
-  let mutedIconSize: CGFloat
-  private var isEmpty: Bool {
-    return !isMuted && displayName?.trimmingCharacters(in: .whitespaces).isEmpty == true
-  }
+    @Binding var displayName: String?
+    @Binding var isMuted: Bool
+    @Binding var isHold: Bool
+    @Environment(\.sizeCategory) var sizeCategory: ContentSizeCategory
+    @AccessibilityFocusState private var isFocused: Bool // Add focus state
+    let titleFont: Font
+    let mutedIconSize: CGFloat
+    private var isEmpty: Bool {
+        return !isMuted && displayName?.trimmingCharacters(in: .whitespaces).isEmpty == true
+    }
 
   private enum Constants {
     static let hSpace: CGFloat = 4
@@ -141,29 +146,30 @@ struct ParticipantTitleView: View {
     static let defaultFontScale: CGFloat = 0.75
   }
 
-  var body: some View {
-    HStack(
-      alignment: .center, spacing: Constants.hSpace,
-      content: {
-        if let displayName = displayName,
-          !displayName.trimmingCharacters(in: .whitespaces).isEmpty
-        {
-          Text(displayName)
-            .font(titleFont)
-            .lineLimit(1)
-            .minimumScaleFactor(
-              sizeCategory.isAccessibilityCategory
-                ? Constants.accessibilityFontScale : Constants.defaultFontScale
-            )
-            .foregroundColor(Color(StyleProvider.color.onBackground))
+    var body: some View {
+        HStack(alignment: .center, spacing: Constants.hSpace, content: {
+            if let displayName = displayName,
+               !displayName.trimmingCharacters(in: .whitespaces).isEmpty {
+                Text(displayName)
+                    .font(titleFont)
+                    .lineLimit(1)
+                    .minimumScaleFactor(sizeCategory.isAccessibilityCategory ?
+                                        Constants.accessibilityFontScale :
+                                            Constants.defaultFontScale)
+                    .foregroundColor(Color(StyleProvider.color.onBackground))
+            }
+            if isMuted && !isHold {
+                Icon(name: .micOff, size: mutedIconSize)
+                    .accessibility(hidden: true)
+            }
+        })
+        .padding(.horizontal, isEmpty ? 0 : 4)
+        .animation(.default, value: true)
+        .accessibilityFocused($isFocused) // Apply accessibility focus
+        .onChange(of: isHold) { newValue in
+            if newValue {
+                isFocused = true // Request focus when put on hold
+            }
         }
-        if isMuted && !isHold {
-          Icon(name: .micOff, size: mutedIconSize)
-            .accessibility(hidden: true)
-        }
-      }
-    )
-    .padding(.horizontal, isEmpty ? 0 : 4)
-    .animation(.default)
-  }
+    }
 }

@@ -19,9 +19,10 @@ struct ParticipantRendererViewInfo {
 protocol RendererViewManager: AnyObject {
   var didRenderFirstFrame: ((CGSize) -> Void)? { get set }
 
-  func getRemoteParticipantVideoRendererView(_ videoViewId: RemoteParticipantVideoViewId)
-    -> ParticipantRendererViewInfo?
-  func getRemoteParticipantVideoRendererViewSize() -> CGSize?
+    func getRemoteParticipantVideoRendererView
+    (_ videoViewId: RemoteParticipantVideoViewId) -> ParticipantRendererViewInfo?
+    func getRemoteParticipantVideoRendererViewSize() -> CGSize?
+    func updateDisplayedRemoteVideoStream(_ videoViewIdArray: [RemoteParticipantVideoViewId])
 }
 
 class VideoViewManager: NSObject, RendererDelegate, RendererViewManager {
@@ -55,38 +56,10 @@ class VideoViewManager: NSObject, RendererDelegate, RendererViewManager {
         userIdentifier: $0.userIdentifier, videoStreamId: $0.videoStreamIdentifier)
     }
 
-    displayedRemoteParticipantsRendererView.makeKeyIterator().forEach { [weak self] key in
-      if !displayedKeys.contains(key) {
-        self?.disposeRemoteParticipantVideoRendererView(key)
-      }
-    }
-  }
-
-  func updateDisplayedLocalVideoStream(_ identifier: String?) {
-    localRendererViews.makeKeyIterator().forEach { [weak self] key in
-      if identifier != key {
-        self?.disposeLocalVideoRendererCache(key)
-      }
-    }
-  }
-
-  func getLocalVideoRendererView(_ videoStreamId: String) -> UIView? {
-    if let localRenderCache = localRendererViews.value(forKey: videoStreamId) {
-      return localRenderCache.rendererView
-    }
-
-    guard
-      let videoStream: CompositeLocalVideoStream<AzureCommunicationCalling.LocalVideoStream> =
-        callingSDKWrapper.getLocalVideoStream(videoStreamId)
-    else {
-      return nil
-    }
-    let wrappedVideoStream = videoStream.wrappedObject
-    do {
-      let newRenderer: VideoStreamRenderer = try VideoStreamRenderer(
-        localVideoStream: wrappedVideoStream)
-      let newRendererView: RendererView = try newRenderer.createView(
-        withOptions: CreateViewOptions(scalingMode: .crop))
+    func updateDisplayedRemoteVideoStream(_ videoViewIdArray: [RemoteParticipantVideoViewId]) {
+        let displayedKeys = videoViewIdArray.map {
+            return generateCacheKey(userIdentifier: $0.userIdentifier, videoStreamId: $0.videoStreamIdentifier)
+        }
 
       let cache = VideoStreamCache(
         renderer: newRenderer,
@@ -138,21 +111,19 @@ class VideoViewManager: NSObject, RendererDelegate, RendererViewManager {
       return nil
     }
 
-    let wrappedVideoStream = videoStream.wrappedObject
-    do {
-      let options = CreateViewOptions(
-        scalingMode: videoStream.mediaStreamType == .screenSharing ? .fit : .crop)
-      let newRenderer: VideoStreamRenderer = try VideoStreamRenderer(
-        remoteVideoStream: wrappedVideoStream)
-      let newRendererView: RendererView = try newRenderer.createView(withOptions: options)
-
-      let cache = VideoStreamCache(
-        renderer: newRenderer,
-        rendererView: newRendererView,
-        mediaStreamType: videoStream.mediaStreamType)
-      displayedRemoteParticipantsRendererView.append(
-        forKey: cacheKey,
-        value: cache)
+    func getLocalVideoRendererView(_ videoStreamId: String) -> UIView? {
+        if let localRenderCache = localRendererViews.value(forKey: videoStreamId) {
+            return localRenderCache.rendererView
+        }
+        guard let videoStream: CompositeLocalVideoStream<AzureCommunicationCalling.LocalVideoStream> =
+                callingSDKWrapper.getLocalVideoStream(videoStreamId) else {
+            return nil
+        }
+        let wrappedVideoStream = videoStream.wrappedObject
+        do {
+            let newRenderer: VideoStreamRenderer = try VideoStreamRenderer(localVideoStream: wrappedVideoStream)
+            let newRendererView: RendererView = try newRenderer.createView(
+                withOptions: CreateViewOptions(scalingMode: .crop))
 
       if videoStream.mediaStreamType == .screenSharing {
         newRenderer.delegate = self
@@ -187,10 +158,14 @@ class VideoViewManager: NSObject, RendererDelegate, RendererViewManager {
     }
   }
 
-  private func disposeRemoteParticipantVideoRendererView(_ cacheId: String) {
-    if let renderer = displayedRemoteParticipantsRendererView.removeValue(forKey: cacheId) {
-      renderer.renderer.dispose()
-      renderer.renderer.delegate = nil
+    // MARK: Helper functions
+    func disposeViews() {
+        displayedRemoteParticipantsRendererView.makeKeyIterator().forEach { key in
+            self.disposeRemoteParticipantVideoRendererView(key)
+        }
+        localRendererViews.makeKeyIterator().forEach { key in
+            self.disposeLocalVideoRendererCache(key)
+        }
     }
   }
 
@@ -200,9 +175,13 @@ class VideoViewManager: NSObject, RendererDelegate, RendererViewManager {
     }
   }
 
-  private func generateCacheKey(userIdentifier: String, videoStreamId: String) -> String {
-    return ("\(userIdentifier):\(videoStreamId)")
-  }
+    private func disposeLocalVideoRendererCache(_ identifier: String) {
+        if let renderer = localRendererViews.removeValue(forKey: identifier) {
+            if renderer.rendererView.isRendering() {
+                renderer.renderer.dispose()
+            }
+        }
+    }
 
   // MARK: RendererDelegate
 

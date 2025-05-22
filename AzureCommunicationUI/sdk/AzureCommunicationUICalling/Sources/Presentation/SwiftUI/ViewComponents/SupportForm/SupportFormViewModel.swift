@@ -5,9 +5,10 @@
 
 import Foundation
 
-class SupportFormViewModel: ObservableObject {
-  @Published var submitOnDismiss: Bool = false
-  @Published var blockSubmission: Bool = true
+internal class SupportFormViewModel: ObservableObject {
+    @Published var isDisplayed = false
+    @Published var submitOnDismiss = false
+    @Published var blockSubmission = true
 
   // Strings
   @Published var reportIssueTitle: String
@@ -22,32 +23,36 @@ class SupportFormViewModel: ObservableObject {
   let events: CallComposite.Events
   let getDebugInfo: () -> DebugInfo
 
-  init(
-    dispatchAction: @escaping ActionDispatch,
-    events: CallComposite.Events,
-    localizationProvider: LocalizationProviderProtocol,
-    getDebugInfo: @escaping () -> DebugInfo
-  ) {
-    self.events = events
-    self.getDebugInfo = getDebugInfo
-    self.dispatchAction = dispatchAction
-    reportIssueTitle = localizationProvider.getLocalizedString(.supportFormReportIssueTitle)
-    logsAttachNotice = localizationProvider.getLocalizedString(.supportFormLogsAttachNotice)
-    privacyPolicyText = localizationProvider.getLocalizedString(.supportFormPrivacyPolicyText)
-    describeYourIssueHintText = localizationProvider.getLocalizedString(
-      .supportFormDescribeYourIssueHintText)
-    cancelButtonText = localizationProvider.getLocalizedString(.supportFormCancelButtonText)
-    reportAProblemText = localizationProvider.getLocalizedString(.supportFormReportAProblemText)
-    sendFeedbackText = localizationProvider.getLocalizedString(.supportFormSendFeedbackText)
-  }
-
-  // Published properties that the view can observe
-  private var _messageText: String = "" {
-    willSet {
-      objectWillChange.send()
+    init(isDisplayed: Bool,
+         dispatchAction: @escaping ActionDispatch,
+         events: CallComposite.Events,
+         localizationProvider: LocalizationProviderProtocol,
+         getDebugInfo: @escaping () -> DebugInfo) {
+        self.events = events
+        self.getDebugInfo = getDebugInfo
+        self.dispatchAction = dispatchAction
+        reportIssueTitle = localizationProvider.getLocalizedString(.supportFormReportIssueTitle)
+        logsAttachNotice = localizationProvider.getLocalizedString(.supportFormLogsAttachNotice)
+        privacyPolicyText = localizationProvider.getLocalizedString(.supportFormPrivacyPolicyText)
+        describeYourIssueHintText = localizationProvider.getLocalizedString(.supportFormDescribeYourIssueHintText)
+        cancelButtonText = localizationProvider.getLocalizedString(.supportFormCancelButtonText)
+        reportAProblemText = localizationProvider.getLocalizedString(.supportFormReportAProblemText)
+        sendFeedbackText = localizationProvider.getLocalizedString(.supportFormSendFeedbackText)
     }
-    didSet {
-      blockSubmission = _messageText.isEmpty
+
+    func update(state: AppState) {
+        isDisplayed = state.navigationState.supportFormVisible
+            && state.visibilityState.currentStatus == .visible
+    }
+
+    // Published properties that the view can observe
+    private var _messageText: String = "" {
+        willSet {
+            objectWillChange.send()
+        }
+        didSet {
+            blockSubmission = _messageText.isEmpty
+        }
     }
   }
 
@@ -61,10 +66,15 @@ class SupportFormViewModel: ObservableObject {
     messageText.isEmpty
   }
 
-  // Function to handle the send action
-  func sendReport() {
-    guard let callback = events.onUserReportedIssue else {
-      return
+    // Function to handle the send action
+    func sendReport() {
+        guard let callback = events.onUserReportedIssue else {
+            return
+        }
+        callback(CallCompositeUserReportedIssue(userMessage: self.messageText,
+                                                debugInfo: self.getDebugInfo()))
+        messageText = ""
+        dispatchAction(.hideDrawer)
     }
     callback(
       CallCompositeUserReportedIssue(
@@ -74,9 +84,9 @@ class SupportFormViewModel: ObservableObject {
     dispatchAction(.hideSupportForm)
   }
 
-  func hideForm() {
-    dispatchAction(.hideSupportForm)
-  }
+    func hideForm() {
+        dispatchAction(.hideDrawer)
+    }
 }
 
 extension SupportFormViewModel: Equatable {

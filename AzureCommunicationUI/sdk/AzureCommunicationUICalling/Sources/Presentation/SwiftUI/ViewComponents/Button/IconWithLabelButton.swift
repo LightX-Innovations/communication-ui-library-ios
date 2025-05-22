@@ -40,7 +40,12 @@ struct IconWithLabelButton<T: ButtonState>: View {
               .font(Fonts.button2.font)
           }
         }
-      }
+        .disabled(viewModel.isDisabled)
+        .foregroundColor(viewModel.isDisabled ? buttonDisabledColor : buttonForegroundColor)
+        .frame(width: width, height: height, alignment: .top)
+        .accessibilityLabel(Text(viewModel.accessibilityLabel ?? ""))
+        .accessibilityValue(Text(viewModel.accessibilityValue ?? ""))
+        .accessibilityHint(Text(viewModel.accessibilityHint ?? ""))
     }
     .animation(nil)
     .disabled(viewModel.isDisabled)

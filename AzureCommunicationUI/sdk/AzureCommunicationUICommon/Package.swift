@@ -4,27 +4,28 @@
 import PackageDescription
 
 let package = Package(
-  name: "AzureCommunicationUICommon",
-  platforms: [.iOS(.v14)],
-  products: [
-    .library(
-      name: "AzureCommunicationUICommon",
-      targets: ["AzureCommunicationUICommon"])
-  ],
-  dependencies: [],
-  targets: [
-    .target(
-      name: "AzureCommunicationUICommon",
-      dependencies: [],
-      swiftSettings: [
-        .unsafeFlags(
-          ["-enable-library-evolution"]
+    name: "AzureCommunicationUICommon",
+    platforms: [.iOS(.v14)],
+    products: [
+        .library(
+            name: "AzureCommunicationUICommon",
+            targets: ["AzureCommunicationUICommon"])
+    ],
+    dependencies: [
+    ],
+    targets: [
+        .target(
+            name: "AzureCommunicationUICommon",
+            dependencies: [],
+            swiftSettings: [
+                .unsafeFlags(
+                    ["-enable-library-evolution"]
+                )
+            ]
+        ),
+        .testTarget(
+            name: "AzureCommunicationUICommonTests",
+            dependencies: ["AzureCommunicationUICommon"]
         )
-      ]
-    ),
-    .testTarget(
-      name: "AzureCommunicationUICommonTests",
-      dependencies: ["AzureCommunicationUICommon"]
-    ),
-  ]
+    ]
 )

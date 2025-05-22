@@ -1,3 +1,4 @@
+import AzureCommunicationCalling
 //
 //  Copyright (c) Microsoft Corporation. All rights reserved.
 //  Licensed under the MIT License.
@@ -74,10 +75,20 @@ public protocol CallingSDKWrapperProtocol {
   func admitAllLobbyParticipants() async throws
   func admitLobbyParticipant(_ participantId: String) async throws
   func declineLobbyParticipant(_ participantId: String) async throws
-
+  func startCaptions(_ language: String) async throws
+  func stopCaptions() async throws
+  func setCaptionsSpokenLanguage(_ language: String) async throws
+  func setCaptionsCaptionLanguage(_ language: String) async throws
+  func sendRttMessage(_ message: String, isFinal: Bool) async throws
+  func removeParticipant(_ participantId: String) async throws
+  func getCapabilities() async throws -> Set<ParticipantCapabilityType>
+  /* <CALL_START_TIME>
+  func callStartTime() -> Date?
+  </CALL_START_TIME> */
   func getLogFiles() -> [URL]
 
   var callingEventsHandler: CallingSDKEventsHandling { get }
+  func dispose()
 }
 
 public protocol CallingSDKEventsHandling {
@@ -94,12 +105,25 @@ public protocol CallingSDKEventsHandling {
   var callIdSubject: PassthroughSubject<String, Never> { get }
 
   var dominantSpeakersSubject: CurrentValueSubject<[String], Never> { get }
-  var participantRoleSubject: PassthroughSubject<ParticipantRole, Never> { get }
+  var participantRoleSubject: PassthroughSubject<ParticipantRoleEnum, Never> { get }
+  var totalParticipantCountSubject: PassthroughSubject<Int, Never> { get }
   var networkQualityDiagnosticsSubject: PassthroughSubject<NetworkQualityDiagnosticModel, Never> {
     get
   }
-
+  /* <CALL_START_TIME>
+  var callStartTimeSubject: PassthroughSubject<Date, Never> { get }
+  </CALL_START_TIME> */
   var networkDiagnosticsSubject: PassthroughSubject<NetworkDiagnosticModel, Never> { get }
 
   var mediaDiagnosticsSubject: PassthroughSubject<MediaDiagnosticModel, Never> { get }
+  var captionsSupportedSpokenLanguages: CurrentValueSubject<[String], Never> { get }
+  var captionsSupportedCaptionLanguages: CurrentValueSubject<[String], Never> { get }
+  var isCaptionsTranslationSupported: CurrentValueSubject<Bool, Never> { get }
+  var captionsReceived: PassthroughSubject<CallCompositeCaptionsData, Never> { get }
+  var rttReceived: PassthroughSubject<CallCompositeRttData, Never> { get }
+  var activeSpokenLanguageChanged: CurrentValueSubject<String, Never> { get }
+  var activeCaptionLanguageChanged: CurrentValueSubject<String, Never> { get }
+  var captionsEnabledChanged: CurrentValueSubject<Bool, Never> { get }
+  var captionsTypeChanged: CurrentValueSubject<CallCompositeCaptionsType, Never> { get }
+  var capabilitiesChangedSubject: PassthroughSubject<CapabilitiesChangedEvent, Never> { get }
 }

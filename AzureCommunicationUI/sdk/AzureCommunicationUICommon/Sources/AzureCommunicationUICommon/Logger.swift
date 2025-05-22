@@ -15,13 +15,11 @@ public protocol Logger {
 
 struct DefaultLogger: Logger {
 
-  private let osLogger: OSLog
-  init(
-    subsystem: String = "com.azure",
-    category: String = "AzureCommunicationUICommon"
-  ) {
-    osLogger = OSLog(subsystem: subsystem, category: category)
-  }
+    private let osLogger: OSLog
+    init(subsystem: String = "com.azure",
+         category: String = "AzureCommunicationUICommon") {
+        osLogger = OSLog(subsystem: subsystem, category: category)
+    }
 
   func debug(_ message: @escaping () -> String?) {
     log(message, atLevel: .debug)

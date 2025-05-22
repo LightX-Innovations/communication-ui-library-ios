@@ -25,8 +25,18 @@ public struct CallCompositeErrorCode {
   /// Error when internet is unavailable and call join fails
   public static let networkConnectionNotAvailable: String = "networkConnectionNotAvailable"
 
-  /// Error when a participant is evicted from the call by another participant
-  static let callEvicted: String = "callEvicted"
+    /// Captions not active. To change caption language, captions must be active.
+    public static let captionsNotActive: String = "captionsNotActive"
+
+    /// Error when captions start failed because spoken language is not supported.
+    public static let captionsStartFailedSpokenLanguageNotSupported: String =
+    "captionsStartFailedSpokenLanguageNotSupported"
+
+    /// Error when failed to start captions. Call state is not connected.
+    public static let captionsStartFailedCallNotConnected: String = "captionsStartFailedCallNotConnected"
+
+    /// Error when a participant is evicted from the call by another participant
+    static let callEvicted: String = "callEvicted"
 
   /// Error when a participant is denied from entering the call
   static let callDenied: String = "callDenied"
@@ -34,8 +44,11 @@ public struct CallCompositeErrorCode {
   /// Error when local user fails to hold a call.
   static let callHold: String = "callHold"
 
-  /// Error when local user fails to resume a call.
-  static let callResume: String = "callResume"
+    /// Error when local user fails to resume a call.
+    static let callResume: String = "callResume"
+
+    /// Communication token credential not set.
+    public static let communicationTokenCredentialNotSet: String = "communicationTokenCredentialNotSet"
 }
 
 /// The error thrown after Call Composite launching.

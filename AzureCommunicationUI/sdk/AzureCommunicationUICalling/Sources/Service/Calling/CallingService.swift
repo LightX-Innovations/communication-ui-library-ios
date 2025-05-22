@@ -14,13 +14,25 @@ protocol CallingServiceProtocol {
   var isLocalUserMutedSubject: PassthroughSubject<Bool, Never> { get }
   var callIdSubject: PassthroughSubject<String, Never> { get }
   var dominantSpeakersSubject: CurrentValueSubject<[String], Never> { get }
-  var participantRoleSubject: PassthroughSubject<ParticipantRole, Never> { get }
+  var participantRoleSubject: PassthroughSubject<ParticipantRoleEnum, Never> { get }
+  var totalParticipantCountSubject: PassthroughSubject<Int, Never> { get }
+  /* <CALL_START_TIME>
+  var callStartTimeSubject: PassthroughSubject<Date, Never> { get }
+  </CALL_START_TIME> */
 
   var networkQualityDiagnosticsSubject: PassthroughSubject<NetworkQualityDiagnosticModel, Never> {
     get
   }
   var networkDiagnosticsSubject: PassthroughSubject<NetworkDiagnosticModel, Never> { get }
   var mediaDiagnosticsSubject: PassthroughSubject<MediaDiagnosticModel, Never> { get }
+  var supportedSpokenLanguagesSubject: CurrentValueSubject<[String], Never> { get }
+  var supportedCaptionLanguagesSubject: CurrentValueSubject<[String], Never> { get }
+  var isCaptionsTranslationSupported: CurrentValueSubject<Bool, Never> { get }
+  var activeSpokenLanguageSubject: CurrentValueSubject<String, Never> { get }
+  var activeCaptionLanguageSubject: CurrentValueSubject<String, Never> { get }
+  var captionsEnabledChanged: CurrentValueSubject<Bool, Never> { get }
+  var captionsTypeSubject: CurrentValueSubject<CallCompositeCaptionsType, Never> { get }
+  var capabilitiesChangedSubject: PassthroughSubject<CapabilitiesChangedEvent, Never> { get }
 
   func setupCall() async throws
   func startCall(isCameraPreferred: Bool, isAudioPreferred: Bool) async throws
@@ -40,10 +52,19 @@ protocol CallingServiceProtocol {
   func admitAllLobbyParticipants() async throws
   func admitLobbyParticipant(_ participantId: String) async throws
   func declineLobbyParticipant(_ participantId: String) async throws
+  func startCaptions(_ language: String) async throws
+  func stopCaptions() async throws
+  func setCaptionsSpokenLanguage(_ language: String) async throws
+  func setCaptionsCaptionLanguage(_ language: String) async throws
+  func removeParticipant(_ participantId: String) async throws
+  func sendRttMessage(_ message: String, isFinal: Bool) async throws
+  func getCapabilities() async throws -> Set<ParticipantCapabilityType>
+  /* <CALL_START_TIME>
+  func callStartTime() -> Date?
+  </CALL_START_TIME> */
 }
 
 class CallingService: NSObject, CallingServiceProtocol {
-
   private let logger: Logger
   private let callingSDKWrapper: CallingSDKWrapperProtocol
 
@@ -55,11 +76,23 @@ class CallingService: NSObject, CallingServiceProtocol {
   var callInfoSubject: PassthroughSubject<CallInfoModel, Never>
   var callIdSubject: PassthroughSubject<String, Never>
   var dominantSpeakersSubject: CurrentValueSubject<[String], Never>
-  var participantRoleSubject: PassthroughSubject<ParticipantRole, Never>
+  var participantRoleSubject: PassthroughSubject<ParticipantRoleEnum, Never>
+  var totalParticipantCountSubject: PassthroughSubject<Int, Never>
   var networkQualityDiagnosticsSubject = PassthroughSubject<NetworkQualityDiagnosticModel, Never>()
   var networkDiagnosticsSubject = PassthroughSubject<NetworkDiagnosticModel, Never>()
   var mediaDiagnosticsSubject = PassthroughSubject<MediaDiagnosticModel, Never>()
+  var capabilitiesChangedSubject: PassthroughSubject<CapabilitiesChangedEvent, Never>
+  /* <CALL_START_TIME>
+  var callStartTimeSubject: PassthroughSubject<Date, Never>
+  </CALL_START_TIME> */
 
+  var supportedSpokenLanguagesSubject: CurrentValueSubject<[String], Never>
+  var supportedCaptionLanguagesSubject: CurrentValueSubject<[String], Never>
+  var isCaptionsTranslationSupported: CurrentValueSubject<Bool, Never>
+  var activeSpokenLanguageSubject: CurrentValueSubject<String, Never>
+  var activeCaptionLanguageSubject: CurrentValueSubject<String, Never>
+  var captionsEnabledChanged: CurrentValueSubject<Bool, Never>
+  var captionsTypeSubject: CurrentValueSubject<CallCompositeCaptionsType, Never>
   init(
     logger: Logger,
     callingSDKWrapper: CallingSDKWrapperProtocol
@@ -79,6 +112,23 @@ class CallingService: NSObject, CallingServiceProtocol {
       callingSDKWrapper.callingEventsHandler.networkQualityDiagnosticsSubject
     networkDiagnosticsSubject = callingSDKWrapper.callingEventsHandler.networkDiagnosticsSubject
     mediaDiagnosticsSubject = callingSDKWrapper.callingEventsHandler.mediaDiagnosticsSubject
+    supportedSpokenLanguagesSubject =
+      callingSDKWrapper.callingEventsHandler.captionsSupportedSpokenLanguages
+    supportedCaptionLanguagesSubject =
+      callingSDKWrapper.callingEventsHandler.captionsSupportedCaptionLanguages
+    isCaptionsTranslationSupported =
+      callingSDKWrapper.callingEventsHandler.isCaptionsTranslationSupported
+    activeSpokenLanguageSubject = callingSDKWrapper.callingEventsHandler.activeSpokenLanguageChanged
+    activeCaptionLanguageSubject =
+      callingSDKWrapper.callingEventsHandler.activeCaptionLanguageChanged
+    captionsEnabledChanged = callingSDKWrapper.callingEventsHandler.captionsEnabledChanged
+    captionsTypeSubject = callingSDKWrapper.callingEventsHandler.captionsTypeChanged
+    capabilitiesChangedSubject = callingSDKWrapper.callingEventsHandler.capabilitiesChangedSubject
+    totalParticipantCountSubject =
+      callingSDKWrapper.callingEventsHandler.totalParticipantCountSubject
+    /* <CALL_START_TIME>
+    callStartTimeSubject = callingSDKWrapper.callingEventsHandler.callStartTimeSubject
+    </CALL_START_TIME> */
   }
 
   func setupCall() async throws {
@@ -95,6 +145,12 @@ class CallingService: NSObject, CallingServiceProtocol {
   func endCall() async throws {
     try await callingSDKWrapper.endCall()
   }
+
+  /* <CALL_START_TIME>
+  func callStartTime() -> Date? {
+      return callingSDKWrapper.callStartTime()
+  }
+  </CALL_START_TIME> */
 
   func requestCameraPreviewOn() async throws -> String {
     return try await callingSDKWrapper.startPreviewVideoStream()
@@ -138,5 +194,33 @@ class CallingService: NSObject, CallingServiceProtocol {
 
   func declineLobbyParticipant(_ participantId: String) async throws {
     try await callingSDKWrapper.declineLobbyParticipant(participantId)
+  }
+
+  func startCaptions(_ spokenLanguage: String) async throws {
+    try await callingSDKWrapper.startCaptions(spokenLanguage)
+  }
+
+  func stopCaptions() async throws {
+    try await callingSDKWrapper.stopCaptions()
+  }
+
+  func setCaptionsSpokenLanguage(_ language: String) async throws {
+    try await callingSDKWrapper.setCaptionsSpokenLanguage(language)
+  }
+
+  func setCaptionsCaptionLanguage(_ language: String) async throws {
+    try await callingSDKWrapper.setCaptionsCaptionLanguage(language)
+  }
+
+  func sendRttMessage(_ message: String, isFinal: Bool) async throws {
+    try await callingSDKWrapper.sendRttMessage(message, isFinal: isFinal)
+  }
+
+  func removeParticipant(_ participantId: String) async throws {
+    try await callingSDKWrapper.removeParticipant(participantId)
+  }
+
+  func getCapabilities() async throws -> Set<ParticipantCapabilityType> {
+    try await callingSDKWrapper.getCapabilities()
   }
 }

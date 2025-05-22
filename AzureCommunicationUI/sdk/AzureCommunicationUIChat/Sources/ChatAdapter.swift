@@ -122,9 +122,15 @@ public class ChatAdapter {
       chatThreadId: chatThreadId
     )
 
-    let repositoryManager = MessageRepositoryManager(
-      chatCompositeEventsHandler: chatCompositeEventsHandler
-    )
+    /// Start connection with chat client and registers for chat events
+    /// This function should be called before adding the Chat Composite to a view
+    public func connect() async throws {
+        return try await withCheckedThrowingContinuation { continuation in
+            connect { result in
+                continuation.resume(with: result)
+            }
+        }
+    }
 
     let store = Store.constructStore(
       logger: logger,

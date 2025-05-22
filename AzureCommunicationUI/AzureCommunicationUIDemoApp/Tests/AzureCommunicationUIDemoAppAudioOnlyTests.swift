@@ -19,15 +19,15 @@ class AzureCommunicationUIDemoAppAudioOnlyTests: XCUITestBase {
       accessibilityIdentifier: AccessibilityIdentifier.videoAccessibilityID.rawValue)
   }
 
-  func testCallCompositeNormalAudioVideoMode() {
-    enterMenu()
-    startExperience()
-    verifyButtonExistsAndEnabled(
-      accessibilityIdentifier: AccessibilityIdentifier.toggleVideoAccessibilityID.rawValue)
-    joinCall()
-    verifyButtonExistsAndEnabled(
-      accessibilityIdentifier: AccessibilityIdentifier.videoAccessibilityID.rawValue)
-  }
+    func testCallCompositeNormalAudioVideoMode() {
+        enterMenu()
+        startExperience()
+        verifyButtonExistsAndEnabled(accessibilityIdentifier:
+                                        AccessibilityIdentifier
+            .toggleVideoAccessibilityID.rawValue)
+        joinCall()
+        verifyButtonExistsAndEnabled(accessibilityIdentifier: AccessibilityIdentifier.videoAccessibilityID.rawValue)
+    }
 }
 
 extension AzureCommunicationUIDemoAppAudioOnlyTests {

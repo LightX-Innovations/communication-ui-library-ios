@@ -6,31 +6,33 @@
 import Foundation
 
 extension Middleware where State == ChatAppState {
-  static func liveChatMiddleware(
-    chatActionHandler actionHandler: ChatActionHandling,
-    chatServiceEventHandler serviceEventHandler: ChatServiceEventHandling
-  )
-    -> Middleware<State, AzureCommunicationUIChat.Action>
-  {
-    .init(
-      apply: { dispatch, getState in
-        return { next in
-          return { action in
-            switch action {
-            case .lifecycleAction(let lifecycleAction):
-              handleLifecycleAction(lifecycleAction, actionHandler, getState, dispatch)
-            case .chatAction(let chatAction):
-              handleChatAction(chatAction, actionHandler, serviceEventHandler, getState, dispatch)
-            case .participantsAction(let participantsAction):
-              handleParticipantsAction(participantsAction, actionHandler, getState, dispatch)
-            case .repositoryAction(let repositoryAction):
-              handleRepositoryAction(repositoryAction, actionHandler, getState, dispatch)
-            case .errorAction(_),
-              .compositeExitAction,
-              .chatViewLaunched:
-              break
-            default:
-              break
+    static func liveChatMiddleware(
+        chatActionHandler actionHandler: ChatActionHandling,
+        chatServiceEventHandler serviceEventHandler: ChatServiceEventHandling)
+    -> Middleware<State, AzureCommunicationUIChat.Action> {
+        .init(
+            apply: { dispatch, getState in
+                return { next in
+                    return { action in
+                        switch action {
+                        case .lifecycleAction(let lifecycleAction):
+                            handleLifecycleAction(lifecycleAction, actionHandler, getState, dispatch)
+                        case .chatAction(let chatAction):
+                            handleChatAction(chatAction, actionHandler, serviceEventHandler, getState, dispatch)
+                        case .participantsAction(let participantsAction):
+                            handleParticipantsAction(participantsAction, actionHandler, getState, dispatch)
+                        case .repositoryAction(let repositoryAction):
+                            handleRepositoryAction(repositoryAction, actionHandler, getState, dispatch)
+                        case .errorAction,
+                                .compositeExitAction,
+                                .chatViewLaunched:
+                            break
+                        default:
+                            break
+                        }
+                        return next(action)
+                    }
+                }
             }
             return next(action)
           }
@@ -39,14 +41,19 @@ extension Middleware where State == ChatAppState {
     )
   }
 
-  private static func handleLifecycleAction(
-    _ action: LifecycleAction,
-    _ actionHandler: ChatActionHandling,
-    _ getState: () -> State,
-    _ dispatch: @escaping ActionDispatch
-  ) {
-    print("`handleLifecycleAction` not implemented")
-  }
+    private static func handleParticipantsAction(_ action: ParticipantsAction,
+                                                 _ actionHandler: ChatActionHandling,
+                                                 _ getState: @escaping () -> State,
+                                                 _ dispatch: @escaping ActionDispatch) {
+        switch action {
+        case .sendReadReceiptTriggered(let messageId):
+            actionHandler.sendReadReceipt(messageId: messageId, state: getState(), dispatch: dispatch)
+        case .typingIndicatorReceived:
+            actionHandler.setTypingParticipantTimer(getState, dispatch)
+        default:
+            break
+        }
+    }
 
   private static func handleChatAction(
     _ action: ChatAction,

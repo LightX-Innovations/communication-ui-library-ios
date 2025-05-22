@@ -31,36 +31,32 @@ class AzureCommunicationUIDemoAppCallTests: XCUITestBase {
 
     wait(for: app.buttons[AccessibilityIdentifier.hangupAccessibilityID.rawValue])
 
-    tapButton(accessibilityIdentifier: "Transcription on")
-    // the text has trait link, so links should be  used instead of staticTexts
-    XCTAssertTrue(
-      app.links[
-        "Transcription has started. By joining, you are giving consent for this meeting to be transcribed. Privacy policy"
-      ].exists)
+        tapButton(accessibilityIdentifier: "Transcription on")
+        // the text has trait link, so links should be  used instead of staticTexts
+        // swiftlint:disable line_length
+        XCTAssertTrue(app.links["Transcription has started. By joining, you are giving consent for this meeting to be transcribed. Privacy policy"].exists)
+        // swiftlint:enable line_length
 
     tapButton(accessibilityIdentifier: "Transcription off")
     XCTAssertTrue(
       app.links["Transcription is being saved. Transcription has stopped. Learn more"].exists)
   }
 
-  func testCallCompositeRecordingHandler() {
-    tapInterfaceFor(.callUIKit)
-    startExperience()
+    func testCallCompositeRecordingHandler() {
+        tapInterfaceFor(.callUIKit)
+        startExperience()
+        joinCall()
+        wait(for: app.buttons[AccessibilityIdentifier.hangupAccessibilityID.rawValue])
 
-    joinCall()
+        tapButton(accessibilityIdentifier: "Recording on")
+        // the text has trait link, so links should be  used instead of staticTexts
+        // swiftlint:disable line_length
+        XCTAssertTrue(app.links["Recording has started. By joining, you are giving consent for this meeting to be transcribed. Privacy policy"].exists)
 
-    wait(for: app.buttons[AccessibilityIdentifier.hangupAccessibilityID.rawValue])
-
-    tapButton(accessibilityIdentifier: "Recording on")
-    // the text has trait link, so links should be  used instead of staticTexts
-    XCTAssertTrue(
-      app.links[
-        "Recording has started. By joining, you are giving consent for this meeting to be transcribed. Privacy policy"
-      ].exists)
-
-    tapButton(accessibilityIdentifier: "Recording off")
-    XCTAssertTrue(app.links["Recording is being saved. Recording has stopped. Learn more"].exists)
-  }
+        tapButton(accessibilityIdentifier: "Recording off")
+        XCTAssertTrue(app.links["Recording is being saved. Recording has stopped. Learn more"].exists)
+        // swiftlint:enable line_length
+    }
 
   func testCallCompositeCallMicrophoneHandler() {
     tapInterfaceFor(.callUIKit)

@@ -4,7 +4,7 @@
 //
 
 import Combine
-import Foundation
+import SwiftUI
 
 class IconButtonViewModel: ObservableObject {
   enum ButtonType {
@@ -16,25 +16,41 @@ class IconButtonViewModel: ObservableObject {
     case cameraSwitchButtonFull
   }
 
-  @Published var iconName: CompositeIcon
-  @Published var accessibilityLabel: String?
-  @Published var accessibilityValue: String?
-  @Published var accessibilityHint: String?
-  @Published var isDisabled: Bool
-  let buttonType: ButtonType
-  var action: (() -> Void)
+    @Published var iconName: CompositeIcon?
+    @Published var icon: UIImage?
+    @Published var accessibilityLabel: String?
+    @Published var accessibilityValue: String?
+    @Published var accessibilityHint: String?
+    @Published var isDisabled: Bool
+    @Published var isVisible: Bool
 
-  init(
-    iconName: CompositeIcon,
-    buttonType: ButtonType = .controlButton,
-    isDisabled: Bool = false,
-    action: @escaping (() -> Void) = {}
-  ) {
-    self.iconName = iconName
-    self.buttonType = buttonType
-    self.isDisabled = isDisabled
-    self.action = action
-  }
+    var buttonType: ButtonType
+    var action: (() -> Void)
+
+    init(iconName: CompositeIcon?,
+         buttonType: ButtonType = .controlButton,
+         isDisabled: Bool = false,
+         isVisible: Bool = true,
+         action: @escaping (() -> Void) = {}) {
+        self.iconName = iconName
+        self.buttonType = buttonType
+        self.isDisabled = isDisabled
+        self.action = action
+        self.isVisible = isVisible
+    }
+
+    convenience init(icon: UIImage,
+                     buttonType: ButtonType = .controlButton,
+                     isDisabled: Bool = false,
+                     isVisible: Bool = true,
+                     action: @escaping (() -> Void) = {}) {
+        self.init(iconName: nil,
+                  buttonType: buttonType,
+                  isDisabled: isDisabled,
+                  isVisible: isVisible,
+                  action: action)
+        self.icon = icon
+    }
 
   func update(iconName: CompositeIcon?) {
     if iconName != nil && self.iconName != iconName {
@@ -64,5 +80,10 @@ class IconButtonViewModel: ObservableObject {
     if self.isDisabled != isDisabled {
       self.isDisabled = isDisabled
     }
-  }
+
+    func update(isVisible: Bool) {
+        if self.isVisible != isVisible {
+            self.isVisible = isVisible
+        }
+    }
 }

@@ -27,17 +27,17 @@ class MessageListViewModel: ObservableObject {
   var scrollOffset: CGFloat = .zero
   var scrollSize: CGFloat = .zero
 
-  @Published var messages: [ChatMessageInfoModel]
-  @Published var hasFetchedInitialMessages: Bool = false
-  @Published var hasFetchedPreviousMessages: Bool = true
-  @Published var hasFetchedAllMessages: Bool = false
-  @Published var showJumpToNewMessages: Bool = false
-  @Published var jumpToNewMessagesButtonLabel: String = ""
-  @Published var shouldScrollToBottom: Bool = false
-  @Published var shouldScrollToId: Bool = false
-  @Published var latestSeenMessageId: String?
-  @Published var latestSendingOrSentMessageId: String?
-  @Published var messageIdsOnScreen: [String] = []
+    @Published var messages: [ChatMessageInfoModel]
+    @Published var hasFetchedInitialMessages = false
+    @Published var hasFetchedPreviousMessages = true
+    @Published var hasFetchedAllMessages = false
+    @Published var showJumpToNewMessages = false
+    @Published var jumpToNewMessagesButtonLabel: String = ""
+    @Published var shouldScrollToBottom = false
+    @Published var shouldScrollToId = false
+    @Published var latestSeenMessageId: String?
+    @Published var latestSendingOrSentMessageId: String?
+    @Published var messageIdsOnScreen: [String] = []
 
   init(
     compositeViewModelFactory: CompositeViewModelFactoryProtocol,

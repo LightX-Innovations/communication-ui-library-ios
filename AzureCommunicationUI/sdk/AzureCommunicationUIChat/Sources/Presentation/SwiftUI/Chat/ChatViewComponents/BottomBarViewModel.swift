@@ -15,15 +15,16 @@ class BottomBarViewModel: ObservableObject {
   private var lastTypingIndicatorSendTimestamp = Date()
   private let typingIndicatorDelay: TimeInterval = 8.0
 
-  @Published var isLocalUserRemoved: Bool = false
-  @Published var message: String = "" {
-    didSet {
-      sendButtonViewModel.update(isDisabled: message.isEmptyOrWhiteSpace)
-      sendButtonViewModel.update(iconName: message.isEmptyOrWhiteSpace ? .sendDisabled : .send)
-      guard !message.isEmpty else {
-        return
-      }
-      sendTypingIndicator()
+    @Published var isLocalUserRemoved = false
+    @Published var message: String = "" {
+        didSet {
+            sendButtonViewModel.update(isDisabled: message.isEmptyOrWhiteSpace)
+            sendButtonViewModel.update(iconName: message.isEmptyOrWhiteSpace ? .sendDisabled : .send)
+            guard !message.isEmpty else {
+                return
+            }
+            sendTypingIndicator()
+        }
     }
   }
 

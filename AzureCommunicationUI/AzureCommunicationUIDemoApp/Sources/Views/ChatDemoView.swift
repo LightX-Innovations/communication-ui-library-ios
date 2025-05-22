@@ -13,10 +13,10 @@ struct ChatDemoView: View {
     static let oneMillisecond: UInt64 = 10_000_000
   }
 
-  @State var isErrorDisplayed: Bool = false
-  @ObservedObject var envConfigSubject: EnvConfigSubject
-  @State var isShowingChatView: Bool = false
-  @State var errorMessage: String = ""
+    @State var isErrorDisplayed = false
+    @ObservedObject var envConfigSubject: EnvConfigSubject
+    @State var isShowingChatView = false
+    @State var errorMessage: String = ""
 
   let verticalPadding: CGFloat = 5
   let horizontalPadding: CGFloat = 10
@@ -184,13 +184,26 @@ struct ChatDemoView: View {
 }
 
 extension ChatDemoView {
-  func startChatComposite(headless: Bool = false) {
-    let communicationIdentifier = CommunicationUserIdentifier(envConfigSubject.userId)
-    guard
-      let communicationTokenCredential = try? CommunicationTokenCredential(
-        token: envConfigSubject.acsToken)
-    else {
-      return
+    func startChatComposite(headless: Bool = false) {
+        let communicationIdentifier = CommunicationUserIdentifier(envConfigSubject.userId)
+        guard let communicationTokenCredential = try? CommunicationTokenCredential(
+            token: envConfigSubject.acsToken) else {
+            return
+        }
+
+        self.chatAdapter = ChatAdapter(
+            endpoint: envConfigSubject.endpointUrl,
+            identifier: communicationIdentifier,
+            credential: communicationTokenCredential,
+            threadId: envConfigSubject.threadId,
+            displayName: envConfigSubject.displayName)
+        guard let chatAdapter = self.chatAdapter else {
+            return
+        }
+        chatAdapter.events.onError = showError(error:)
+        chatAdapter.connect { _ in
+            print("Chat connect completionHandler called")
+        }
     }
 
     self.chatAdapter = ChatAdapter(
@@ -236,16 +249,26 @@ extension ChatDemoView {
     }
   }
 
-  private func onDisconnectFromChat(with result: Result<Void, ChatCompositeError>) {
-    switch result {
-    case .success:
-      self.chatAdapter = nil
-      Task { @MainActor in
-        try await Task.sleep(nanoseconds: Constant.oneMillisecond)
-        self.isShowingChatView = false
-      }
-    case .failure(let error):
-      print("disconnect error \(error)")
+    private func showError(error: ChatCompositeError) {
+        print("::::SwiftUIChatDemoView::showError \(error)")
+        print("::::SwiftUIChatDemoView error.code \(error.code)")
+        print("Error - \(error.code): \(error.error?.localizedDescription ?? error.localizedDescription)")
+        switch error.code {
+        case ChatCompositeErrorCode.joinFailed:
+            errorMessage = "Connection Failed"
+        case ChatCompositeErrorCode.disconnectFailed:
+            errorMessage = "Disconnect Failed"
+        case ChatCompositeErrorCode.sendMessageFailed,
+            ChatCompositeErrorCode.fetchMessagesFailed,
+            ChatCompositeErrorCode.requestParticipantsFetchFailed,
+            ChatCompositeErrorCode.sendReadReceiptFailed,
+            ChatCompositeErrorCode.sendTypingIndicatorFailed:
+            // no alert
+            return
+        default:
+            errorMessage = "Unknown error"
+        }
+        isErrorDisplayed = true
     }
   }
 
