@@ -5,16 +5,13 @@
 
 import Foundation
 
-extension Reducer
-where
-  State == ErrorState,
-  Actions == Action
-{
-  static var liveErrorReducer: Self = Reducer { state, action in
+extension Reducer where State == ErrorState,
+                        Actions == Action {
+    static var liveErrorReducer: Self = Reducer { state, action in
 
-    var errorType = state.internalError
-    var error = state.error
-    var errorCategory = state.errorCategory
+        var errorType = state.internalError
+        var error = state.error
+        var errorCategory = state.errorCategory
 
         switch action {
         case let .errorAction(.fatalErrorUpdated(internalError, rawError)):
@@ -72,10 +69,4 @@ where
                           error: error,
                           errorCategory: errorCategory)
     }
-
-    return ErrorState(
-      internalError: errorType,
-      error: error,
-      errorCategory: errorCategory)
-  }
 }

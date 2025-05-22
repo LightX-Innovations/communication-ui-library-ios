@@ -2006,7 +2006,7 @@ class CallingDemoViewController: UIViewController {
         scrollView.contentInset = .zero
         scrollView.scrollIndicatorInsets = .zero
       }
-    }
+    
   }
 
   @objc func toggleAudioOnly() {

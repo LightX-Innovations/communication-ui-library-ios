@@ -5,23 +5,20 @@
 
 import Foundation
 
-extension Reducer
-where
-  State == NavigationState,
-  Actions == Action
-{
-  static var liveNavigationReducer: Self = Reducer { state, action in
-    var navigationStatus = state.status
-    switch action {
-    case .chatViewLaunched:
-      navigationStatus = .inChat
-    case .chatViewHeadless:
-      navigationStatus = .headless
-    case .compositeExitAction:
-      navigationStatus = .exit
-    default:
-      return state
+extension Reducer where State == NavigationState,
+                        Actions == Action {
+    static var liveNavigationReducer: Self = Reducer { state, action in
+        var navigationStatus = state.status
+        switch action {
+        case .chatViewLaunched:
+            navigationStatus = .inChat
+        case .chatViewHeadless:
+            navigationStatus = .headless
+        case .compositeExitAction:
+            navigationStatus = .exit
+        default:
+            return state
+        }
+        return NavigationState(status: navigationStatus)
     }
-    return NavigationState(status: navigationStatus)
-  }
 }

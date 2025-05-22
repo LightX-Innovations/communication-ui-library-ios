@@ -3,14 +3,14 @@
 //  Licensed under the MIT License.
 //
 
+import Foundation
 import AzureCommunicationCommon
 import AzureCore
-import Foundation
 
 struct ReadReceiptInfoModel: BaseInfoModel, Equatable {
-  let senderIdentifier: CommunicationIdentifier
-  let chatMessageId: String
-  let readOn: Iso8601Date
+    let senderIdentifier: CommunicationIdentifier
+    let chatMessageId: String
+    let readOn: Iso8601Date
 
     static func == (lhs: ReadReceiptInfoModel, rhs: ReadReceiptInfoModel) -> Bool {
         return lhs.chatMessageId == rhs.chatMessageId

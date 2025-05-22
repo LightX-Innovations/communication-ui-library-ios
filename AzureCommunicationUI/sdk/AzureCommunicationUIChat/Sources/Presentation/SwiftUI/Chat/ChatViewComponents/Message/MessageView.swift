@@ -6,78 +6,75 @@
 import SwiftUI
 
 struct MessageView: View {
-  private enum Constants {
-    static let horizontalPadding: CGFloat = 16
-    static let bottomPadding: CGFloat = 0
-    static let topPadding: CGFloat = 8
-    static let topConsecutivePadding: CGFloat = 4
-    static let remoteTrailingPadding: CGFloat = 60
-    static let messageWithSendStatusTrailingPadding: CGFloat = 1
-  }
-
-  let messageModel: ChatMessageInfoModel
-  let showDateHeader: Bool
-  let isConsecutive: Bool
-  let showUsername: Bool
-  let showTime: Bool
-  let showMessageStatus: Bool
-
-  // Inject localization with environment?
-
-  var body: some View {
-    let edgeInsets = EdgeInsets(
-      top: isConsecutive
-        ? Constants.topConsecutivePadding
-        : Constants.topPadding,
-      leading: Constants.horizontalPadding,
-      bottom: Constants.bottomPadding,
-      trailing: getMessageTrailingPadding(for: messageModel))
-    VStack {
-      dateHeader
-        .padding(.top, Constants.topPadding)
-      message
-        .padding(edgeInsets)
+    private enum Constants {
+        static let horizontalPadding: CGFloat = 16
+        static let bottomPadding: CGFloat = 0
+        static let topPadding: CGFloat = 8
+        static let topConsecutivePadding: CGFloat = 4
+        static let remoteTrailingPadding: CGFloat = 60
+        static let messageWithSendStatusTrailingPadding: CGFloat = 1
     }
-  }
 
-  var dateHeader: some View {
-    Group {
-      if showDateHeader {
-        Text(messageModel.dateHeaderLabel)
-          .font(.caption)
-          .foregroundColor(Color(StyleProvider.color.textSecondary))
-      }
-    }
-  }
+    let messageModel: ChatMessageInfoModel
+    let showDateHeader: Bool
+    let isConsecutive: Bool
+    let showUsername: Bool
+    let showTime: Bool
+    let showMessageStatus: Bool
 
-  var message: some View {
-    Group {
-      switch messageModel.type {
-      case .text, .html:
-        if messageModel.deletedOn == nil || messageModel.content == nil {
-          TextMessageView(
-            messageModel: messageModel,
-            showUsername: showUsername,
-            showTime: showTime)
+    // Inject localization with environment?
+
+    var body: some View {
+        let edgeInsets = EdgeInsets(top: isConsecutive
+                                        ? Constants.topConsecutivePadding
+                                        : Constants.topPadding,
+                                    leading: Constants.horizontalPadding,
+                                    bottom: Constants.bottomPadding,
+                                    trailing: getMessageTrailingPadding(for: messageModel))
+        VStack {
+            dateHeader
+            .padding(.top, Constants.topPadding)
+            message
+            .padding(edgeInsets)
         }
-      case .participantsAdded, .participantsRemoved, .topicUpdated:
-        SystemMessageView(messageModel: messageModel)
-      default:
-        EmptyView()
-      }
     }
-  }
 
-  private func getMessageTrailingPadding(for message: ChatMessageInfoModel) -> CGFloat {
-    if !message.isLocalUser {
-      return Constants.remoteTrailingPadding
+    var dateHeader: some View {
+        Group {
+            if showDateHeader {
+                Text(messageModel.dateHeaderLabel)
+                    .font(.caption)
+                    .foregroundColor(Color(StyleProvider.color.textSecondary))
+            }
+        }
     }
-    if message.type == .text,
-      showMessageStatus,
-      message.sendStatus != nil
-    {
-      return Constants.messageWithSendStatusTrailingPadding
+
+    var message: some View {
+        Group {
+            switch messageModel.type {
+            case .text, .html:
+                if messageModel.deletedOn == nil || messageModel.content == nil {
+                    TextMessageView(messageModel: messageModel,
+                                    showUsername: showUsername,
+                                    showTime: showTime)
+                }
+            case .participantsAdded, .participantsRemoved, .topicUpdated:
+                SystemMessageView(messageModel: messageModel)
+            default:
+                EmptyView()
+            }
+        }
     }
-    return Constants.horizontalPadding
-  }
+
+    private func getMessageTrailingPadding(for message: ChatMessageInfoModel) -> CGFloat {
+        if !message.isLocalUser {
+            return Constants.remoteTrailingPadding
+        }
+        if message.type == .text,
+           showMessageStatus,
+           message.sendStatus != nil {
+            return Constants.messageWithSendStatusTrailingPadding
+        }
+        return Constants.horizontalPadding
+    }
 }

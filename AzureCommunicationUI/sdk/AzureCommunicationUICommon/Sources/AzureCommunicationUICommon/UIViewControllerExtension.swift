@@ -15,5 +15,4 @@ extension UIViewController {
             completion?()
         }
     }
-  }
 }

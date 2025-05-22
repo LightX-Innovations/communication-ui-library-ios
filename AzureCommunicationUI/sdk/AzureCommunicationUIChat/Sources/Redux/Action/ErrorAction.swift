@@ -6,15 +6,13 @@
 import Foundation
 
 enum ErrorAction: Equatable {
-  case fatalErrorUpdated(internalError: ChatCompositeInternalError, error: Error?)
+    case fatalErrorUpdated(internalError: ChatCompositeInternalError, error: Error?)
 
-  static func == (lhs: ErrorAction, rhs: ErrorAction) -> Bool {
-    switch (lhs, rhs) {
-    case let (
-      .fatalErrorUpdated(internalError: lErr, error: _),
-      .fatalErrorUpdated(internalError: rErr, error: _)
-    ):
-      return lErr == rErr
+    static func == (lhs: ErrorAction, rhs: ErrorAction) -> Bool {
+        switch (lhs, rhs) {
+        case let (.fatalErrorUpdated(internalError: lErr, error: _),
+                  .fatalErrorUpdated(internalError: rErr, error: _)):
+            return lErr == rErr
+        }
     }
-  }
 }

@@ -6,14 +6,14 @@
 import Foundation
 
 class BottomBarViewModel: ObservableObject {
-  private let logger: Logger
-  private let dispatch: ActionDispatch
+    private let logger: Logger
+    private let dispatch: ActionDispatch
 
-  var sendButtonViewModel: IconButtonViewModel!
+    var sendButtonViewModel: IconButtonViewModel!
 
-  // MARK: Typing Indicators
-  private var lastTypingIndicatorSendTimestamp = Date()
-  private let typingIndicatorDelay: TimeInterval = 8.0
+    // MARK: Typing Indicators
+    private var lastTypingIndicatorSendTimestamp = Date()
+    private let typingIndicatorDelay: TimeInterval = 8.0
 
     @Published var isLocalUserRemoved = false
     @Published var message: String = "" {
@@ -26,50 +26,44 @@ class BottomBarViewModel: ObservableObject {
             sendTypingIndicator()
         }
     }
-  }
 
-  init(
-    compositeViewModelFactory: CompositeViewModelFactory,
-    logger: Logger,
-    dispatch: @escaping ActionDispatch
-  ) {
-    self.logger = logger
-    self.dispatch = dispatch
+    init(compositeViewModelFactory: CompositeViewModelFactory,
+         logger: Logger,
+         dispatch: @escaping ActionDispatch) {
+        self.logger = logger
+        self.dispatch = dispatch
 
-    sendButtonViewModel = compositeViewModelFactory.makeIconButtonViewModel(
-      iconName: .send,
-      buttonType: .sendButton,
-      isDisabled: true
-    ) { [weak self] in
-      guard let self = self else {
-        return
-      }
-      self.sendMessage()
+        sendButtonViewModel = compositeViewModelFactory.makeIconButtonViewModel(
+            iconName: .send,
+            buttonType: .sendButton,
+            isDisabled: true) { [weak self] in
+                guard let self = self else {
+                    return
+                }
+                self.sendMessage()
+        }
+//        sendButtonViewModel.update(
+//            accessibilityLabel: self.localizationProvider.getLocalizedString(.sendAccessibilityLabel))
     }
-    //        sendButtonViewModel.update(
-    //            accessibilityLabel: self.localizationProvider.getLocalizedString(.sendAccessibilityLabel))
-  }
 
-  func sendMessage() {
-    dispatch(
-      .repositoryAction(
-        .sendMessageTriggered(
-          internalId: UUID().uuidString,
-          content: message.trim())))
-    message = ""
-  }
-
-  func sendTypingIndicator() {
-    if lastTypingIndicatorSendTimestamp < Date() - typingIndicatorDelay {
-      dispatch(.chatAction(.sendTypingIndicatorTriggered))
-      lastTypingIndicatorSendTimestamp = Date()
+    func sendMessage() {
+        dispatch(.repositoryAction(.sendMessageTriggered(
+            internalId: UUID().uuidString,
+            content: message.trim())))
+        message = ""
     }
-  }
 
-  func update(chatState: ChatState) {
-    guard isLocalUserRemoved != chatState.isLocalUserRemovedFromChat else {
-      return
+    func sendTypingIndicator() {
+        if lastTypingIndicatorSendTimestamp < Date() - typingIndicatorDelay {
+            dispatch(.chatAction(.sendTypingIndicatorTriggered))
+            lastTypingIndicatorSendTimestamp = Date()
+        }
     }
-    isLocalUserRemoved = chatState.isLocalUserRemovedFromChat
-  }
+
+    func update(chatState: ChatState) {
+        guard isLocalUserRemoved != chatState.isLocalUserRemovedFromChat else {
+            return
+        }
+        isLocalUserRemoved = chatState.isLocalUserRemovedFromChat
+    }
 }

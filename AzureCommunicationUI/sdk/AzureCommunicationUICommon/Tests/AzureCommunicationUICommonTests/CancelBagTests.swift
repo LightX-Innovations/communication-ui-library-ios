@@ -4,7 +4,6 @@
 //
 
 import XCTest
-
 @testable import AzureCommunicationUICommon
 
 final class CancelBagTests: XCTestCase {

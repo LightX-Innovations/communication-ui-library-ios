@@ -1,7 +1,16 @@
-configuration.version = "1.0"
-
-indentation.spaceCount = 4
-lineLength = 120
-
-rules.wrapArguments.beforeFirstArgument = false
-rules.wrapArguments.lineBreakBeforeEachArgument = false
+{
+  "indentation": {
+    "spaces": 4
+  },
+  "lineLength": 120,
+  "rules": {
+    "wrapArguments": {
+      "beforeFirstArgument": false,
+      "lineBreakBeforeEachArgument": false
+    },
+    "wrapCollections": {
+      "beforeFirstElement": false,
+      "lineBreakBeforeEachElement": false
+    }
+  }
+}

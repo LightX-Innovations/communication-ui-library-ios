@@ -66,8 +66,7 @@ class ParticipantsListCellViewModel: BaseDrawerItemViewModel {
         }
         return participantViewData
     }
-    return participantViewData
-  }
+
 
   func getCellDisplayName(with participantViewData: ParticipantViewData?) -> String {
     let name = getParticipantName(with: participantViewData)

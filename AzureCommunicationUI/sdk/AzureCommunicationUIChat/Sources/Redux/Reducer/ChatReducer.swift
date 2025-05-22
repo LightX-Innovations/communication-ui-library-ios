@@ -6,22 +6,19 @@
 import AzureCore
 import Foundation
 
-extension Reducer
-where
-  State == ChatState,
-  Actions == Action
-{
-  static var liveChatReducer: Self = Reducer { chatState, action in
-    var localUser = chatState.localUser
-    var isRealTimeNotificationConnected = chatState.isRealTimeNotificationConnected
-    var threadId = chatState.threadId
-    var topic = chatState.topic
-    var lastReadReceiptReceivedTimestamp = chatState.lastReadReceiptReceivedTimestamp
-    var lastReadReceiptSentTimestamp = chatState.lastReadReceiptSentTimestamp
-    var lastReceivedMessageTimestamp = chatState.lastReceivedMessageTimestamp
-    var lastSendingMessageTimestamp = chatState.lastSendingMessageTimestamp
-    var lastSentOrFailedMessageTimestamp = chatState.lastSentOrFailedMessageTimestamp
-    var isLocalUserRemovedFromChat = chatState.isLocalUserRemovedFromChat
+extension Reducer where State == ChatState,
+                        Actions == Action {
+    static var liveChatReducer: Self = Reducer { chatState, action in
+        var localUser = chatState.localUser
+        var isRealTimeNotificationConnected = chatState.isRealTimeNotificationConnected
+        var threadId = chatState.threadId
+        var topic = chatState.topic
+        var lastReadReceiptReceivedTimestamp = chatState.lastReadReceiptReceivedTimestamp
+        var lastReadReceiptSentTimestamp = chatState.lastReadReceiptSentTimestamp
+        var lastReceivedMessageTimestamp = chatState.lastReceivedMessageTimestamp
+        var lastSendingMessageTimestamp = chatState.lastSendingMessageTimestamp
+        var lastSentOrFailedMessageTimestamp = chatState.lastSentOrFailedMessageTimestamp
+        var isLocalUserRemovedFromChat = chatState.isLocalUserRemovedFromChat
 
         switch action {
         case .chatAction(.initializeChatSuccess):
@@ -63,15 +60,4 @@ where
                          lastSentOrFailedMessageTimestamp: lastSentOrFailedMessageTimestamp,
                          isLocalUserRemovedFromChat: isLocalUserRemovedFromChat)
     }
-    return ChatState(
-      localUser: localUser,
-      threadId: threadId,
-      topic: topic,
-      lastReadReceiptReceivedTimestamp: lastReadReceiptReceivedTimestamp,
-      lastReadReceiptSentTimestamp: lastReadReceiptSentTimestamp,
-      lastReceivedMessageTimestamp: lastReceivedMessageTimestamp,
-      lastSendingMessageTimestamp: lastSendingMessageTimestamp,
-      lastSentOrFailedMessageTimestamp: lastSentOrFailedMessageTimestamp,
-      isLocalUserRemovedFromChat: isLocalUserRemovedFromChat)
-  }
 }

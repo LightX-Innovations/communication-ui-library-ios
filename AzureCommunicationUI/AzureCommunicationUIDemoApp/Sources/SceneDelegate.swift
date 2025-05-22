@@ -65,6 +65,5 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
            let appDelegate = UIApplication.shared.delegate as? AppDelegate {
             assignCallID(callID, appDelegate)
         }
-    }
   }
 }

@@ -14,22 +14,47 @@ extension UIWindow {
                 .first { $0.isKeyWindow }
     }
 
-    var hasViewController = false
-    if !viewController.children.isEmpty {
-      viewController.children.forEach {
-        if UIWindow.hasViewController(ofKind: kind, fromViewController: $0) {
-          hasViewController = true
+    var topViewController: UIViewController? {
+        if var topViewController = self.rootViewController {
+            while let presentedViewController = topViewController.presentedViewController {
+                topViewController = presentedViewController
+            }
+
+            return topViewController
+        } else {
+            return nil
         }
-      }
     }
 
-    if let presented = viewController.presentedViewController,
-      UIWindow.hasViewController(ofKind: kind, fromViewController: presented)
-    {
-      hasViewController = true
+    func hasViewController(ofKind kind: AnyClass) -> Bool {
+        if let rootViewController = self.rootViewController {
+            return UIWindow.hasViewController(ofKind: kind, fromViewController: rootViewController)
+        } else {
+            return false
+        }
     }
 
-    return hasViewController
-  }
+    static func hasViewController(ofKind kind: AnyClass,
+                                  fromViewController viewController: UIViewController) -> Bool {
+        guard !viewController.isKind(of: kind) else {
+            return true
+        }
+
+        var hasViewController = false
+        if !viewController.children.isEmpty {
+            viewController.children.forEach {
+                if UIWindow.hasViewController(ofKind: kind, fromViewController: $0) {
+                    hasViewController = true
+                }
+            }
+        }
+
+        if let presented = viewController.presentedViewController,
+           UIWindow.hasViewController(ofKind: kind, fromViewController: presented) {
+            hasViewController = true
+        }
+
+        return hasViewController
+    }
 
 }
