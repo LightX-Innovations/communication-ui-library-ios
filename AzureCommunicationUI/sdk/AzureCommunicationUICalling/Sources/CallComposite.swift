@@ -12,7 +12,6 @@ import UIKit
 import SwiftUI
 import FluentUI
 import AVKit
-import AzureCommunicationCommon
 import Combine
 /* <SDK_CX_PROVIDER_SUPPORT>
 import CallKit
