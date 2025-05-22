@@ -4,6 +4,10 @@
     "strings": "off",
     "other": "off"
   },
+  "[swift]": {
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true
+  },
   "lldb.library": "/Applications/Xcode.app/Contents/SharedFrameworks/LLDB.framework/Versions/A/LLDB",
   "lldb.launch.expressions": "native"
 }
