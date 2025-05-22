@@ -3,9 +3,8 @@
 //  Licensed under the MIT License.
 //
 
-import AzureCommunicationCommon
 import XCTest
-
+import AzureCommunicationCommon
 @testable import AzureCommunicationUICalling
 
 class RemoteParticipantsManagerTests: XCTestCase {
@@ -26,15 +25,6 @@ class RemoteParticipantsManagerTests: XCTestCase {
                                                      localParticipantId: localParticipantId,
                                                      localParticipantViewData: nil)
     }
-    let participants = [participant1, participant2]
-    let state = AppState(
-      remoteParticipantsState: RemoteParticipantsState(participantInfoList: participants))
-    mockStoreFactory.setState(state)
-    let updatedState = AppState(
-      remoteParticipantsState: RemoteParticipantsState(participantInfoList: [participant1]))
-    mockStoreFactory.setState(updatedState)
-    wait(for: [storageUpdatedExpectation], timeout: 1)
-  }
 
     override func tearDown() {
         super.tearDown()
@@ -193,41 +183,23 @@ class RemoteParticipantsManagerTests: XCTestCase {
         mockStoreFactory.setState(newState)
         wait(for: [remoteParticipantsJoinedExpectation], timeout: 1)
     }
-    expectedIds = participantInfoModels.map { $0.userIdentifier }
-    let state = AppState(
-      remoteParticipantsState: RemoteParticipantsState(
-        participantInfoList: participantInfoModels,
-        lastUpdateTimeStamp: Date().addingTimeInterval(-1)))
-    remoteParticipantsJoinedExpectation.expectedFulfillmentCount = 1
-    remoteParticipantsJoinedExpectation.assertForOverFulfill = true
-    // initial state setup
-    mockStoreFactory.setState(state)
-    participantInfoModels.removeFirst(2)
-    let newState = AppState(
-      remoteParticipantsState: RemoteParticipantsState(participantInfoList: participantInfoModels))
-    // final state setup
-    mockStoreFactory.setState(newState)
-    wait(for: [remoteParticipantsJoinedExpectation], timeout: 1)
-  }
 }
 
 extension RemoteParticipantsManagerTests {
-  func makeSUT(isParticipantsJoinHandlerSet: Bool = true) {
-    if isParticipantsJoinHandlerSet {
-      eventsHandler.onRemoteParticipantJoined = { [weak self] ids in
-        guard let self = self else {
-          return
+    func makeSUT(isParticipantsJoinHandlerSet: Bool = true) {
+        if isParticipantsJoinHandlerSet {
+            eventsHandler.onRemoteParticipantJoined = { [weak self] ids in
+                guard let self = self else {
+                    return
+                }
+                // check getRemoteParticipantCallIds as there is no way to init RemoteParticipant for getRemoteParticipant func
+                XCTAssertEqual(ids.map { $0.rawId }.sorted(),
+                               self.expectedIds.sorted())
+                self.remoteParticipantsJoinedExpectation.fulfill()
+            }
         }
-        // check getRemoteParticipantCallIds as there is no way to init RemoteParticipant for getRemoteParticipant func
-        XCTAssertEqual(
-          ids.map { $0.rawId }.sorted(),
-          self.expectedIds.sorted())
-        self.remoteParticipantsJoinedExpectation.fulfill()
-      }
+        sut = RemoteParticipantsManager(store: mockStoreFactory.store,
+                                        callCompositeEventsHandler: eventsHandler,
+                                        avatarViewManager: avatarViewManager)
     }
-    sut = RemoteParticipantsManager(
-      store: mockStoreFactory.store,
-      callCompositeEventsHandler: eventsHandler,
-      avatarViewManager: avatarViewManager)
-  }
 }

@@ -3,9 +3,8 @@
 //  Licensed under the MIT License.
 //
 
-import FluentUI
 import Foundation
-
+import FluentUI
 @testable import AzureCommunicationUICalling
 import SwiftUI
 
@@ -47,11 +46,9 @@ struct CompositeViewModelFactoryMocking: CompositeViewModelFactoryProtocol {
     var moreCallOptionsListCellViewModel: DrawerGenericItemViewModel?
     var leaveCallConfirmationViewModel: LeaveCallConfirmationViewModel?
 
-  var createMockParticipantGridCellViewModel:
-    ((ParticipantInfoModel) -> ParticipantGridCellViewModel?)?
-  var createParticipantsListCellViewModel:
-    ((ParticipantInfoModel) -> ParticipantsListCellViewModel?)?
-  var createIconButtonViewModel: ((CompositeIcon) -> IconButtonViewModel?)?
+    var createMockParticipantGridCellViewModel: ((ParticipantInfoModel) -> ParticipantGridCellViewModel?)?
+    var createParticipantsListCellViewModel: ((ParticipantInfoModel) -> ParticipantsListCellViewModel?)?
+    var createIconButtonViewModel: ((CompositeIcon) -> IconButtonViewModel?)?
 
     var createCameraIconWithLabelButtonViewModel: ((CameraButtonState) -> IconWithLabelButtonViewModel<CameraButtonState>?)?
     var createMicIconWithLabelButtonViewModel: ((MicButtonState) -> IconWithLabelButtonViewModel<MicButtonState>?)?
@@ -179,15 +176,13 @@ struct CompositeViewModelFactoryMocking: CompositeViewModelFactoryProtocol {
                                                                 action: action)
     }
 
-  func makeCallDiagnosticsViewModel(dispatchAction: @escaping ActionDispatch)
-    -> CallDiagnosticsViewModel
-  {
-    return callDiagnosticsViewModel
-      ?? CallDiagnosticsViewModel(
-        localizationProvider: localizationProvider,
-        accessibilityProvider: accessibilityProvider,
-        dispatchAction: dispatchAction)
-  }
+    func makeAudioDevicesListViewModel(dispatchAction: @escaping ActionDispatch,
+                                       localUserState: LocalUserState) -> AudioDevicesListViewModel {
+        return audioDevicesListViewModel ?? AudioDevicesListViewModel(compositeViewModelFactory: self,
+                                                                      dispatchAction: dispatchAction,
+                                                                      localUserState: localUserState,
+                                                                      localizationProvider: localizationProvider)
+    }
 
     func makeParticipantMenuViewModel(localUserState: LocalUserState,
                                       isDisplayed: Bool,
@@ -209,13 +204,11 @@ struct CompositeViewModelFactoryMocking: CompositeViewModelFactoryProtocol {
                                                         subtitle: subtitle)
     }
 
-  // MARK: CallingViewModels
-  func makeLobbyOverlayViewModel() -> LobbyOverlayViewModel {
-    return lobbyOverlayViewModel
-      ?? LobbyOverlayViewModel(
-        localizationProvider: localizationProvider,
-        accessibilityProvider: accessibilityProvider)
-  }
+    func makeCallDiagnosticsViewModel(dispatchAction: @escaping ActionDispatch) -> CallDiagnosticsViewModel {
+        return callDiagnosticsViewModel ?? CallDiagnosticsViewModel(localizationProvider: localizationProvider,
+                                                                    accessibilityProvider: accessibilityProvider,
+                                                                    dispatchAction: dispatchAction)
+    }
 
     func makeSelectableDrawerListItemViewModel(icon: CompositeIcon,
                                                title: String,
@@ -236,21 +229,11 @@ struct CompositeViewModelFactoryMocking: CompositeViewModelFactoryProtocol {
                                                   endCall: {}, dismissConfirmation: {})
     }
 
-  func makeControlBarViewModel(
-    dispatchAction: @escaping ActionDispatch,
-    endCallConfirm: @escaping (() -> Void),
-    localUserState: LocalUserState
-  ) -> ControlBarViewModel {
-    return controlBarViewModel
-      ?? ControlBarViewModel(
-        compositeViewModelFactory: self,
-        logger: logger,
-        localizationProvider: localizationProvider,
-        dispatchAction: dispatchAction,
-        endCallConfirm: endCallConfirm,
-        localUserState: localUserState,
-        audioVideoMode: .audioAndVideo)
-  }
+    // MARK: CallingViewModels
+    func makeLobbyOverlayViewModel() -> LobbyOverlayViewModel {
+        return lobbyOverlayViewModel ?? LobbyOverlayViewModel(localizationProvider: localizationProvider,
+                                                              accessibilityProvider: accessibilityProvider)
+    }
 
     func makeLoadingOverlayViewModel() -> LoadingOverlayViewModel {
         return loadingOverlayViewModel ?? LoadingOverlayViewModel(localizationProvider: localizationProvider,
@@ -383,26 +366,15 @@ struct CompositeViewModelFactoryMocking: CompositeViewModelFactoryProtocol {
         return bannerViewModel ?? BannerViewModel(compositeViewModelFactory: self, dispatchAction: dispatchAction)
     }
 
-  func makeParticipantsListCellViewModel(participantInfoModel: ParticipantInfoModel)
-    -> ParticipantsListCellViewModel
-  {
-    createParticipantsListCellViewModel?(participantInfoModel)
-      ?? ParticipantsListCellViewModel(
-        participantInfoModel: participantInfoModel,
-        localizationProvider: localizationProvider)
-  }
+    func makeBannerTextViewModel() -> BannerTextViewModel {
+        return bannerTextViewModel ?? BannerTextViewModel(accessibilityProvider: accessibilityProvider,
+                                                          localizationProvider: localizationProvider)
+    }
 
-  func makeMoreCallOptionsListViewModel(
-    showSharingViewAction: @escaping () -> Void, showSupportFormAction: @escaping () -> Void
-  ) -> MoreCallOptionsListViewModel {
-    moreCallOptionsListViewModel
-      ?? MoreCallOptionsListViewModel(
-        compositeViewModelFactory: self,
-        localizationProvider: localizationProvider,
-        showSharingViewAction: showSharingViewAction,
-        showSupportFormAction: showSupportFormAction,
-        isSupportFormAvailable: false)
-  }
+    func makeLocalParticipantsListCellViewModel(localUserState: LocalUserState) -> ParticipantsListCellViewModel {
+        localParticipantsListCellViewModel ?? ParticipantsListCellViewModel(localUserState: localUserState,
+                                                                            localizationProvider: localizationProvider)
+    }
 
     func makeDebugInfoSharingActivityViewModel() -> DebugInfoSharingActivityViewModel {
         debugInfoSharingActivityViewModel ??
@@ -419,9 +391,12 @@ struct CompositeViewModelFactoryMocking: CompositeViewModelFactoryProtocol {
             getDebugInfo: { [self] in self.debugInfoManager.getDebugInfo() })
     }
 
-  func makeJoiningCallActivityViewModel() -> JoiningCallActivityViewModel {
-    JoiningCallActivityViewModel(localizationProvider: localizationProvider)
-  }
+    // MARK: SetupViewModels
+    func makePreviewAreaViewModel(dispatchAction: @escaping ActionDispatch) -> PreviewAreaViewModel {
+        return previewAreaViewModel ?? PreviewAreaViewModel(compositeViewModelFactory: self,
+                                                            dispatchAction: dispatchAction,
+                                                            localizationProvider: localizationProvider)
+    }
 
     func makeSetupControlBarViewModel(dispatchAction: @escaping ActionDispatch,
                                       localUserState: LocalUserState,

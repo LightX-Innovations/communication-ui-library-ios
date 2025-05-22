@@ -3,24 +3,21 @@
 //  Licensed under the MIT License.
 //
 
-import AzureCommunicationCommon
 import Foundation
 import XCTest
-
+import AzureCommunicationCommon
 @testable import AzureCommunicationUICalling
 
 class RemoteOptionsTests: XCTestCase {
-  func test_remoteOptions_init_groupCall_when_parametersAreValid_then_returnRemoteOptionsObject() {
-    let sampleToken =
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjMyNTAzNjgwMDAwfQ.9i7FNNHHJT8cOzo-yrAUJyBSfJ-tPPk2emcHavOEpWc"
-    let communicationTokenCredential = try? CommunicationTokenCredential(token: sampleToken)
-    let displayName = "Display Name"
-    let groupId = UUID()
+    func test_remoteOptions_init_groupCall_when_parametersAreValid_then_returnRemoteOptionsObject() {
+        let sampleToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjMyNTAzNjgwMDAwfQ.9i7FNNHHJT8cOzo-yrAUJyBSfJ-tPPk2emcHavOEpWc"
+        let communicationTokenCredential = try? CommunicationTokenCredential(token: sampleToken)
+        let displayName = "Display Name"
+        let groupId = UUID()
 
-    let remoteOptions = RemoteOptions(
-      for: .groupCall(groupId: groupId),
-      credential: communicationTokenCredential!,
-      displayName: displayName)
+        let remoteOptions = RemoteOptions(for: .groupCall(groupId: groupId),
+                                          credential: communicationTokenCredential!,
+                                          displayName: displayName)
 
         XCTAssertNotNil(remoteOptions)
         XCTAssertEqual(remoteOptions.displayName, displayName)
@@ -36,20 +33,16 @@ class RemoteOptionsTests: XCTestCase {
             XCTFail("Should not be a teams meeting with teamsId \(locatorMeetingId)")
         }
     }
-  }
 
-  func test_remoteOptions_init_teamsMeeting_when_parametersAreValid_then_returnRemoteOptionsObject()
-  {
-    let sampleToken =
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjMyNTAzNjgwMDAwfQ.9i7FNNHHJT8cOzo-yrAUJyBSfJ-tPPk2emcHavOEpWc"
-    let communicationTokenCredential = try? CommunicationTokenCredential(token: sampleToken)
-    let displayName = "Display Name"
-    let meetingLink = "asdf"
+    func test_remoteOptions_init_teamsMeeting_when_parametersAreValid_then_returnRemoteOptionsObject() {
+        let sampleToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjMyNTAzNjgwMDAwfQ.9i7FNNHHJT8cOzo-yrAUJyBSfJ-tPPk2emcHavOEpWc"
+        let communicationTokenCredential = try? CommunicationTokenCredential(token: sampleToken)
+        let displayName = "Display Name"
+        let meetingLink = "asdf"
 
-    let remoteOptions = RemoteOptions(
-      for: .teamsMeeting(teamsLink: meetingLink),
-      credential: communicationTokenCredential!,
-      displayName: displayName)
+        let remoteOptions = RemoteOptions(for: .teamsMeeting(teamsLink: meetingLink),
+                                          credential: communicationTokenCredential!,
+                                          displayName: displayName)
 
         XCTAssertNotNil(remoteOptions)
         XCTAssertEqual(remoteOptions.displayName, displayName)
@@ -117,5 +110,4 @@ class RemoteOptionsTests: XCTestCase {
             XCTAssertEqual(meetingId, locatorMeetingId)
         }
     }
-  }
 }

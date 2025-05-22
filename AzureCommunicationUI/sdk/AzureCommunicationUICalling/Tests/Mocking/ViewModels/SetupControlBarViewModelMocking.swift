@@ -4,7 +4,6 @@
 //
 
 import Foundation
-
 @testable import AzureCommunicationUICalling
 
 class SetupControlBarViewModelMocking: SetupControlBarViewModel {
@@ -38,7 +37,7 @@ class SetupControlBarViewModelMocking: SetupControlBarViewModel {
                      buttonViewDataState)
     }
 
-  override func update(isJoinRequested: Bool) {
-    updateIsJoinRequested?(isJoinRequested)
-  }
+    override func update(isJoinRequested: Bool) {
+        updateIsJoinRequested?(isJoinRequested)
+    }
 }

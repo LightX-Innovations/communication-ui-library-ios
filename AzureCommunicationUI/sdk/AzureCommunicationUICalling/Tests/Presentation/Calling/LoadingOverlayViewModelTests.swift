@@ -5,24 +5,23 @@
 
 import Foundation
 import XCTest
-
 @testable import AzureCommunicationUICalling
 
 class LoadingOverlayViewModelTests: XCTestCase {
-  private var localizationProvider: LocalizationProviderMocking!
-  private var storeFactory: StoreFactoryMocking!
+    private var localizationProvider: LocalizationProviderMocking!
+    private var storeFactory: StoreFactoryMocking!
 
-  override func setUp() {
-    super.setUp()
-    localizationProvider = LocalizationProviderMocking()
-    storeFactory = StoreFactoryMocking()
-  }
+    override func setUp() {
+        super.setUp()
+        localizationProvider = LocalizationProviderMocking()
+        storeFactory = StoreFactoryMocking()
+    }
 
-  override func tearDown() {
-    super.tearDown()
-    localizationProvider = nil
-    storeFactory = nil
-  }
+    override func tearDown() {
+        super.tearDown()
+        localizationProvider = nil
+        storeFactory = nil
+    }
 
     func test_loadingOverlayViewModel_displays_title_from_AppLocalization() {
         let sut = makeSUT()
@@ -69,7 +68,7 @@ extension LoadingOverlayViewModelTests {
         )
     }
 
-  func makeSUTLocalizationMocking() -> LoadingOverlayViewModel {
-    return makeSUT(localizationProvider: localizationProvider)
-  }
+    func makeSUTLocalizationMocking() -> LoadingOverlayViewModel {
+        return makeSUT(localizationProvider: localizationProvider)
+    }
 }

@@ -5,7 +5,6 @@
 
 import Foundation
 import XCTest
-
 @testable import AzureCommunicationUICalling
 
 class SupportFormViewModelTests: XCTestCase {
@@ -58,24 +57,6 @@ class SupportFormViewModelTests: XCTestCase {
         XCTAssertEqual(lastIssue?.userMessage, "TEST MESSAGE")
         XCTAssertTrue(lastAction == Action.hideDrawer)
     }
-    let debugInfo = DebugInfo(
-      callHistoryRecords: [], callingUIVersion: "1.0", logFiles: []
-    )
-    let dispatchAction: ActionDispatch = { action in
-      lastAction = action
-    }
-    // Initialize the viewModel with mocks
-    let viewModel = SupportFormViewModel(
-      dispatchAction: dispatchAction,
-      events: events,
-      localizationProvider: LocalizationProviderMocking(),
-      getDebugInfo: { debugInfo })
-    viewModel.messageText = "TEST MESSAGE"
-    viewModel.sendReport()
-    XCTAssertTrue(lastIssue != nil)
-    XCTAssertEqual(lastIssue?.userMessage, "TEST MESSAGE")
-    XCTAssertTrue(lastAction == Action.hideSupportForm)
-  }
 
     func test_SupportFormViewModel_ValidateSendFormTriggersEventNoText() {
         let events = CallComposite.Events()

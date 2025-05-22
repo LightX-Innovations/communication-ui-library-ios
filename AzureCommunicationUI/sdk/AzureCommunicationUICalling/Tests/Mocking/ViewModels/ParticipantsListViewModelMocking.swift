@@ -4,7 +4,6 @@
 //
 
 import Foundation
-
 @testable import AzureCommunicationUICalling
 
 class ParticipantsListViewModelMocking: ParticipantsListViewModel {

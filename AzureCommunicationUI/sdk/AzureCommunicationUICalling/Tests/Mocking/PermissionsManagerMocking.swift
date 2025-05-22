@@ -3,9 +3,8 @@
 //  Licensed under the MIT License.
 //
 
-import Combine
 import Foundation
-
+import Combine
 @testable import AzureCommunicationUICalling
 
 class PermissionsManagerMocking: PermissionsManagerProtocol {
@@ -15,19 +14,19 @@ class PermissionsManagerMocking: PermissionsManagerProtocol {
     var didResolveStatus = false
     var didRequestPermission = false
 
-  func resolveStatus(for permission: AppPermission) -> AppPermission.Status {
-    return .granted
-  }
-
-  func request(_ permission: AppPermission) -> Future<AppPermission.Status, Never> {
-    requestWasCalled = true
-    requestWasCalledWithPermission = permission
-    return Future { promise in
-      promise(Result.success(.granted))
+    func resolveStatus(for permission: AppPermission) -> AppPermission.Status {
+        return .granted
     }
-  }
 
-  func requestWasCalledWith(permission: AppPermission) -> Bool {
-    return requestWasCalled && permission == requestWasCalledWithPermission
-  }
+    func request(_ permission: AppPermission) -> Future<AppPermission.Status, Never> {
+        requestWasCalled = true
+        requestWasCalledWithPermission = permission
+        return Future { promise in
+            promise(Result.success(.granted))
+        }
+    }
+
+    func requestWasCalledWith(permission: AppPermission) -> Bool {
+        return requestWasCalled && permission == requestWasCalledWithPermission
+    }
 }

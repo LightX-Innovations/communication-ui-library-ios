@@ -9,11 +9,11 @@ import AzureCommunicationCommon
 @testable import AzureCommunicationUICalling
 
 class SetupViewModelTests: XCTestCase {
-  private var storeFactory: StoreFactoryMocking!
-  private var factoryMocking: CompositeViewModelFactoryMocking!
-  private var cancellable: CancelBag!
-  private var logger: LoggerMocking!
-  private let timeout: TimeInterval = 10.0
+    private var storeFactory: StoreFactoryMocking!
+    private var factoryMocking: CompositeViewModelFactoryMocking!
+    private var cancellable: CancelBag!
+    private var logger: LoggerMocking!
+    private let timeout: TimeInterval = 10.0
 
     override func setUp() {
         super.setUp()
@@ -27,75 +27,30 @@ class SetupViewModelTests: XCTestCase {
                                                                                                   localParticipantViewData: nil),
                                                           updatableOptionsManager: UpdatableOptionsManager(store: storeFactory.store, setupScreenOptions: nil, callScreenOptions: nil))
     }
-    factoryMocking.previewAreaViewModel = PreviewAreaViewModelMocking(
-      compositeViewModelFactory: factoryMocking,
-      dispatchAction: storeFactory.store.dispatch,
-      updateState: updatePreviewAreaViewModel)
-    let sut = makeSUT()
-    sut.receive(appState)
-    wait(for: [expectation], timeout: timeout)
-  }
 
-  func test_setupViewModel_receive_when_appStateUpdated_then_setupControlBarViewModelUpdated() {
-    let appState = AppState(
-      callingState: CallingState(status: .connected),
-      permissionState: PermissionState(audioPermission: .granted),
-      localUserState: LocalUserState(displayName: "DisplayName"))
-    let expectation = XCTestExpectation(description: "SetupControlBarViewModel is updated")
-    let updateSetupControlBarViewModel: ((LocalUserState, PermissionState, CallingState) -> Void) =
-      { userState, permissionsState, callingState in
-        XCTAssertEqual(userState.displayName, appState.localUserState.displayName)
-        XCTAssertEqual(permissionsState.audioPermission, appState.permissionState.audioPermission)
-        XCTAssertEqual(callingState, appState.callingState)
-        expectation.fulfill()
-      }
-    factoryMocking.setupControlBarViewModel = SetupControlBarViewModelMocking(
-      compositeViewModelFactory: factoryMocking,
-      logger: logger,
-      dispatchAction: storeFactory.store.dispatch,
-      localUserState: LocalUserState(),
-      updateState: updateSetupControlBarViewModel)
-    let sut = makeSUT()
-    sut.receive(appState)
-    wait(for: [expectation], timeout: timeout)
-  }
-
-  func
-    test_setupViewModel_receive_when_isJoinRequestedTrue_then_setupControlBarViewModelUpdatedTrue()
-  {
-    let expectation = XCTestExpectation(description: "SetupControlBarViewModel is updated")
-
-    let setupControlBarViewModel = SetupControlBarViewModelMocking(
-      compositeViewModelFactory: factoryMocking,
-      logger: logger,
-      dispatchAction: storeFactory.store.dispatch,
-      localUserState: LocalUserState())
-    factoryMocking.setupControlBarViewModel = setupControlBarViewModel
-    let sut = makeSUT()
-    let updateIsJoinRequested: ((Bool) -> Void) = { isJoinRequested in
-      XCTAssertTrue(isJoinRequested)
-      expectation.fulfill()
+    override func tearDown() {
+        super.tearDown()
+        storeFactory = nil
+        cancellable = nil
+        logger = nil
+        factoryMocking = nil
     }
-    setupControlBarViewModel.updateIsJoinRequested = updateIsJoinRequested
-    sut.isJoinRequested = true
-    wait(for: [expectation], timeout: timeout)
-  }
 
-  func test_setupViewModel_receive_when_appStateUpdated_then_joinCallButtonViewModelUpdated() {
-    let appState = AppState()
-    let expectation = XCTestExpectation(description: "JoinCallButtonViewModel is updated")
-    let updateJoinCallButtonViewModel: ((Bool) -> Void) = { isDisabled in
-      XCTAssertEqual(isDisabled, appState.permissionState.audioPermission == .denied)
-      expectation.fulfill()
+    func test_setupViewModel_when_joinCallButtonTapped_then_shouldCallStartRequest_isJoinRequestedTrue() {
+        let expectation = XCTestExpectation(description: "Verify Last Action is Calling View Launched")
+        let sut = makeSUT()
+
+        storeFactory.store.$state
+            .dropFirst()
+            .sink { [weak self] _ in
+                XCTAssertEqual(self?.storeFactory.actions.count, 2)
+                XCTAssertTrue(self?.storeFactory.actions.last == Action.callingAction(.callStartRequested))
+                expectation.fulfill()
+            }.store(in: cancellable)
+        sut.joinCallButtonTapped()
+        XCTAssertTrue(sut.isJoinRequested)
+        wait(for: [expectation], timeout: timeout)
     }
-    factoryMocking.primaryButtonViewModel = PrimaryButtonViewModelMocking(
-      buttonStyle: .primaryFilled,
-      buttonLabel: "buttonLabel",
-      updateState: updateJoinCallButtonViewModel)
-    let sut = makeSUT()
-    sut.receive(appState)
-    wait(for: [expectation], timeout: timeout)
-  }
 
     func test_joinCallButtonViewModel_when_audioPermissionDenied_then_shouldDisablejoinCallButton() {
         let sut = makeSUT()
@@ -300,21 +255,14 @@ class SetupViewModelTests: XCTestCase {
         sut.receive(appState)
         wait(for: [expectation], timeout: timeout)
     }
-    factoryMocking.errorInfoViewModel = ErrorInfoViewModelMocking(
-      updateState: updateErrorInfoViewModel)
-    let sut = makeSUT()
-    sut.receive(appState)
-    wait(for: [expectation], timeout: timeout)
-  }
 }
 
 extension SetupViewModelTests {
-  func getCallingState(_ statue: CallingStatus = .none) -> CallingState {
-    return CallingState(
-      status: statue,
-      isRecordingActive: false,
-      isTranscriptionActive: false)
-  }
+    func getCallingState(_ statue: CallingStatus = .none) -> CallingState {
+        return CallingState(status: statue,
+                            isRecordingActive: false,
+                            isTranscriptionActive: false)
+    }
 
     func makeSUT(callType: CompositeCallType = .groupCall) -> SetupViewModel {
         return SetupViewModel(compositeViewModelFactory: factoryMocking,

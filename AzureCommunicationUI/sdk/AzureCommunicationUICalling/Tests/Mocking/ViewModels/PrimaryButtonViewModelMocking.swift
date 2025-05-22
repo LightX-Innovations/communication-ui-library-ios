@@ -3,9 +3,8 @@
 //  Licensed under the MIT License.
 //
 
-import FluentUI
 import Foundation
-
+import FluentUI
 @testable import AzureCommunicationUICalling
 
 class PrimaryButtonViewModelMocking: PrimaryButtonViewModel {

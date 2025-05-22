@@ -3,26 +3,23 @@
 //  Licensed under the MIT License.
 //
 
-import Combine
 import Foundation
+import Combine
 
 @testable import AzureCommunicationUICalling
 
 class BannerTextViewModelMocking: BannerTextViewModel {
-  var updateBannerInfoType: ((BannerInfoType?) -> Void)?
-  var bannerType: BannerInfoType?
+    var updateBannerInfoType: ((BannerInfoType?) -> Void)?
+    var bannerType: BannerInfoType?
 
-  init(
-    accessibilityProvider: AccessibilityProviderProtocol = AccessibilityProvider(),
-    updateBannerInfoType: ((BannerInfoType?) -> Void)? = nil
-  ) {
-    self.updateBannerInfoType = updateBannerInfoType
-    super.init(
-      accessibilityProvider: accessibilityProvider,
-      localizationProvider: LocalizationProviderMocking())
-  }
+    init(accessibilityProvider: AccessibilityProviderProtocol = AccessibilityProvider(),
+         updateBannerInfoType: ((BannerInfoType?) -> Void)? = nil) {
+        self.updateBannerInfoType = updateBannerInfoType
+        super.init(accessibilityProvider: accessibilityProvider,
+                   localizationProvider: LocalizationProviderMocking())
+    }
 
-  override func update(bannerInfoType: BannerInfoType?) {
-    updateBannerInfoType?(bannerInfoType)
-  }
+    override func update(bannerInfoType: BannerInfoType?) {
+        updateBannerInfoType?(bannerInfoType)
+    }
 }

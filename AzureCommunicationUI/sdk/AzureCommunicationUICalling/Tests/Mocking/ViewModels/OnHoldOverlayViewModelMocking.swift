@@ -9,9 +9,9 @@ import Foundation
 @testable import AzureCommunicationUICalling
 
 class OnHoldOverlayViewModelMocking: OnHoldOverlayViewModel {
-  var actionButtonViewModelMocking: PrimaryButtonViewModel?
-  var resumeAction: (() -> Void)?
-  var updateState: ((CallingStatus) -> Void)?
+    var actionButtonViewModelMocking: PrimaryButtonViewModel?
+    var resumeAction: (() -> Void)?
+    var updateState: ((CallingStatus) -> Void)?
 
     init(localizationProvider: LocalizationProviderProtocol,
          compositeViewModelFactory: CompositeViewModelFactoryProtocol,
@@ -36,23 +36,13 @@ class OnHoldOverlayViewModelMocking: OnHoldOverlayViewModel {
                    audioSessionManager: audioSessionManager,
                    resumeAction: resumeAction)
     }
-    super.init(
-      localizationProvider: localizationProvider,
-      compositeViewModelFactory: compositeViewModelFactory,
-      logger: logger,
-      accessibilityProvider: accessibilityProvider,
-      audioSessionManager: audioSessionManager,
-      resumeAction: resumeAction)
-  }
 
-  override func update(
-    callingStatus: CallingStatus,
-    audioSessionStatus: AudioSessionStatus
-  ) {
-    updateState?(callingStatus)
-  }
+    override func update(callingStatus: CallingStatus,
+                         audioSessionStatus: AudioSessionStatus) {
+        updateState?(callingStatus)
+    }
 
-  func mockResumeAction() {
-    self.resumeAction?()
-  }
+    func mockResumeAction() {
+        self.resumeAction?()
+    }
 }

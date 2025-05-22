@@ -3,6 +3,7 @@
 //  Licensed under the MIT License.
 //
 
+import Foundation
 import Combine
 @testable import AzureCommunicationUICalling
 

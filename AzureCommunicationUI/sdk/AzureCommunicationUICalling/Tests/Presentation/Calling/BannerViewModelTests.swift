@@ -9,9 +9,9 @@ import AzureCommunicationCommon
 @testable import AzureCommunicationUICalling
 
 class BannerViewModelTests: XCTestCase {
-  var cancellable: CancelBag!
-  var storeFactory: StoreFactoryMocking!
-  var factoryMocking: CompositeViewModelFactoryMocking!
+    var cancellable: CancelBag!
+    var storeFactory: StoreFactoryMocking!
+    var factoryMocking: CompositeViewModelFactoryMocking!
 
     override func setUp() {
         super.setUp()
@@ -25,59 +25,28 @@ class BannerViewModelTests: XCTestCase {
                                                             localParticipantViewData: nil),
                                                           updatableOptionsManager: UpdatableOptionsManager(store: storeFactory.store, setupScreenOptions: nil, callScreenOptions: nil))
     }
-  }
 
-  func
-    test_bannerViewModel_update_when_withRecordingActiveTrueAndTranscriptionActiveFalse_shouldUpdateRecordingStartedBanner()
-  {
-    let parameters: [(BannerViewModel.FeatureStatus, BannerViewModel.FeatureStatus)] = [
-      (.on, .off),
-      (.off, .off),
-      (.stopped, .off),
-      (.stopped, .stopped),
-    ]
-    for (initialRecordingState, initialTranscriptionState) in parameters {
-      let isRecordingActiveToUpdate = true
-      let isTranscriptionActiveToUpdate = false
-      let expectedType = BannerInfoType.recordingStarted
-
-      let callStatesArr = createCallStates(
-        recordingState: initialRecordingState,
-        transcriptionState: initialTranscriptionState)
-      let mockingBannerViewModel = BannerTextViewModelMocking()
-      factoryMocking.bannerTextViewModel = mockingBannerViewModel
-      let bannerViewModel = makeSut(callingStateArray: callStatesArr)
-
-      let expectationClosure: ((BannerInfoType?) -> Void) = { bannerInfoType in
-        XCTAssertEqual(bannerInfoType, expectedType)
-      }
-      mockingBannerViewModel.updateBannerInfoType = expectationClosure
-      let callingStateToUpdate = makeCallingState(
-        isRecordingActiveToUpdate, isTranscriptionActiveToUpdate)
-      bannerViewModel.update(callingState: callingStateToUpdate)
+    override func tearDown() {
+        super.tearDown()
+        cancellable = nil
+        storeFactory = nil
+        factoryMocking = nil
     }
-  }
 
-  func
-    test_bannerViewModel_update_when_withRecordingActiveTrueAndTranscriptionActiveFalse_shouldUpdateTranscriptionStoppedStillRecordingBanner()
-  {
-    let parameters: [(BannerViewModel.FeatureStatus, BannerViewModel.FeatureStatus)] = [
-      (.on, .on),
-      (.on, .stopped),
-      (.off, .on),
-      (.off, .stopped),
-      (.stopped, .on),
-    ]
-    for (initialRecordingState, initialTranscriptionState) in parameters {
-      let isRecordingActiveToUpdate = true
-      let isTranscriptionActiveToUpdate = false
-      let expectedType = BannerInfoType.transcriptionStoppedStillRecording
+    func test_bannerViewModel_isBannerDisplayedPublished_when_displayBannerWithRecordingOnAndTranscriptionOn_then_shouldBecomeTrueAndPublish() {
+        let bannerViewModel = makeSUT()
+        let expectation = XCTestExpectation(description: "Should publish isBannerDisplayed")
+        bannerViewModel.$isBannerDisplayed
+            .dropFirst()
+            .sink(receiveValue: { isBannerDisplayed in
+                XCTAssertTrue(isBannerDisplayed)
+                expectation.fulfill()
+            }).store(in: cancellable)
 
         let callingState = makeCallingState(.on, .on)
         bannerViewModel.update(callingState: callingState, visibilityState: VisibilityState.init(currentStatus: .visible))
         wait(for: [expectation], timeout: 1)
     }
-  }
 
     func test_bannerViewModel_isBannerDisplayedPublished_when_visibilityInPip_then_shouldBecomeFalseAndPublish() {
         let bannerViewModel = makeSUT()
@@ -97,7 +66,6 @@ class BannerViewModelTests: XCTestCase {
 
         wait(for: [expectation], timeout: 1)
     }
-  }
 
     func test_bannerViewModel_update_shouldUpdateRecordingAndTranscriptionStartedgBanner() {
         let parameters: [((RecordingStatus, RecordingStatus), BannerInfoType?)] = [
@@ -128,7 +96,6 @@ class BannerViewModelTests: XCTestCase {
             bannerViewModel.update(callingState: callingStateToUpdate, visibilityState: VisibilityState.init(currentStatus: .visible))
         }
     }
-  }
 }
 
 extension BannerViewModelTests {
@@ -143,8 +110,6 @@ extension BannerViewModelTests {
         sut.update(callingState: callingState, visibilityState: VisibilityState.init(currentStatus: visibilitySataus))
         return sut
     }
-    return sut
-  }
 
     func makeCallingState(_ recordingStatus: RecordingStatus, _ transcriptionStatus: RecordingStatus) -> CallingState {
         return CallingState(status: .connected,
@@ -153,7 +118,6 @@ extension BannerViewModelTests {
                             recordingStatus: recordingStatus,
                             transcriptionStatus: transcriptionStatus)
     }
-  }
 
     func makeCallingState() -> CallingState {
         return CallingState(status: .connected)

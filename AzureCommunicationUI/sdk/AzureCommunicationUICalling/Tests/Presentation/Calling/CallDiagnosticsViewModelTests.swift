@@ -5,31 +5,30 @@
 
 import Foundation
 import XCTest
-
 @testable import AzureCommunicationUICalling
 
 class CallDiagnosticsViewModelTests: XCTestCase {
-  /// Collect diagnostic actions that we dispatch through view model so we can assert the correct behavior.
-  class DiagnosticCollector {
-    var actions: [DiagnosticsAction] = []
+    /// Collect diagnostic actions that we dispatch through view model so we can assert the correct behavior.
+    class DiagnosticCollector {
+        var actions: [DiagnosticsAction] = []
 
-    var dismissedMedia: [MediaCallDiagnostic] {
-      actions.compactMap { action in
-        if case let .dismissMedia(diagnostic) = action {
-          return diagnostic
+        var dismissedMedia: [MediaCallDiagnostic] {
+            actions.compactMap { action in
+                if case let .dismissMedia(diagnostic) = action {
+                    return diagnostic
+                }
+                return nil
+            }
         }
-        return nil
-      }
-    }
 
-    var dismissedNetwork: [NetworkCallDiagnostic] {
-      actions.compactMap { action in
-        if case let .dismissNetwork(diagnostic) = action {
-          return diagnostic
+        var dismissedNetwork: [NetworkCallDiagnostic] {
+            actions.compactMap { action in
+                if case let .dismissNetwork(diagnostic) = action {
+                    return diagnostic
+                }
+                return nil
+            }
         }
-        return nil
-      }
-    }
 
         var dismissedNetworkQuality: [NetworkQualityCallDiagnostic] {
             actions.compactMap { action in
@@ -74,78 +73,32 @@ class CallDiagnosticsViewModelTests: XCTestCase {
                 break
             }
         }
-        return nil
-      }
     }
 
-    func dispatch(_ action: Action) {
-      switch action {
-      case .callDiagnosticAction(let action):
-        actions.append(action)
-      case .audioSessionAction(_),
-        .callingAction(_),
-        .errorAction(_),
-        .lifecycleAction(_),
-        .localUserAction(_),
-        .permissionAction(_),
-        .remoteParticipantsAction(_),
-        .compositeExitAction,
-        .callingViewLaunched,
-        .showSupportForm,
-        .hideSupportForm,
-        .visibilityAction(_):
-        break
-      }
+    private var localizationProvider: LocalizationProviderMocking!
+
+    override func setUp() {
+        super.setUp()
+        localizationProvider = LocalizationProviderMocking()
     }
-  }
 
-  private var localizationProvider: LocalizationProviderMocking!
-
-  override func setUp() {
-    super.setUp()
-    localizationProvider = LocalizationProviderMocking()
-  }
-
-  override func tearDown() {
-    super.tearDown()
-    localizationProvider = nil
-  }
-
-  func
-    test_receiving_media_diagnostic_update_should_be_added_to_bottom_toast_and_displayed_in_bad_state_and_not_displayed_in_good_state()
-  {
-    for diagnostic in BottomToastDiagnosticViewModel.handledMediaDiagnostics {
-      let collector = DiagnosticCollector()
-
-      let sut = makeSUT(dispatchAction: collector.dispatch)
-      XCTAssertNil(sut.currentBottomToastDiagnostic)
-
-      let badState = MediaDiagnosticModel(diagnostic: diagnostic, value: true)
-      sut.update(diagnosticsState: CallDiagnosticsState(mediaDiagnostic: badState))
-
-      XCTAssertEqual(sut.currentBottomToastDiagnostic?.mediaDiagnostic, diagnostic)
-
-      let goodState = MediaDiagnosticModel(diagnostic: diagnostic, value: false)
-      sut.update(diagnosticsState: CallDiagnosticsState(mediaDiagnostic: goodState))
-
-      XCTAssertNil(sut.currentBottomToastDiagnostic)
-      XCTAssertEqual(collector.dismissedMedia, [diagnostic])
+    override func tearDown() {
+        super.tearDown()
+        localizationProvider = nil
     }
-  }
 
     func test_receiving_media_diagnostic_update_should_be_showing_message_bar() {
         for diagnostic in MessageBarDiagnosticViewModel.handledMediaDiagnostics {
             let collector = DiagnosticCollector()
 
-      let sut = makeSUT(dispatchAction: collector.dispatch)
-      XCTAssertNil(sut.currentBottomToastDiagnostic)
+            let sut = makeSUT(dispatchAction: collector.dispatch)
 
             for messageBar in sut.messageBarStack {
                 XCTAssertFalse(messageBar.isDisplayed)
             }
 
-      let goodState = MediaDiagnosticModel(diagnostic: diagnostic, value: false)
-      sut.update(diagnosticsState: CallDiagnosticsState(mediaDiagnostic: goodState))
+            let badState = MediaDiagnosticModel(diagnostic: diagnostic, value: true)
+            sut.update(diagnosticsState: CallDiagnosticsState(mediaDiagnostic: badState))
 
             XCTAssertTrue(sut.messageBarStack.first(where: { $0.mediaDiagnostic == diagnostic })?.isDisplayed ?? false)
 
@@ -160,20 +113,14 @@ class CallDiagnosticsViewModelTests: XCTestCase {
 }
 
 extension CallDiagnosticsViewModelTests {
-  func makeSUT(
-    dispatchAction: @escaping ActionDispatch,
-    localizationProvider: LocalizationProviderMocking? = nil
-  ) -> CallDiagnosticsViewModel {
-    let accessibilityProvider: AccessibilityProviderProtocol = AccessibilityProviderMocking()
-    return CallDiagnosticsViewModel(
-      localizationProvider: localizationProvider ?? LocalizationProvider(logger: LoggerMocking()),
-      accessibilityProvider: accessibilityProvider, dispatchAction: dispatchAction
-    )
-  }
+    func makeSUT(dispatchAction: @escaping ActionDispatch, localizationProvider: LocalizationProviderMocking? = nil) -> CallDiagnosticsViewModel {
+        let accessibilityProvider: AccessibilityProviderProtocol = AccessibilityProviderMocking()
+        return CallDiagnosticsViewModel(
+            localizationProvider: localizationProvider ?? LocalizationProvider(logger: LoggerMocking()), accessibilityProvider: accessibilityProvider, dispatchAction: dispatchAction
+        )
+    }
 
-  func makeSUTLocalizationMocking(dispatchAction: @escaping ActionDispatch)
-    -> CallDiagnosticsViewModel
-  {
-    return makeSUT(dispatchAction: dispatchAction, localizationProvider: localizationProvider)
-  }
+    func makeSUTLocalizationMocking(dispatchAction: @escaping ActionDispatch) -> CallDiagnosticsViewModel {
+        return makeSUT(dispatchAction: dispatchAction, localizationProvider: localizationProvider)
+    }
 }

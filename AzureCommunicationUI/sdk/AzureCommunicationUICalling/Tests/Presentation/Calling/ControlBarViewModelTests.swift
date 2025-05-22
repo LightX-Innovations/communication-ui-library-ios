@@ -33,19 +33,6 @@ class ControlBarViewModelTests: XCTestCase {
                                                           updatableOptionsManager: UpdatableOptionsManager(store: storeFactory.store, setupScreenOptions: nil, callScreenOptions: nil))
         capabilitiesManager = CapabilitiesManager(callType: .groupCall)
     }
-    let sut = makeSUT()
-    let cameraState = LocalUserState.CameraState(
-      operation: .on,
-      device: .front,
-      transmission: .local)
-    let localUserState = LocalUserState(cameraState: cameraState)
-    sut.update(
-      localUserState: localUserState,
-      permissionState: PermissionState(),
-      callingState: CallingState(),
-      visibilityState: VisibilityState(currentStatus: .visible))
-    wait(for: [expectation], timeout: 1)
-  }
 
     override func tearDown() {
         super.tearDown()
@@ -770,15 +757,6 @@ class ControlBarViewModelTests: XCTestCase {
                    buttonViewDataState: buttonState)
         XCTAssertTrue(sut.isMicDisabled())
     }
-    factoryMocking.audioDevicesListViewModel = audioDevicesListViewModel
-    let sut = makeSUT()
-    sut.update(
-      localUserState: localUserState,
-      permissionState: PermissionState(),
-      callingState: CallingState(),
-      visibilityState: VisibilityState(currentStatus: .visible))
-    wait(for: [expectation], timeout: 1.0)
-  }
 }
 
 extension ControlBarViewModelTests {
@@ -814,7 +792,7 @@ extension ControlBarViewModelTests {
                                    buttonViewDataState: ButtonViewDataState())
     }
 
-  func makeSUTLocalizationMocking() -> ControlBarViewModel {
-    return makeSUT(localizationProvider: localizationProvider)
-  }
+    func makeSUTLocalizationMocking() -> ControlBarViewModel {
+        return makeSUT(localizationProvider: localizationProvider)
+    }
 }

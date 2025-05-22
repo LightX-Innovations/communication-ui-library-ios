@@ -34,100 +34,14 @@ class InfoHeaderViewModelTests: XCTestCase {
         )
     }
 
-    let participantsListViewModel = ParticipantsListViewModelMocking(
-      compositeViewModelFactory: factoryMocking,
-      localUserState: LocalUserState(),
-      dispatchAction: storeFactory.store.dispatch,
-      localizationProvider: localizationProvider)
-    participantsListViewModel.updateStates = updateStates
-    factoryMocking.participantsListViewModel = participantsListViewModel
-
-    let sut = makeSUT()
-    sut.update(
-      localUserState: localUserStateValue,
-      remoteParticipantsState: remoteParticipantsStateValue,
-      callingState: CallingState(),
-      visibilityState: VisibilityState(currentStatus: .visible))
-    wait(for: [expectation], timeout: 1)
-  }
-
-  func test_infoHeaderViewModel_when_displayParticipantsList_then_participantsListDisplayed() {
-    let sut = makeSUT()
-    sut.displayParticipantsList()
-
-    XCTAssertTrue(sut.isParticipantsListDisplayed)
-  }
-
-  func
-    test_infoHeaderViewModel_toggleDisplayInfoHeader_when_isInfoHeaderDisplayedFalse_then_shouldBecomeTrueAndPublish()
-  {
-    let sut = makeSUT()
-    let expectation = XCTestExpectation(description: "Should publish isInfoHeaderDisplayed true")
-    let cancel = sut.$isInfoHeaderDisplayed
-      .dropFirst(2)
-      .sink(receiveValue: { isInfoHeaderDisplayed in
-        XCTAssertTrue(isInfoHeaderDisplayed)
-        expectation.fulfill()
-      })
-
-    sut.isInfoHeaderDisplayed = false
-    XCTAssertFalse(sut.isInfoHeaderDisplayed)
-    sut.toggleDisplayInfoHeaderIfNeeded()
-    XCTAssertTrue(sut.isInfoHeaderDisplayed)
-    cancel.cancel()
-    wait(for: [expectation], timeout: 1)
-  }
-
-  func
-    test_infoHeaderViewModel_toggleDisplayInfoHeader_when_isInfoHeaderDisplayedFalse_then_isTrueAndWaitForTimerToHide_shouldBecomeFalseAgainAndPublish()
-  {
-    let sut = makeSUT()
-    let expectation = XCTestExpectation(description: "Should publish isInfoHeaderDisplayed true")
-    sut.$isInfoHeaderDisplayed
-      .dropFirst(3)
-      .sink(receiveValue: { isInfoHeaderDisplayed in
-        XCTAssertFalse(isInfoHeaderDisplayed)
-        expectation.fulfill()
-      }).store(in: cancellable)
-
-    sut.isInfoHeaderDisplayed = false
-    XCTAssertFalse(sut.isInfoHeaderDisplayed)
-    sut.toggleDisplayInfoHeaderIfNeeded()
-    XCTAssertTrue(sut.isInfoHeaderDisplayed)
-    wait(for: [expectation], timeout: 5)
-  }
-
-  func
-    test_infoHeaderViewModel_toggleDisplayInfoHeader_when_isInfoHeaderDisplayedTrue_then_shouldBecomeFalseAndPublish()
-  {
-    let sut = makeSUT()
-    let expectation = XCTestExpectation(description: "Should publish isInfoHeaderDisplayed false")
-    let cancel = sut.$isInfoHeaderDisplayed
-      .dropFirst(2)
-      .sink(receiveValue: { isInfoHeaderDisplayed in
-        XCTAssertFalse(isInfoHeaderDisplayed)
-        expectation.fulfill()
-      })
-
-    sut.isInfoHeaderDisplayed = true
-    XCTAssertTrue(sut.isInfoHeaderDisplayed)
-    sut.toggleDisplayInfoHeaderIfNeeded()
-    XCTAssertFalse(sut.isInfoHeaderDisplayed)
-    cancel.cancel()
-    wait(for: [expectation], timeout: 1)
-  }
-
-  func test_infoHeaderViewModel_init_then_subscribedToVoiceOverStatusDidChangeNotification() {
-    let expectation = XCTestExpectation(
-      description: "Should subscribe to VoiceOverStatusDidChange notification")
-    let accessibilityProvider = AccessibilityProviderMocking()
-    accessibilityProvider.subscribeToVoiceOverStatusDidChangeNotificationBlock = { object in
-      XCTAssertNotNil(object)
-      expectation.fulfill()
+    override func tearDown() {
+        super.tearDown()
+        storeFactory = nil
+        cancellable = nil
+        localizationProvider = nil
+        logger = nil
+        factoryMocking = nil
     }
-    _ = makeSUT(accessibilityProvider: accessibilityProvider)
-    wait(for: [expectation], timeout: 1)
-  }
 
     func test_infoHeaderViewModel_update_when_participantInfoListCountSame_then_shouldNotBePublished() {
         let sut = makeSUT()
@@ -140,16 +54,9 @@ class InfoHeaderViewModelTests: XCTestCase {
                 XCTFail("participantInfoList count is same and infoLabel should not publish")
             }).store(in: cancellable)
 
-  func test_infoHeaderViewModel_display_infoHeaderLabel0Participant_from_LocalizationMocking() {
-    let sut = makeSUTLocalizationMocking()
-    let expectation = XCTestExpectation(description: "Should not publish infoLabel")
-    expectation.isInverted = true
-    sut.$infoLabel
-      .dropFirst()
-      .sink(receiveValue: { _ in
-        expectation.fulfill()
-        XCTFail("participantInfoList count is same and infoLabel should not publish")
-      }).store(in: cancellable)
+        let participantInfoModel: [ParticipantInfoModel] = []
+        let remoteParticipantsState = RemoteParticipantsState(
+            participantInfoList: participantInfoModel, lastUpdateTimeStamp: Date())
 
         sut.update(localUserState: storeFactory.store.state.localUserState,
                    remoteParticipantsState: remoteParticipantsState,
@@ -196,16 +103,8 @@ class InfoHeaderViewModelTests: XCTestCase {
         )
         XCTAssertEqual(sut.title, "Call with 1 person")
 
-    let secondParticipantInfoModel = ParticipantInfoModel(
-      displayName: "Participant 2",
-      isSpeaking: false,
-      isMuted: false,
-      isRemoteUser: true,
-      userIdentifier: "testUserIdentifier1",
-      status: .idle,
-      screenShareVideoStreamModel: nil,
-      cameraVideoStreamModel: nil)
-    participantList.append(secondParticipantInfoModel)
+        wait(for: [expectation], timeout: 1)
+    }
 
     func test_infoHeaderViewModel_update_when_multipleParticipantInfoListCountChanged_then_shouldBePublished() {
         let sut = makeSUT()
@@ -513,7 +412,7 @@ extension InfoHeaderViewModelTests {
         )
     }
 
-  func makeSUTLocalizationMocking() -> InfoHeaderViewModel {
-    return makeSUT(localizationProvider: localizationProvider)
-  }
+    func makeSUTLocalizationMocking() -> InfoHeaderViewModel {
+        return makeSUT(localizationProvider: localizationProvider)
+    }
 }

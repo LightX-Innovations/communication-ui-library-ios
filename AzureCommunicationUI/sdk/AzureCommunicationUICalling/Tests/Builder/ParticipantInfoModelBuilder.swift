@@ -4,7 +4,6 @@
 //
 
 import Foundation
-
 @testable import AzureCommunicationUICalling
 
 struct ParticipantInfoModelBuilder {
@@ -38,28 +37,11 @@ struct ParticipantInfoModelBuilder {
                                     cameraVideoStreamModel: videoStreamInfoModel)
     }
 
-    if let cameraId = videoStreamId {
-      videoStreamInfoModel = VideoStreamInfoModel(
-        videoStreamIdentifier: cameraId,
-        mediaStreamType: .cameraVideo)
+    static func getArray(count: Int = 1) -> [ParticipantInfoModel] {
+        var array = [ParticipantInfoModel]()
+        for _ in 0..<count {
+            array.append(get())
+        }
+        return array
     }
-
-    return ParticipantInfoModel(
-      displayName: displayName,
-      isSpeaking: isSpeaking,
-      isMuted: isMuted,
-      isRemoteUser: true,
-      userIdentifier: participantIdentifier,
-      status: status,
-      screenShareVideoStreamModel: screenShareIdInfoModel,
-      cameraVideoStreamModel: videoStreamInfoModel)
-  }
-
-  static func getArray(count: Int = 1) -> [ParticipantInfoModel] {
-    var array = [ParticipantInfoModel]()
-    for _ in 0..<count {
-      array.append(get())
-    }
-    return array
-  }
 }

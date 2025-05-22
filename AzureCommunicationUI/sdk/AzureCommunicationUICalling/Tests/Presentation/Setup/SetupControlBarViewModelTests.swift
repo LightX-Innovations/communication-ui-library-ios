@@ -9,13 +9,13 @@ import AzureCommunicationCommon
 @testable import AzureCommunicationUICalling
 
 class SetupControlBarViewModelTests: XCTestCase {
-  private var storeFactory: StoreFactoryMocking!
-  private var factoryMocking: CompositeViewModelFactoryMocking!
-  private var cancellable: CancelBag!
-  private var logger: LoggerMocking!
-  private var localizationProvider: LocalizationProviderMocking!
+    private var storeFactory: StoreFactoryMocking!
+    private var factoryMocking: CompositeViewModelFactoryMocking!
+    private var cancellable: CancelBag!
+    private var logger: LoggerMocking!
+    private var localizationProvider: LocalizationProviderMocking!
 
-  private let timeout: TimeInterval = 10.0
+    private let timeout: TimeInterval = 10.0
 
     override func setUp() {
         super.setUp()
@@ -31,26 +31,14 @@ class SetupControlBarViewModelTests: XCTestCase {
                                                           updatableOptionsManager: UpdatableOptionsManager(store: storeFactory.store, setupScreenOptions: nil, callScreenOptions: nil))
     }
 
-    factoryMocking.createMicIconWithLabelButtonViewModel = { buttonState in
-      guard buttonState == .micOff
-      else { return nil }
-
-      let iconWithLabelButtonViewModel = IconWithLabelButtonViewModelMocking(
-        selectedButtonState: MicButtonState.micOff,
-        localizationProvider: self.localizationProvider,
-        buttonTypeColor: .colorThemedWhite)
-      iconWithLabelButtonViewModel.updateButtonInfo = updateButtonInfoCompletion
-      return iconWithLabelButtonViewModel
+    override func tearDown() {
+        super.tearDown()
+        storeFactory = nil
+        cancellable = nil
+        logger = nil
+        localizationProvider = nil
+        factoryMocking = nil
     }
-    let localUserState = LocalUserState(
-      audioState: LocalUserState.AudioState(operation: .on, device: .receiverSelected))
-    let sut = makeSUT()
-    sut.update(
-      localUserState: localUserState,
-      permissionState: PermissionState(),
-      callingState: CallingState())
-    wait(for: [expectation], timeout: timeout)
-  }
 
     func test_setupControlBarViewModel_when_videoButtonTapped_then_requestCameraOnIfPreviouslyOff() {
         let expectation = XCTestExpectation(description: "Verify Camera On")
@@ -78,9 +66,6 @@ class SetupControlBarViewModelTests: XCTestCase {
 
         wait(for: [expectation], timeout: timeout)
     }
-    factoryMocking.createAudioIconWithLabelButtonViewModel = { buttonState in
-      guard buttonState == .speaker
-      else { return nil }
 
     func test_setupControlBarViewModel_when_videoButtonTapped_then_requestCameraOffIfPreviouslyOn() {
         let expectation = XCTestExpectation(description: "Verify Camera Off")
@@ -108,15 +93,6 @@ class SetupControlBarViewModelTests: XCTestCase {
 
         wait(for: [expectation], timeout: timeout)
     }
-    let localUserState = LocalUserState(
-      audioState: LocalUserState.AudioState(operation: .on, device: .speakerSelected))
-    let sut = makeSUT()
-    sut.update(
-      localUserState: localUserState,
-      permissionState: PermissionState(),
-      callingState: CallingState())
-    wait(for: [expectation], timeout: timeout)
-  }
 
     func test_setupControlBarViewModel_when_micButtonTapped_then_requestMicPreviewOnIfPreviouslyOff() {
         let expectation = XCTestExpectation(description: "Verify Mic Preview On")
@@ -130,35 +106,19 @@ class SetupControlBarViewModelTests: XCTestCase {
                    callingState: CallingState.init(),
                    buttonViewDataState: storeFactory.store.state.buttonViewDataState)
 
-  func test_SetupControlBarViewModel_audioVideoModeNormalShowsCameraButton() {
-    let sut = makeSUT(audioVideoMode: .audioAndVideo)
-    XCTAssertTrue(sut.isCameraDisplayed)
-  }
+        storeFactory.store.$state
+            .dropFirst()
+            .sink { [weak self] _ in
+                XCTAssertEqual(self?.storeFactory.actions.count, 1)
+                XCTAssertTrue(self?.storeFactory.actions.last == Action.localUserAction(.microphonePreviewOn))
 
-  func
-    test_setupControlBarViewModel_updateStates_when_stateUpdated_then_audioDeviceListViewModelUpdated()
-  {
-    let expectation = XCTestExpectation(description: "AudioDevicesListViewModel is updated")
-    let localUserState = LocalUserState(
-      audioState: LocalUserState.AudioState(operation: .on, device: .speakerSelected))
-    let audioDevicesListViewModel = AudioDevicesListViewModelMocking(
-      compositeViewModelFactory: factoryMocking,
-      dispatchAction: storeFactory.store.dispatch,
-      localUserState: localUserState,
-      localizationProvider: localizationProvider)
+                expectation.fulfill()
+            }.store(in: cancellable)
 
-    audioDevicesListViewModel.updateState = { status in
-      XCTAssertEqual(status, localUserState.audioState.device)
-      expectation.fulfill()
+        sut.microphoneButtonTapped()
+
+        wait(for: [expectation], timeout: timeout)
     }
-    factoryMocking.audioDevicesListViewModel = audioDevicesListViewModel
-    let sut = makeSUT()
-    sut.update(
-      localUserState: localUserState,
-      permissionState: PermissionState(),
-      callingState: CallingState())
-    wait(for: [expectation], timeout: timeout)
-  }
 
     func test_setupControlBarViewModel_when_micButtonTapped_then_requestMicPreviewOffIfPreviouslyOn() {
         let expectation = XCTestExpectation(description: "Verify Mic Preview Off")
@@ -185,9 +145,6 @@ class SetupControlBarViewModelTests: XCTestCase {
 
         wait(for: [expectation], timeout: timeout)
     }
-    factoryMocking.createCameraIconWithLabelButtonViewModel = { buttonState in
-      guard buttonState == .videoOff
-      else { return nil }
 
     func test_setupControlBarViewModel_when_audioPermissionDenied_then_hideSetupControlBar() {
         let cameraState = LocalUserState.CameraState(operation: .off,
@@ -447,18 +404,6 @@ class SetupControlBarViewModelTests: XCTestCase {
                    buttonViewDataState: storeFactory.store.state.buttonViewDataState)
         wait(for: [expectation], timeout: timeout)
     }
-    let localUserState = LocalUserState(
-      cameraState: LocalUserState.CameraState(
-        operation: .on,
-        device: .front,
-        transmission: .local))
-    let sut = makeSUTLocalizationMocking()
-    sut.update(
-      localUserState: localUserState,
-      permissionState: PermissionState(),
-      callingState: CallingState())
-    wait(for: [expectation], timeout: timeout)
-  }
 }
 
 extension SetupControlBarViewModelTests {
@@ -475,7 +420,7 @@ extension SetupControlBarViewModelTests {
                                         buttonViewDataState: storeFactory.store.state.buttonViewDataState)
     }
 
-  func makeSUTLocalizationMocking() -> SetupControlBarViewModel {
-    return makeSUT(localizationProvider: localizationProvider)
-  }
+    func makeSUTLocalizationMocking() -> SetupControlBarViewModel {
+        return makeSUT(localizationProvider: localizationProvider)
+    }
 }

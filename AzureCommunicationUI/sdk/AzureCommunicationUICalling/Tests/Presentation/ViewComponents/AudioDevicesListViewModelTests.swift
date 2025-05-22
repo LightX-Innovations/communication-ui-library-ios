@@ -9,11 +9,11 @@ import AzureCommunicationCommon
 @testable import AzureCommunicationUICalling
 
 class AudioDevicesListViewModelTests: XCTestCase {
-  private var storeFactory: StoreFactoryMocking!
-  private var cancellable: CancelBag!
-  private var audioDevicesListViewModel: AudioDevicesListViewModel!
-  private var localizationProvider: LocalizationProviderMocking!
-  private var factoryMocking: CompositeViewModelFactoryMocking!
+    private var storeFactory: StoreFactoryMocking!
+    private var cancellable: CancelBag!
+    private var audioDevicesListViewModel: AudioDevicesListViewModel!
+    private var localizationProvider: LocalizationProviderMocking!
+    private var factoryMocking: CompositeViewModelFactoryMocking!
 
     override func setUp() {
         super.setUp()
@@ -29,25 +29,23 @@ class AudioDevicesListViewModelTests: XCTestCase {
                                                           updatableOptionsManager: UpdatableOptionsManager(store: storeFactory.store, setupScreenOptions: nil, callScreenOptions: nil))
     }
 
-  override func tearDown() {
-    super.tearDown()
-    storeFactory = nil
-    cancellable = nil
-    localizationProvider = nil
-    factoryMocking = nil
-  }
+    override func tearDown() {
+        super.tearDown()
+        storeFactory = nil
+        cancellable = nil
+        localizationProvider = nil
+        factoryMocking = nil
+    }
 
-  func
-    test_audioDevicesListViewModel_update_when_audioDevicesListFirstInitialized_then_shouldBePublished()
-  {
-    let sut = makeSUT()
-    let expectation = XCTestExpectation(description: "Should publish audioDevicesList")
-    sut.$audioDevicesList
-      .dropFirst()
-      .sink(receiveValue: { audioDevicesList in
-        XCTAssertEqual(audioDevicesList.count, 2)
-        expectation.fulfill()
-      }).store(in: cancellable)
+    func test_audioDevicesListViewModel_update_when_audioDevicesListFirstInitialized_then_shouldBePublished() {
+        let sut = makeSUT()
+        let expectation = XCTestExpectation(description: "Should publish audioDevicesList")
+        sut.$audioDevicesList
+            .dropFirst()
+            .sink(receiveValue: { audioDevicesList in
+                XCTAssertEqual(audioDevicesList.count, 2)
+                expectation.fulfill()
+            }).store(in: cancellable)
 
         XCTAssertTrue(sut.audioDevicesList.isEmpty)
         sut.update(audioDeviceStatus: .headphonesSelected,
@@ -57,19 +55,16 @@ class AudioDevicesListViewModelTests: XCTestCase {
         wait(for: [expectation], timeout: 1)
     }
 
-  func
-    test_audioDevicesListViewModel_update_when_audioDeviceStatusUpdatedToSpeakerRequested_then_shouldNotBePublished()
-  {
-    let sut = makeSUT()
-    let expectation = XCTestExpectation(description: "Should not publish audioDevicesList")
-    expectation.isInverted = true
-    sut.$audioDevicesList
-      .dropFirst(2)
-      .sink(receiveValue: { _ in
-        expectation.fulfill()
-        XCTFail(
-          "audio device is in the process of switching so audioDeviceStatus should not publish")
-      }).store(in: cancellable)
+    func test_audioDevicesListViewModel_update_when_audioDeviceStatusUpdatedToSpeakerRequested_then_shouldNotBePublished() {
+        let sut = makeSUT()
+        let expectation = XCTestExpectation(description: "Should not publish audioDevicesList")
+        expectation.isInverted = true
+        sut.$audioDevicesList
+            .dropFirst(2)
+            .sink(receiveValue: { _ in
+                expectation.fulfill()
+                XCTFail("audio device is in the process of switching so audioDeviceStatus should not publish")
+            }).store(in: cancellable)
 
         sut.update(audioDeviceStatus: .receiverSelected,
                    navigationState: NavigationState(),
@@ -120,37 +115,18 @@ class AudioDevicesListViewModelTests: XCTestCase {
         XCTAssertEqual(updatedSelection?.title, self.localizationProvider
                         .getLocalizedString(AudioDeviceType.bluetooth.name))
         XCTAssertEqual(updatedSelection?.icon, .speakerBluetooth)
-        expectation.fulfill()
-      }).store(in: cancellable)
-
-    sut.update(audioDeviceStatus: .bluetoothRequested)
-    let requestedSelection = sut.audioDevicesList.first(where: { $0.isSelected })
-    XCTAssertNotEqual(
-      requestedSelection?.title,
-      self.localizationProvider
-        .getLocalizedString(AudioDeviceType.bluetooth.name))
-    XCTAssertNotEqual(requestedSelection?.icon, .speakerBluetooth)
-
-    sut.update(audioDeviceStatus: .bluetoothSelected)
-    let updatedSelection = sut.audioDevicesList.first(where: { $0.isSelected })
-    XCTAssertEqual(
-      updatedSelection?.title,
-      self.localizationProvider
-        .getLocalizedString(AudioDeviceType.bluetooth.name))
-    XCTAssertEqual(updatedSelection?.icon, .speakerBluetooth)
-    wait(for: [expectation], timeout: 1)
-  }
+        wait(for: [expectation], timeout: 1)
+    }
 }
 
 extension AudioDevicesListViewModelTests {
-  func makeSUT() -> AudioDevicesListViewModel {
-    func dispatch(action: Action) {
-      storeFactory.store.dispatch(action: action)
+    func makeSUT() -> AudioDevicesListViewModel {
+        func dispatch(action: Action) {
+            storeFactory.store.dispatch(action: action)
+        }
+        return AudioDevicesListViewModel(compositeViewModelFactory: factoryMocking,
+                                         dispatchAction: dispatch,
+                                         localUserState: LocalUserState(),
+                                         localizationProvider: localizationProvider)
     }
-    return AudioDevicesListViewModel(
-      compositeViewModelFactory: factoryMocking,
-      dispatchAction: dispatch,
-      localUserState: LocalUserState(),
-      localizationProvider: localizationProvider)
-  }
 }

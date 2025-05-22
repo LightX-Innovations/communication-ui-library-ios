@@ -4,17 +4,16 @@
 //
 
 import Foundation
-
 @testable import AzureCommunicationUICalling
 
 class CallHistoryServiceMocking: CallHistoryService {
-  var recordCallHistoryCallCount: Int = 0
+    var recordCallHistoryCallCount: Int = 0
 
-  override func recordCallHistory(callStartedOn: Date, callId: String) {
-    recordCallHistoryCallCount += 1
-  }
+    override func recordCallHistory(callStartedOn: Date, callId: String) {
+        recordCallHistoryCallCount += 1
+    }
 
-  func recordCallHistoryWasCalled() -> Bool {
-    return recordCallHistoryCallCount > 0
-  }
+    func recordCallHistoryWasCalled() -> Bool {
+        return recordCallHistoryCallCount > 0
+    }
 }

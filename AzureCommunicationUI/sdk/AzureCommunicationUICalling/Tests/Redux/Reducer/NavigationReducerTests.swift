@@ -5,7 +5,6 @@
 
 import Foundation
 import XCTest
-
 @testable import AzureCommunicationUICalling
 
 class NavigationReducerTests: XCTestCase {
@@ -19,28 +18,28 @@ class NavigationReducerTests: XCTestCase {
         let sut = makeSUT()
         let resultState = sut.reduce(state, action)
 
-    XCTAssertEqual(resultState, expectedState)
-  }
+        XCTAssertEqual(resultState, expectedState)
+    }
 
-  func test_navigationReducer_reduce_when_compositexitaction_then_stateExitUpdated() {
-    let expectedState = NavigationState(status: .exit)
-    let state = NavigationState(status: .setup)
-    let action = Action.compositeExitAction
-    let sut = makeSUT()
-    let resultState = sut.reduce(state, action)
+    func test_navigationReducer_reduce_when_compositexitaction_then_stateExitUpdated() {
+        let expectedState = NavigationState(status: .exit)
+        let state = NavigationState(status: .setup)
+        let action = Action.compositeExitAction
+        let sut = makeSUT()
+        let resultState = sut.reduce(state, action)
 
-    XCTAssertEqual(resultState, expectedState)
-  }
+        XCTAssertEqual(resultState, expectedState)
+    }
 
-  func test_navigationReducer_reduce_when_callingViewLaunched_then_stateinCallUpdated() {
-    let expectedState = NavigationState(status: .inCall)
-    let state = NavigationState(status: .exit)
-    let action = Action.callingViewLaunched
-    let sut = makeSUT()
-    let resultState = sut.reduce(state, action)
+    func test_navigationReducer_reduce_when_callingViewLaunched_then_stateinCallUpdated() {
+        let expectedState = NavigationState(status: .inCall)
+        let state = NavigationState(status: .exit)
+        let action = Action.callingViewLaunched
+        let sut = makeSUT()
+        let resultState = sut.reduce(state, action)
 
-    XCTAssertEqual(resultState, expectedState)
-  }
+        XCTAssertEqual(resultState, expectedState)
+    }
 
     func test_navigationReducer_reduce_when_action_not_applicable_then_stateNotUpdate() {
         let expectedState = NavigationState(status: .inCall)
@@ -254,7 +253,7 @@ class NavigationReducerTests: XCTestCase {
 }
 
 extension NavigationReducerTests {
-  private func makeSUT() -> Reducer<NavigationState, Action> {
-    return .liveNavigationReducer
-  }
+    private func makeSUT() -> Reducer<NavigationState, Action> {
+        return .liveNavigationReducer
+    }
 }

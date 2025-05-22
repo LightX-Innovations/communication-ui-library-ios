@@ -4,17 +4,11 @@
 //
 
 import Foundation
-
 @testable import AzureCommunicationUICalling
 
 class ParticipantGridViewModelMocking: ParticipantGridViewModel {
-  private let updateState:
-    (
-      (
-        CallingState, RemoteParticipantsState,
-        VisibilityState, LifeCycleState
-      ) -> Void
-    )?
+    private let updateState: ((CallingState, RemoteParticipantsState,
+                               VisibilityState, LifeCycleState) -> Void)?
 
     init(compositeViewModelFactory: CompositeViewModelFactoryProtocol,
          localizationProvider: LocalizationProviderProtocol,

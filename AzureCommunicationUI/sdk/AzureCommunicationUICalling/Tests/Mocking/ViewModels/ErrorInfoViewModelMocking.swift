@@ -4,18 +4,17 @@
 //
 
 import Foundation
-
 @testable import AzureCommunicationUICalling
 
 class ErrorInfoViewModelMocking: ErrorInfoViewModel {
-  private let updateState: ((ErrorState) -> Void)?
+    private let updateState: ((ErrorState) -> Void)?
 
-  init(updateState: ((ErrorState) -> Void)? = nil) {
-    self.updateState = updateState
-    super.init(localizationProvider: LocalizationProviderMocking())
-  }
+    init(updateState: ((ErrorState) -> Void)? = nil) {
+        self.updateState = updateState
+        super.init(localizationProvider: LocalizationProviderMocking())
+    }
 
-  override func update(errorState: ErrorState) {
-    updateState?(errorState)
-  }
+    override func update(errorState: ErrorState) {
+        updateState?(errorState)
+    }
 }

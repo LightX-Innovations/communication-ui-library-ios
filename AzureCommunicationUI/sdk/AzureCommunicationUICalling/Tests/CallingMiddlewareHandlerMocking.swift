@@ -4,7 +4,6 @@
 //
 
 import Foundation
-
 @testable import AzureCommunicationUICalling
 
 class CallingMiddlewareHandlerMocking: CallingMiddlewareHandling {
@@ -41,51 +40,47 @@ class CallingMiddlewareHandlerMocking: CallingMiddlewareHandling {
     var removeParticipant: ((Bool) -> Void)?
     var onCapabilitiesChanged: ((CapabilitiesChangedEvent) -> Void)?
 
-  func setupCall(state: AppState, dispatch: @escaping ActionDispatch) -> Task<Void, Never> {
-    Task {
-      setupCallWasCalled?(true)
+    func setupCall(state: AppState, dispatch: @escaping ActionDispatch) -> Task<Void, Never> {
+        Task {
+            setupCallWasCalled?(true)
+        }
     }
-  }
 
-  func startCall(state: AppState, dispatch: @escaping ActionDispatch) -> Task<Void, Never> {
-    Task {
-      startCallWasCalled?(true)
+    func startCall(state: AppState, dispatch: @escaping ActionDispatch) -> Task<Void, Never> {
+        Task {
+            startCallWasCalled?(true)
+        }
     }
-  }
 
-  func endCall(state: AppState, dispatch: @escaping ActionDispatch) -> Task<Void, Never> {
-    Task {
-      endCallWasCalled?(true)
+    func endCall(state: AppState, dispatch: @escaping ActionDispatch) -> Task<Void, Never> {
+        Task {
+            endCallWasCalled?(true)
+        }
     }
-  }
 
-  func enterBackground(state: AppState, dispatch: @escaping ActionDispatch) -> Task<Void, Never> {
-    Task {
-      enterBackgroundCalled?(true)
+    func enterBackground(state: AppState, dispatch: @escaping ActionDispatch) -> Task<Void, Never> {
+        Task {
+            enterBackgroundCalled?(true)
+        }
     }
-  }
 
-  func enterForeground(state: AppState, dispatch: @escaping ActionDispatch) -> Task<Void, Never> {
-    Task {
-      enterForegroundCalled?(true)
+    func enterForeground(state: AppState, dispatch: @escaping ActionDispatch) -> Task<Void, Never> {
+        Task {
+            enterForegroundCalled?(true)
+        }
     }
-  }
 
-  func onCameraPermissionIsSet(state: AppState, dispatch: @escaping ActionDispatch) -> Task<
-    Void, Never
-  > {
-    Task {
-      cameraPermissionSetCalled?(true)
+    func onCameraPermissionIsSet(state: AppState, dispatch: @escaping ActionDispatch) -> Task<Void, Never> {
+        Task {
+            cameraPermissionSetCalled?(true)
+        }
     }
-  }
 
-  func cameraPermissionGranted(state: AppState, dispatch: @escaping ActionDispatch) -> Task<
-    Void, Never
-  > {
-    Task {
-      cameraPermissionGrantedCalled?(true)
+    func cameraPermissionGranted(state: AppState, dispatch: @escaping ActionDispatch) -> Task<Void, Never> {
+        Task {
+            cameraPermissionGrantedCalled?(true)
+        }
     }
-  }
 
     func onMicPermissionIsGranted(state: AppState, dispatch: @escaping ActionDispatch) -> Task<Void, Never> {
         Task {
@@ -98,96 +93,82 @@ class CallingMiddlewareHandlerMocking: CallingMiddlewareHandling {
             requestCameraPreviewOnCalled?(true)
         }
     }
-  }
 
-  func requestCameraOn(
-    state: AppState, dispatch: @escaping ActionDispatch
-  ) -> Task<Void, Never> {
-    Task {
-      requestCameraOnCalled?(true)
+    func requestCameraOn(
+        state: AppState, dispatch: @escaping ActionDispatch) -> Task<Void, Never> {
+            Task {
+                requestCameraOnCalled?(true)
+            }
+        }
+
+    func requestCameraOff(state: AppState, dispatch: @escaping ActionDispatch) -> Task<Void, Never> {
+        Task {
+            requestCameraOffCalled?(true)
+        }
     }
-  }
 
-  func requestCameraOff(state: AppState, dispatch: @escaping ActionDispatch) -> Task<Void, Never> {
-    Task {
-      requestCameraOffCalled?(true)
+    func requestCameraSwitch(state: AppState, dispatch: @escaping ActionDispatch) -> Task<Void, Never> {
+        Task {
+            requestCameraSwitchCalled?(true)
+        }
     }
-  }
 
-  func requestCameraSwitch(state: AppState, dispatch: @escaping ActionDispatch) -> Task<Void, Never>
-  {
-    Task {
-      requestCameraSwitchCalled?(true)
+    func requestMicrophoneMute(state: AppState, dispatch: @escaping ActionDispatch) -> Task<Void, Never> {
+        Task {
+            requestMicMuteCalled?(true)
+        }
     }
-  }
 
-  func requestMicrophoneMute(state: AppState, dispatch: @escaping ActionDispatch) -> Task<
-    Void, Never
-  > {
-    Task {
-      requestMicMuteCalled?(true)
+    func requestMicrophoneUnmute(state: AppState, dispatch: @escaping ActionDispatch) -> Task<Void, Never> {
+        Task {
+            requestMicUnmuteCalled?(true)
+        }
     }
-  }
 
-  func requestMicrophoneUnmute(state: AppState, dispatch: @escaping ActionDispatch) -> Task<
-    Void, Never
-  > {
-    Task {
-      requestMicUnmuteCalled?(true)
+    func holdCall(state: AppState, dispatch: @escaping ActionDispatch) -> Task<Void, Never> {
+        Task {
+            requestHoldCalled?(true)
+        }
     }
-  }
 
-  func holdCall(state: AppState, dispatch: @escaping ActionDispatch) -> Task<Void, Never> {
-    Task {
-      requestHoldCalled?(true)
+    func resumeCall(state: AppState, dispatch: @escaping ActionDispatch) -> Task<Void, Never> {
+        Task {
+            requestResumeCalled?(true)
+        }
     }
-  }
 
-  func resumeCall(state: AppState, dispatch: @escaping ActionDispatch) -> Task<Void, Never> {
-    Task {
-      requestResumeCalled?(true)
+    func audioSessionInterrupted(state: AppState, dispatch: @escaping ActionDispatch) -> Task<Void, Never> {
+        Task {}
     }
-  }
 
-  func audioSessionInterrupted(state: AppState, dispatch: @escaping ActionDispatch) -> Task<
-    Void, Never
-  > {
-    Task {}
-  }
-
-  func willTerminate(
-    state: AzureCommunicationUICalling.AppState,
-    dispatch: @escaping AzureCommunicationUICalling.ActionDispatch
-  ) -> Task<Void, Never> {
-    Task {
-      willTerminateCalled?(true)
+    func willTerminate(state: AzureCommunicationUICalling.AppState, dispatch: @escaping AzureCommunicationUICalling.ActionDispatch) -> Task<Void, Never> {
+        Task {
+            willTerminateCalled?(true)
+        }
     }
-  }
 
-  func admitAllLobbyParticipants(
-    state: AzureCommunicationUICalling.AppState,
-    dispatch: @escaping AzureCommunicationUICalling.ActionDispatch
-  ) -> Task<Void, Never> {
-    Task {
-      admitAllLobbyParticipants?(true)
+    func admitAllLobbyParticipants(state: AzureCommunicationUICalling.AppState, dispatch: @escaping AzureCommunicationUICalling.ActionDispatch) -> Task<Void, Never> {
+        Task {
+            admitAllLobbyParticipants?(true)
+        }
     }
-  }
 
-  func declineAllLobbyParticipants(
-    state: AzureCommunicationUICalling.AppState,
-    dispatch: @escaping AzureCommunicationUICalling.ActionDispatch
-  ) -> Task<Void, Never> {
-    Task {
-      declineAllLobbyParticipants?(true)
+    func declineAllLobbyParticipants(state: AzureCommunicationUICalling.AppState, dispatch: @escaping AzureCommunicationUICalling.ActionDispatch) -> Task<Void, Never> {
+        Task {
+            declineAllLobbyParticipants?(true)
+        }
     }
-  }
 
-  func admitLobbyParticipant(
-    state: AzureCommunicationUICalling.AppState,
-    dispatch: @escaping AzureCommunicationUICalling.ActionDispatch, participantId: String
-  ) -> Task<Void, Never> {
-    Task {
-      admitLobbyParticipant?(true)
+    func admitLobbyParticipant(state: AzureCommunicationUICalling.AppState, dispatch: @escaping AzureCommunicationUICalling.ActionDispatch, participantId: String) -> Task<Void, Never> {
+        Task {
+            admitLobbyParticipant?(true)
+        }
+    }
+
+    func declineLobbyParticipant(state: AzureCommunicationUICalling.AppState, dispatch: @escaping AzureCommunicationUICalling.ActionDispatch, participantId: String) -> Task<Void, Never> {
+        Task {
+            declineLobbyParticipant?(true)
+        }
     }
 
     func startCaptions(state: AzureCommunicationUICalling.AppState, dispatch: @escaping AzureCommunicationUICalling.ActionDispatch, language: String) -> Task<Void, Never> {
