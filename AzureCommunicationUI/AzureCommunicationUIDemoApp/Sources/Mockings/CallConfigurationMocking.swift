@@ -3,13 +3,12 @@
 //  Licensed under the MIT License.
 //
 
-import AzureCommunicationCommon
 import Foundation
-
+import AzureCommunicationCommon
 #if DEBUG
-  @testable import AzureCommunicationUICalling
+@testable import AzureCommunicationUICalling
 
-  struct CallConfigurationMocking {
+struct CallConfigurationMocking {
     let groupId: UUID?
     let meetingLink: String?
     let meetingId: String?
@@ -27,15 +26,15 @@ import Foundation
         self.compositeCallType = .groupCall
         let sampleToken =
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjMyNTAzNjgwMDAwfQ.9i7FNNHHJT8cOzo-yrAUJyBSfJ-tPPk2emcHavOEpWc"
-      let communicationTokenCredential = try? CommunicationTokenCredential(token: sampleToken)
-      self.credential = communicationTokenCredential!
-      self.displayName = "E2E testing"
-      self.diagnosticConfig = DiagnosticConfig()
+        let communicationTokenCredential = try? CommunicationTokenCredential(token: sampleToken)
+        self.credential = communicationTokenCredential!
+        self.displayName = "E2E testing"
+        self.diagnosticConfig = DiagnosticConfig()
     }
-  }
+}
 
-  enum CompositeCallTypeMocking {
+enum CompositeCallTypeMocking {
     case groupCall
     case teamsMeeting
-  }
+}
 #endif

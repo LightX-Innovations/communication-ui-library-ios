@@ -3,11 +3,12 @@
 //  Licensed under the MIT License.
 //
 
+import UIKit
 import SwiftUI
 import Intents
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
-  var window: UIWindow?
+    var window: UIWindow?
 
     fileprivate func assignCallID(_ callID: String, _ appDelegate: AppDelegate) {
         if callID.contains("http") {
@@ -65,5 +66,5 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
            let appDelegate = UIApplication.shared.delegate as? AppDelegate {
             assignCallID(callID, appDelegate)
         }
-  }
+    }
 }

@@ -4,7 +4,6 @@
 //
 
 import XCTest
-
 @testable import AzureCommunicationUICalling
 
 class AzureCommunicationUIDemoAppDebugInfoTests: XCUITestBase {
@@ -23,8 +22,6 @@ class AzureCommunicationUIDemoAppDebugInfoTests: XCUITestBase {
         }
         checkActivityViewControllerDismissed()
     }
-    checkActivityViewControllerDismissed()
-  }
 
     func testCallCompositeCopyDiagnosticInfo() {
         startCall()
@@ -35,14 +32,12 @@ class AzureCommunicationUIDemoAppDebugInfoTests: XCUITestBase {
         checkActivityViewControllerDismissed()
     }
 
-  func testCallCompositeSupportForm() {
-    startCall()
-    openSupportFormDiagnosticsInfoMenu()
-    tapButton(
-      accessibilityIdentifier: AccessibilityIdentifier.supportFormTextFieldAccessibilityId.rawValue)
-    tapButton(
-      accessibilityIdentifier: AccessibilityIdentifier.supportFormSubmitAccessibilityId.rawValue)
-    hangupCall()
+    func testCallCompositeSupportForm() {
+        startCall()
+        openSupportFormDiagnosticsInfoMenu()
+        tapButton(accessibilityIdentifier: AccessibilityIdentifier.supportFormTextFieldAccessibilityId.rawValue)
+        tapButton(accessibilityIdentifier: AccessibilityIdentifier.supportFormSubmitAccessibilityId.rawValue)
+        hangupCall()
 
         let userReportedOutput =
         app.staticTexts[AccessibilityId
@@ -56,43 +51,35 @@ class AzureCommunicationUIDemoAppDebugInfoTests: XCUITestBase {
 }
 
 extension AzureCommunicationUIDemoAppDebugInfoTests {
-  func startCall() {
-    tapInterfaceFor(.callSwiftUI)
-    tapMeetingType(.groupCall)
+    func startCall() {
+        tapInterfaceFor(.callSwiftUI)
+        tapMeetingType(.groupCall)
 
-    startExperience()
-    joinCall()
-  }
-
-  func openShareDiagnosticsInfoMenu() {
-    tapButton(
-      accessibilityIdentifier: AccessibilityIdentifier.moreAccessibilityID.rawValue,
-      shouldWait: true)
-    tapCell(
-      accessibilityIdentifier: AccessibilityIdentifier.shareDiagnosticsAccessibilityID.rawValue)
-    wait(
-      for: app.otherElements[AccessibilityIdentifier.activityViewControllerAccessibilityID.rawValue]
-    )
-  }
-
-  func openSupportFormDiagnosticsInfoMenu() {
-    tapButton(
-      accessibilityIdentifier: AccessibilityIdentifier.moreAccessibilityID.rawValue,
-      shouldWait: true)
-    tapCell(accessibilityIdentifier: AccessibilityIdentifier.reportIssueAccessibilityID.rawValue)
-    wait(for: app.buttons[AccessibilityIdentifier.supportFormTextFieldAccessibilityId.rawValue])
-  }
-
-  func checkActivityViewControllerDismissed() {
-    let activityListView = app.otherElements[
-      AccessibilityIdentifier.activityViewControllerAccessibilityID.rawValue]
-    let isDismissedPredicate = NSPredicate(format: "exists == false")
-    let expectation = expectation(
-      for: isDismissedPredicate,
-      evaluatedWith: activityListView
-    ) {
-      return true
+        startExperience()
+        joinCall()
     }
-    wait(for: [expectation], timeout: 20.0)
-  }
+
+    func openShareDiagnosticsInfoMenu() {
+        tapButton(accessibilityIdentifier: AccessibilityIdentifier.moreAccessibilityID.rawValue,
+                  shouldWait: true)
+        tapCell(accessibilityIdentifier: AccessibilityIdentifier.shareDiagnosticsAccessibilityID.rawValue)
+        wait(for: app.otherElements[AccessibilityIdentifier.activityViewControllerAccessibilityID.rawValue])
+    }
+
+    func openSupportFormDiagnosticsInfoMenu() {
+        tapButton(accessibilityIdentifier: AccessibilityIdentifier.moreAccessibilityID.rawValue,
+                  shouldWait: true)
+        tapCell(accessibilityIdentifier: AccessibilityIdentifier.reportIssueAccessibilityID.rawValue)
+        wait(for: app.buttons[AccessibilityIdentifier.supportFormTextFieldAccessibilityId.rawValue])
+    }
+
+    func checkActivityViewControllerDismissed() {
+        let activityListView = app.otherElements[AccessibilityIdentifier.activityViewControllerAccessibilityID.rawValue]
+        let isDismissedPredicate = NSPredicate(format: "exists == false")
+        let expectation = expectation(for: isDismissedPredicate,
+                                      evaluatedWith: activityListView) {
+            return true
+        }
+        wait(for: [expectation], timeout: 20.0)
+    }
 }

@@ -3,9 +3,7 @@
 //  Licensed under the MIT License.
 //
 
-import AVFoundation
-import AppCenterCrashes
-import AzureCommunicationCommon
+import UIKit
 import Combine
 import SwiftUI
 import AzureCommunicationCommon
@@ -13,21 +11,21 @@ import AppCenterCrashes
 import AVFoundation
 import CallKit
 #if DEBUG
-  @testable import AzureCommunicationUICalling
+@testable import AzureCommunicationUICalling
 #else
-  import AzureCommunicationUICalling
+import AzureCommunicationUICalling
 #endif
 
 class CallingDemoViewController: UIViewController {
 
-  enum LayoutConstants {
-    static let verticalSpacing: CGFloat = 8.0
-    static let stackViewSpacingPortrait: CGFloat = 18.0
-    static let stackViewSpacingLandscape: CGFloat = 12.0
-    static let buttonHorizontalInset: CGFloat = 20.0
-    static let buttonVerticalInset: CGFloat = 10.0
-  }
-  var callingViewModel: CallingDemoViewModel
+    enum LayoutConstants {
+        static let verticalSpacing: CGFloat = 8.0
+        static let stackViewSpacingPortrait: CGFloat = 18.0
+        static let stackViewSpacingLandscape: CGFloat = 12.0
+        static let buttonHorizontalInset: CGFloat = 20.0
+        static let buttonVerticalInset: CGFloat = 10.0
+    }
+    var callingViewModel: CallingDemoViewModel
 
     private var selectedAcsTokenType: ACSTokenType = .token
     private var acsTokenUrlTextField: UITextField!
@@ -66,322 +64,86 @@ class CallingDemoViewController: UIViewController {
     private var isKeyboardShowing = false
     private var exitCompositeExecuted = false
 
-  private var cancellable = Set<AnyCancellable>()
-  private var envConfigSubject: EnvConfigSubject
-  #if DEBUG
+    private var cancellable = Set<AnyCancellable>()
+    private var envConfigSubject: EnvConfigSubject
+#if DEBUG
     private var callingSDKWrapperMock: UITestCallingSDKWrapper?
-  #endif
-  private lazy var contentView: UIView = {
-    let view = UIView()
-    view.translatesAutoresizingMaskIntoConstraints = false
-    return view
-  }()
+#endif
+    private lazy var contentView: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
 
-  private lazy var scrollView: UIScrollView = {
-    let view = UIScrollView()
-    view.translatesAutoresizingMaskIntoConstraints = false
-    view.showsVerticalScrollIndicator = false
-    view.showsHorizontalScrollIndicator = false
-    return view
-  }()
+    private lazy var scrollView: UIScrollView = {
+        let view = UIScrollView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.showsVerticalScrollIndicator = false
+        view.showsHorizontalScrollIndicator = false
+        return view
+    }()
 
-  override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-    super.traitCollectionDidChange(previousTraitCollection)
-    updateUIBasedOnUserInterfaceStyle()
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        updateUIBasedOnUserInterfaceStyle()
 
-    if UIDevice.current.orientation.isPortrait {
-      stackView.spacing = LayoutConstants.stackViewSpacingPortrait
-      titleLabelConstraint.constant = 32
-    } else if UIDevice.current.orientation.isLandscape {
-      stackView.spacing = LayoutConstants.stackViewSpacingLandscape
-      titleLabelConstraint.constant = 16.0
-    }
-  }
-
-  #if DEBUG
-    init(
-      envConfigSubject: EnvConfigSubject,
-      callingViewModel: CallingDemoViewModel,
-      callingSDKHandlerMock: UITestCallingSDKWrapper? = nil
-    ) {
-      self.envConfigSubject = envConfigSubject
-      self.callingViewModel = callingViewModel
-      self.callingSDKWrapperMock = callingSDKHandlerMock
-      super.init(nibName: nil, bundle: nil)
-      self.combineEnvConfigSubject()
-    }
-  #else
-    init(
-      envConfigSubject: EnvConfigSubject,
-      callingViewModel: CallingDemoViewModel
-    ) {
-      self.envConfigSubject = envConfigSubject
-      self.callingViewModel = callingViewModel
-      super.init(nibName: nil, bundle: nil)
-      self.combineEnvConfigSubject()
-    }
-  #endif
-  required init?(coder: NSCoder) {
-    fatalError("init(coder:) has not been implemented")
-  }
-
-  override func viewDidLoad() {
-    super.viewDidLoad()
-    setupUI()
-    registerNotifications()
-  }
-
-  override func viewWillLayoutSubviews() {
-    super.viewWillLayoutSubviews()
-    guard !userIsEditing else {
-      return
-    }
-    scrollView.setNeedsLayout()
-    scrollView.layoutIfNeeded()
-    let emptySpace = stackView.customSpacing(after: stackView.arrangedSubviews.first!)
-    let spaceToFill = (scrollView.frame.height - (stackView.frame.height - emptySpace)) / 2
-    stackView.setCustomSpacing(
-      spaceToFill + LayoutConstants.verticalSpacing,
-      after: stackView.arrangedSubviews.first!)
-  }
-
-  private func combineEnvConfigSubject() {
-    envConfigSubject.objectWillChange
-      .throttle(for: 0.5, scheduler: DispatchQueue.main, latest: true).sink(receiveValue: {
-        [weak self] _ in
-        self?.updateFromEnvConfig()
-      }).store(in: &cancellable)
-  }
-
-  private func updateFromEnvConfig() {
-    if envConfigSubject.useExpiredToken {
-      updateToken(envConfigSubject.expiredAcsToken)
-    } else {
-      updateToken(envConfigSubject.acsToken)
-    }
-
-    if !envConfigSubject.displayName.isEmpty {
-      displayNameTextField.text = envConfigSubject.displayName
-    }
-
-    if !envConfigSubject.groupCallId.isEmpty {
-      groupCallTextField.text = envConfigSubject.groupCallId
-    }
-
-    if !envConfigSubject.teamsMeetingLink.isEmpty {
-      teamsMeetingTextField.text = envConfigSubject.teamsMeetingLink
-    }
-
-    if envConfigSubject.selectedMeetingType == .groupCall {
-      meetingTypeSegmentedControl.selectedSegmentIndex = 0
-    } else if envConfigSubject.selectedMeetingType == .teamsMeeting {
-      meetingTypeSegmentedControl.selectedSegmentIndex = 1
-    }
-  }
-
-  private func updateToken(_ token: String) {
-    if !token.isEmpty {
-      acsTokenTextField.text = token
-      acsTokenTypeSegmentedControl.selectedSegmentIndex = 1
-    }
-  }
-
-  private func onError(_ error: CallCompositeError, callComposite: CallComposite) {
-    print("::::UIKitDemoView::getEventsHandler::onError \(error)")
-    print("::::UIKitDemoView error.code \(error.code)")
-    callingViewModel.callHistory.last?.callIds.forEach { print("::::UIKitDemoView call id \($0)") }
-  }
-
-  private func onRemoteParticipantJoined(
-    to callComposite: CallComposite, identifiers: [CommunicationIdentifier]
-  ) {
-    print("::::UIKitDemoView::getEventsHandler::onRemoteParticipantJoined \(identifiers)")
-    guard envConfigSubject.useCustomRemoteParticipantViewData else {
-      return
-    }
-
-    RemoteParticipantAvatarHelper.onRemoteParticipantJoined(
-      to: callComposite,
-      identifiers: identifiers)
-  }
-
-  private func onCallStateChanged(_ callState: CallState, callComposite: CallComposite) {
-    print(
-      "::::CallingDemoViewController::getEventsHandler::onCallStateChanged \(callState.requestString)"
-    )
-    callStateLabel.text = callState.requestString
-  }
-
-  private func startExperience(with link: String) async {
-    var localizationConfig: LocalizationOptions?
-    let layoutDirection: LayoutDirection =
-      envConfigSubject.isRightToLeft ? .rightToLeft : .leftToRight
-    if !envConfigSubject.localeIdentifier.isEmpty {
-      let locale = Locale(identifier: envConfigSubject.localeIdentifier)
-      localizationConfig = LocalizationOptions(
-        locale: locale,
-        layoutDirection: layoutDirection)
-    } else if !envConfigSubject.locale.identifier.isEmpty {
-      localizationConfig = LocalizationOptions(
-        locale: envConfigSubject.locale,
-        layoutDirection: layoutDirection)
-    }
-
-    let setupViewOrientation = envConfigSubject.setupViewOrientation
-    let callingViewOrientation = envConfigSubject.callingViewOrientation
-    let callCompositeOptions = CallCompositeOptions(
-      theme: envConfigSubject.useCustomColors
-        ? CustomColorTheming(envConfigSubject: envConfigSubject)
-        : Theming(envConfigSubject: envConfigSubject),
-      localization: localizationConfig,
-      setupScreenOrientation: setupViewOrientation,
-      callingScreenOrientation: callingViewOrientation,
-      enableMultitasking: envConfigSubject.enableMultitasking,
-      enableSystemPictureInPictureWhenMultitasking: envConfigSubject.enablePipWhenMultitasking)
-    #if DEBUG
-      let callComposite =
-        envConfigSubject.useMockCallingSDKHandler
-        ? CallComposite(
-          withOptions: callCompositeOptions,
-          callingSDKWrapperProtocol: callingSDKWrapperMock)
-        : CallComposite(withOptions: callCompositeOptions)
-    #else
-      let callComposite = CallComposite(withOptions: callCompositeOptions)
-    #endif
-    let onRemoteParticipantJoinedHandler: ([CommunicationIdentifier]) -> Void = {
-      [weak callComposite] ids in
-      guard let composite = callComposite else {
-        return
-      }
-      self.onRemoteParticipantJoined(
-        to: composite,
-        identifiers: ids)
-    }
-    let onErrorHandler: (CallCompositeError) -> Void = { [weak callComposite] error in
-      guard let composite = callComposite else {
-        return
-      }
-      self.onError(
-        error,
-        callComposite: composite)
-    }
-    let onCallStateChangedHandler: (CallState) -> Void = { [weak callComposite] callState in
-      guard let composite = callComposite else {
-        return
-      }
-      self.onCallStateChanged(callState, callComposite: composite)
-    }
-    let onDismissedHandler: (CallCompositeDismissed) -> Void = { [] _ in
-      if self.envConfigSubject.useRelaunchOnDismissedToggle && self.exitCompositeExecuted {
-        DispatchQueue.main.async {
-          Task { @MainActor in
-            self.onStartExperienceBtnPressed()
-          }
+        if UIDevice.current.orientation.isPortrait {
+            stackView.spacing = LayoutConstants.stackViewSpacingPortrait
+            titleLabelConstraint.constant = 32
+        } else if UIDevice.current.orientation.isLandscape {
+            stackView.spacing = LayoutConstants.stackViewSpacingLandscape
+            titleLabelConstraint.constant = 16.0
         }
-      }
     }
 
-    let onUserReportedIssueHandler: (CallCompositeUserReportedIssue) -> Void = { [] userIssue in
-      print("::::UIKitDemoView::getEventsHandler::onUserReportedIssue \(userIssue)")
+#if DEBUG
+    init(envConfigSubject: EnvConfigSubject,
+         callingViewModel: CallingDemoViewModel,
+         callingSDKHandlerMock: UITestCallingSDKWrapper? = nil) {
+        self.envConfigSubject = envConfigSubject
+        self.callingViewModel = callingViewModel
+        self.callingSDKWrapperMock = callingSDKHandlerMock
+        super.init(nibName: nil, bundle: nil)
+        self.combineEnvConfigSubject()
+    }
+#else
+    init(envConfigSubject: EnvConfigSubject,
+         callingViewModel: CallingDemoViewModel) {
+        self.envConfigSubject = envConfigSubject
+        self.callingViewModel = callingViewModel
+        super.init(nibName: nil, bundle: nil)
+        self.combineEnvConfigSubject()
+    }
+#endif
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
 
-    exitCompositeExecuted = false
-    if !envConfigSubject.exitCompositeAfterDuration.isEmpty {
-      DispatchQueue.main.asyncAfter(
-        deadline: .now() + Float64(envConfigSubject.exitCompositeAfterDuration)!
-      ) { [weak callComposite] in
-        self.exitCompositeExecuted = true
-        callComposite?.dismiss()
-      }
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupUI()
+        registerNotifications()
     }
 
-    callComposite.events.onRemoteParticipantJoined = onRemoteParticipantJoinedHandler
-    callComposite.events.onError = onErrorHandler
-    callComposite.events.onCallStateChanged = onCallStateChangedHandler
-    callComposite.events.onDismissed = onDismissedHandler
-    callComposite.events.onUserReportedIssue = onUserReportedIssueHandler
-
-    let renderDisplayName =
-      envConfigSubject.renderedDisplayName.isEmpty ? nil : envConfigSubject.renderedDisplayName
-    let setupScreenViewData = SetupScreenViewData(
-      title: envConfigSubject.navigationTitle,
-      subtitle: envConfigSubject.navigationSubtitle)
-    let participantViewData = ParticipantViewData(
-      avatar: UIImage(named: envConfigSubject.avatarImageName),
-      displayName: renderDisplayName)
-    let localOptions = LocalOptions(
-      participantViewData: participantViewData,
-      setupScreenViewData: setupScreenViewData,
-      cameraOn: envConfigSubject.cameraOn,
-      microphoneOn: envConfigSubject.microphoneOn,
-      skipSetupScreen: envConfigSubject.skipSetupScreen,
-      audioVideoMode: envConfigSubject.audioOnly ? .audioOnly : .audioAndVideo)
-    self.callComposite = callComposite
-
-    if let credential = try? await getTokenCredential() {
-      switch selectedMeetingType {
-      case .groupCall:
-        let uuid = UUID(uuidString: link) ?? UUID()
-        callComposite.launch(
-          remoteOptions: RemoteOptions(
-            for: .groupCall(groupId: uuid),
-            credential: credential,
-            displayName: getDisplayName()),
-          localOptions: localOptions)
-      case .teamsMeeting:
-        callComposite.launch(
-          remoteOptions: RemoteOptions(
-            for: .teamsMeeting(teamsLink: link),
-            credential: credential,
-            displayName: getDisplayName()),
-          localOptions: localOptions)
-      }
-    } else {
-      showError(for: DemoError.invalidToken.getErrorCode())
-      return
-    }
-  }
-
-  private func getTokenCredential() async throws -> CommunicationTokenCredential {
-    switch selectedAcsTokenType {
-    case .token:
-      if let communicationTokenCredential = try? CommunicationTokenCredential(
-        token: acsTokenTextField.text!)
-      {
-        return communicationTokenCredential
-      } else {
-        throw DemoError.invalidToken
-      }
-    case .tokenUrl:
-      if let url = URL(string: acsTokenUrlTextField.text!) {
-        let tokenRefresher = AuthenticationHelper.getCommunicationToken(
-          tokenUrl: url,
-          aadToken: envConfigSubject.aadToken)
-        let initialToken = await AuthenticationHelper.fetchInitialToken(with: tokenRefresher)
-        let refreshOptions = CommunicationTokenRefreshOptions(
-          initialToken: initialToken,
-          refreshProactively: true,
-          tokenRefresher: tokenRefresher)
-        if let credential = try? CommunicationTokenCredential(withOptions: refreshOptions) {
-          return credential
+    override func viewWillLayoutSubviews() {
+        super.viewWillLayoutSubviews()
+        guard !userIsEditing else {
+            return
         }
-      }
-      throw DemoError.invalidToken
+        scrollView.setNeedsLayout()
+        scrollView.layoutIfNeeded()
+        let emptySpace = stackView.customSpacing(after: stackView.arrangedSubviews.first!)
+        let spaceToFill = (scrollView.frame.height - (stackView.frame.height - emptySpace)) / 2
+        stackView.setCustomSpacing(spaceToFill + LayoutConstants.verticalSpacing,
+                                   after: stackView.arrangedSubviews.first!)
     }
-  }
 
-  private func getDisplayName() -> String {
-    displayNameTextField.text ?? ""
-  }
-
-  private func getMeetingLink() -> String {
-    switch selectedMeetingType {
-    case .groupCall:
-      return groupCallTextField.text ?? ""
-    case .teamsMeeting:
-      return teamsMeetingTextField.text ?? ""
+    private func combineEnvConfigSubject() {
+        envConfigSubject.objectWillChange
+            .throttle(for: 0.5, scheduler: DispatchQueue.main, latest: true).sink(receiveValue: { [weak self] _ in
+                self?.updateFromEnvConfig()
+            }).store(in: &cancellable)
     }
-  }
 
     private func updateFromEnvConfig() {
         if envConfigSubject.useExpiredToken {
@@ -423,61 +185,34 @@ class CallingDemoViewController: UIViewController {
             roomCallTextField.text = envConfigSubject.roomId
         }
     }
-    let errorAlert = UIAlertController(
-      title: "Error", message: errorMessage, preferredStyle: .alert)
-    errorAlert.addAction(UIAlertAction(title: "Dismiss", style: .cancel, handler: nil))
-    present(
-      errorAlert,
-      animated: true,
-      completion: nil)
-  }
 
-  private func registerNotifications() {
-    let notificationCenter = NotificationCenter.default
-    notificationCenter.addObserver(
-      self,
-      selector: #selector(keyboardWillHide),
-      name: UIResponder.keyboardWillHideNotification,
-      object: nil)
-    notificationCenter.addObserver(
-      self,
-      selector: #selector(keyboardWillShow),
-      name: UIResponder.keyboardWillShowNotification,
-      object: nil)
-  }
-
-  private func updateUIBasedOnUserInterfaceStyle() {
-    if UITraitCollection.current.userInterfaceStyle == .dark {
-      view.backgroundColor = .black
-    } else {
-      view.backgroundColor = .white
+    private func updateToken(_ token: String) {
+        if !token.isEmpty {
+            acsTokenTextField.text = token
+            acsTokenTypeSegmentedControl.selectedSegmentIndex = 1
+        }
     }
-  }
 
-  @objc func onAcsTokenTypeValueChanged(_ sender: UISegmentedControl!) {
-    selectedAcsTokenType = ACSTokenType(rawValue: sender.selectedSegmentIndex)!
-    updateAcsTokenTypeFields()
-  }
-  @objc func onMeetingTypeValueChanged(_ sender: UISegmentedControl!) {
-    selectedMeetingType = MeetingType(rawValue: sender.selectedSegmentIndex)!
-    updateMeetingTypeFields()
-  }
+    private func onError(_ error: CallCompositeError, callComposite: CallComposite) {
+        print("::::UIKitDemoView::getEventsHandler::onError \(error)")
+        print("::::UIKitDemoView error.code \(error.code)")
+        callingViewModel.callHistory.last?.callIds.forEach { print("::::UIKitDemoView call id \($0)") }
+    }
 
-  @objc func keyboardWillShow(notification: NSNotification) {
-    isKeyboardShowing = true
-    adjustScrollView()
-  }
+    private func onRemoteParticipantJoined(to callComposite: CallComposite, identifiers: [CommunicationIdentifier]) {
+        print("::::UIKitDemoView::getEventsHandler::onRemoteParticipantJoined \(identifiers)")
+        guard envConfigSubject.useCustomRemoteParticipantViewData else {
+            return
+        }
 
-  @objc func keyboardWillHide(notification: NSNotification) {
-    userIsEditing = false
-    isKeyboardShowing = false
-    adjustScrollView()
-  }
+        RemoteParticipantAvatarHelper.onRemoteParticipantJoined(to: callComposite,
+                                                                identifiers: identifiers)
+    }
 
-  @objc func textFieldEditingDidChange() {
-    startExperienceButton.isEnabled = !isStartExperienceDisabled
-    updateStartExperieceButton()
-  }
+    private func onCallStateChanged(_ callState: CallState, callComposite: CallComposite) {
+        print("::::CallingDemoViewController::getEventsHandler::onCallStateChanged \(callState.requestString)")
+        callStateLabel.text = callState.requestString
+    }
 
     func createCallComposite() async -> CallComposite? {
         print("CallingDemoView:::: createCallComposite requesting")
@@ -1655,372 +1390,34 @@ class CallingDemoViewController: UIViewController {
         self.declineCallButton.isHidden = true
     }
 
-    return false
-  }
+    private func adjustScrollView() {
+        if UIDevice.current.userInterfaceIdiom == .phone || UIDevice.current.orientation.isLandscape {
+            if self.isKeyboardShowing {
+                let offset: CGFloat = (UIDevice.current.orientation.isPortrait
+                              || UIDevice.current.orientation == .unknown) ? 200 : 250
+                let contentInsets = UIEdgeInsets(top: 0, left: 0, bottom: offset, right: 0)
+                scrollView.contentInset = contentInsets
+                scrollView.scrollIndicatorInsets = contentInsets
+                scrollView.setContentOffset(CGPoint(x: 0, y: offset), animated: true)
+            } else {
+                scrollView.contentInset = .zero
+                scrollView.scrollIndicatorInsets = .zero
+            }
+        }
+    }
 
-  private func getAudioPermissionStatus() -> AVAudioSession.RecordPermission {
-    return AVAudioSession.sharedInstance().recordPermission
-  }
+    @objc func toggleAudioOnly() {
+        envConfigSubject.audioOnly = !envConfigSubject.audioOnly
+    }
 
-  private func setupUI() {
-    updateUIBasedOnUserInterfaceStyle()
-    let safeArea = view.safeAreaLayoutGuide
-    #if DEBUG
-      // Debug Buttons for Instrumentation to press
-      // They shouldn't be visible
-      let audioOnlyButton = UIButton(type: .system)
-      audioOnlyButton.backgroundColor = UIColor.clear  // Making the button transparent
-      audioOnlyButton.addTarget(self, action: #selector(toggleAudioOnly), for: .touchUpInside)
-      audioOnlyButton.accessibilityIdentifier =
-        AccessibilityId.toggleAudioOnlyModeAccessibilityID.rawValue
-      audioOnlyButton.frame = CGRect(x: 0, y: 0, width: 10, height: 10)  // Minimal size
-
-      let mockSdkButton = UIButton(type: .system)
-      mockSdkButton.backgroundColor = UIColor.clear  // Making the button transparent
-      mockSdkButton.addTarget(self, action: #selector(toggleMockSdk), for: .touchUpInside)
-      mockSdkButton.accessibilityIdentifier =
-        AccessibilityId.useMockCallingSDKHandlerToggleAccessibilityID.rawValue
-      mockSdkButton.frame = CGRect(x: 0, y: 0, width: 10, height: 10)  // Minimal size
-
-      let debugButtonsStackView = UIStackView(arrangedSubviews: [audioOnlyButton, mockSdkButton])
-      debugButtonsStackView.axis = .horizontal
-      debugButtonsStackView.distribution = .fillEqually
-      debugButtonsStackView.spacing = 4  // Reduced spacing
-      debugButtonsStackView.translatesAutoresizingMaskIntoConstraints = false
-      view.addSubview(debugButtonsStackView)
-
-      NSLayoutConstraint.activate([
-        debugButtonsStackView.topAnchor.constraint(equalTo: safeArea.topAnchor, constant: 8),
-        debugButtonsStackView.leadingAnchor.constraint(
-          equalTo: safeArea.leadingAnchor, constant: 8),
-        debugButtonsStackView.widthAnchor.constraint(equalToConstant: 24),  // Container width
-        audioOnlyButton.heightAnchor.constraint(equalToConstant: 10),  // Button height
-        mockSdkButton.heightAnchor.constraint(equalToConstant: 10),  // Button height
-      ])
-    #endif
-    titleLabel = UILabel()
-    titleLabel.text = "UI Library - UIKit Sample"
-    titleLabel.sizeToFit()
-    titleLabel.translatesAutoresizingMaskIntoConstraints = false
-    view.addSubview(titleLabel)
-    titleLabelConstraint = titleLabel.topAnchor.constraint(
-      equalTo: safeArea.topAnchor,
-      constant: LayoutConstants.stackViewSpacingPortrait)
-    titleLabelConstraint.isActive = true
-    titleLabel.centerXAnchor.constraint(equalTo: safeArea.centerXAnchor).isActive = true
-
-    acsTokenUrlTextField = UITextField()
-    acsTokenUrlTextField.placeholder = "ACS Token URL"
-    acsTokenUrlTextField.text = envConfigSubject.acsTokenUrl
-    acsTokenUrlTextField.delegate = self
-    acsTokenUrlTextField.sizeToFit()
-    acsTokenUrlTextField.translatesAutoresizingMaskIntoConstraints = false
-    acsTokenUrlTextField.borderStyle = .roundedRect
-    acsTokenUrlTextField.addTarget(
-      self,
-      action: #selector(textFieldEditingDidChange),
-      for: .editingChanged)
-
-    acsTokenTextField = UITextField()
-    acsTokenTextField.placeholder = "ACS Token"
-    acsTokenTextField.text = envConfigSubject.acsToken
-    acsTokenTextField.delegate = self
-    acsTokenTextField.sizeToFit()
-    acsTokenTextField.translatesAutoresizingMaskIntoConstraints = false
-    acsTokenTextField.borderStyle = .roundedRect
-    acsTokenTextField.addTarget(
-      self, action: #selector(textFieldEditingDidChange), for: .editingChanged)
-
-    acsTokenTypeSegmentedControl = UISegmentedControl(items: ["Token URL", "Token"])
-    acsTokenTypeSegmentedControl.selectedSegmentIndex =
-      envConfigSubject.selectedAcsTokenType.rawValue
-    acsTokenTypeSegmentedControl.translatesAutoresizingMaskIntoConstraints = false
-    acsTokenTypeSegmentedControl.addTarget(
-      self,
-      action: #selector(onAcsTokenTypeValueChanged(_:)),
-      for: .valueChanged)
-    selectedAcsTokenType = envConfigSubject.selectedAcsTokenType
-
-    displayNameTextField = UITextField()
-    displayNameTextField.placeholder = "Display Name"
-    displayNameTextField.text = envConfigSubject.displayName
-    displayNameTextField.translatesAutoresizingMaskIntoConstraints = false
-    displayNameTextField.delegate = self
-    displayNameTextField.borderStyle = .roundedRect
-    displayNameTextField.addTarget(
-      self, action: #selector(textFieldEditingDidChange), for: .editingChanged)
-
-    groupCallTextField = UITextField()
-    groupCallTextField.placeholder = "Group Call Id"
-    groupCallTextField.text = envConfigSubject.groupCallId
-    groupCallTextField.delegate = self
-    groupCallTextField.sizeToFit()
-    groupCallTextField.translatesAutoresizingMaskIntoConstraints = false
-    groupCallTextField.borderStyle = .roundedRect
-    groupCallTextField.addTarget(
-      self, action: #selector(textFieldEditingDidChange), for: .editingChanged)
-
-    teamsMeetingTextField = UITextField()
-    teamsMeetingTextField.placeholder = "Teams Meeting Link"
-    teamsMeetingTextField.text = envConfigSubject.teamsMeetingLink
-    teamsMeetingTextField.delegate = self
-    teamsMeetingTextField.sizeToFit()
-    teamsMeetingTextField.translatesAutoresizingMaskIntoConstraints = false
-    teamsMeetingTextField.borderStyle = .roundedRect
-    teamsMeetingTextField.addTarget(
-      self, action: #selector(textFieldEditingDidChange), for: .editingChanged)
-
-    meetingTypeSegmentedControl = UISegmentedControl(items: ["Group Call", "Teams Meeting"])
-    meetingTypeSegmentedControl.selectedSegmentIndex = envConfigSubject.selectedMeetingType.rawValue
-    meetingTypeSegmentedControl.translatesAutoresizingMaskIntoConstraints = false
-    meetingTypeSegmentedControl.addTarget(
-      self,
-      action: #selector(onMeetingTypeValueChanged(_:)),
-      for: .valueChanged)
-    selectedMeetingType = envConfigSubject.selectedMeetingType
-
-    settingsButton = UIButton()
-    settingsButton.setTitle("Settings", for: .normal)
-    settingsButton.backgroundColor = .systemBlue
-    settingsButton.addTarget(self, action: #selector(onSettingsPressed), for: .touchUpInside)
-    settingsButton.layer.cornerRadius = 8
-    settingsButton.contentEdgeInsets = UIEdgeInsets.init(
-      top: LayoutConstants.buttonVerticalInset,
-      left: LayoutConstants.buttonHorizontalInset,
-      bottom: LayoutConstants.buttonVerticalInset,
-      right: LayoutConstants.buttonHorizontalInset)
-    settingsButton.accessibilityIdentifier = AccessibilityId.settingsButtonAccessibilityID.rawValue
-
-    showCallHistoryButton = UIButton()
-    showCallHistoryButton.setTitle("Show call history", for: .normal)
-    showCallHistoryButton.backgroundColor = .systemBlue
-    showCallHistoryButton.contentEdgeInsets = UIEdgeInsets.init(
-      top: LayoutConstants.buttonVerticalInset,
-      left: LayoutConstants.buttonHorizontalInset,
-      bottom: LayoutConstants.buttonVerticalInset,
-      right: LayoutConstants.buttonHorizontalInset)
-    showCallHistoryButton.layer.cornerRadius = 8
-    showCallHistoryButton.addTarget(
-      self, action: #selector(onShowHistoryBtnPressed), for: .touchUpInside)
-
-    startExperienceButton = UIButton()
-    startExperienceButton.backgroundColor = .systemBlue
-    startExperienceButton.setTitleColor(UIColor.white, for: .normal)
-    startExperienceButton.setTitleColor(UIColor.systemGray6, for: .disabled)
-    startExperienceButton.contentEdgeInsets = UIEdgeInsets.init(
-      top: LayoutConstants.buttonVerticalInset,
-      left: LayoutConstants.buttonHorizontalInset,
-      bottom: LayoutConstants.buttonVerticalInset,
-      right: LayoutConstants.buttonHorizontalInset)
-    startExperienceButton.layer.cornerRadius = 8
-    startExperienceButton.setTitle("Start Experience", for: .normal)
-    startExperienceButton.sizeToFit()
-    startExperienceButton.translatesAutoresizingMaskIntoConstraints = false
-    startExperienceButton.addTarget(
-      self, action: #selector(onStartExperienceBtnPressed), for: .touchUpInside)
-
-    startExperienceButton.accessibilityLabel =
-      AccessibilityId.startExperienceAccessibilityID.rawValue
-
-    showExperienceButton = UIButton()
-    showExperienceButton.backgroundColor = .systemBlue
-    showExperienceButton.setTitleColor(UIColor.white, for: .normal)
-    showExperienceButton.setTitleColor(UIColor.systemGray6, for: .disabled)
-    showExperienceButton.contentEdgeInsets = UIEdgeInsets.init(
-      top: LayoutConstants.buttonVerticalInset,
-      left: LayoutConstants.buttonHorizontalInset,
-      bottom: LayoutConstants.buttonVerticalInset,
-      right: LayoutConstants.buttonHorizontalInset)
-    showExperienceButton.layer.cornerRadius = 8
-    showExperienceButton.setTitle("Show", for: .normal)
-    showExperienceButton.sizeToFit()
-    showExperienceButton.translatesAutoresizingMaskIntoConstraints = false
-    showExperienceButton.addTarget(
-      self, action: #selector(onShowExperienceBtnPressed), for: .touchUpInside)
-
-    showExperienceButton.accessibilityLabel = AccessibilityId.showExperienceAccessibilityID.rawValue
-
-    callStateLabel = UILabel()
-    callStateLabel.text = "State"
-    callStateLabel.translatesAutoresizingMaskIntoConstraints = false
-    view.addSubview(callStateLabel)
-    callStateLabelConstraint = callStateLabel.bottomAnchor.constraint(
-      equalTo: safeArea.bottomAnchor,
-      constant: LayoutConstants.verticalSpacing)
-    callStateLabelConstraint.isActive = true
-    callStateLabel.centerXAnchor.constraint(equalTo: safeArea.centerXAnchor).isActive = true
-    callStateLabel.centerYAnchor.constraint(equalTo: safeArea.bottomAnchor, constant: -10)
-      .isActive = true
-
-    // horizontal stack view for the settingButton and startExperienceButton
-    let settingButtonHSpacer1 = UIView()
-    settingButtonHSpacer1.translatesAutoresizingMaskIntoConstraints = false
-    settingButtonHSpacer1.setContentHuggingPriority(.defaultLow, for: .horizontal)
-
-    let settingButtonHSpacer2 = UIView()
-    settingButtonHSpacer2.translatesAutoresizingMaskIntoConstraints = false
-    settingButtonHSpacer2.setContentHuggingPriority(.defaultLow, for: .horizontal)
-
-    let settingsButtonHStack = UIStackView(arrangedSubviews: [
-      settingButtonHSpacer1,
-      settingsButton,
-      settingButtonHSpacer2,
-    ])
-    settingsButtonHStack.axis = .horizontal
-    settingsButtonHStack.alignment = .fill
-    settingsButtonHStack.distribution = .fill
-    settingsButtonHStack.translatesAutoresizingMaskIntoConstraints = false
-
-    let showHistoryButtonHSpacer1 = UIView()
-    showHistoryButtonHSpacer1.translatesAutoresizingMaskIntoConstraints = false
-    showHistoryButtonHSpacer1.setContentHuggingPriority(.defaultLow, for: .horizontal)
-
-    let showHistoryButtonHSpacer2 = UIView()
-    showHistoryButtonHSpacer2.translatesAutoresizingMaskIntoConstraints = false
-    showHistoryButtonHSpacer2.setContentHuggingPriority(.defaultLow, for: .horizontal)
-
-    let showHistoryButtonHStack = UIStackView(arrangedSubviews: [
-      showHistoryButtonHSpacer1,
-      showCallHistoryButton,
-      showHistoryButtonHSpacer2,
-    ])
-    showHistoryButtonHStack.axis = .horizontal
-    showHistoryButtonHStack.alignment = .fill
-    showHistoryButtonHStack.distribution = .fill
-    showHistoryButtonHStack.translatesAutoresizingMaskIntoConstraints = false
-
-    let startButtonHSpacer1 = UIView()
-    startButtonHSpacer1.translatesAutoresizingMaskIntoConstraints = false
-    startButtonHSpacer1.setContentHuggingPriority(.defaultLow, for: .horizontal)
-
-    let startButtonHSpacer2 = UIView()
-    startButtonHSpacer2.translatesAutoresizingMaskIntoConstraints = false
-    startButtonHSpacer2.setContentHuggingPriority(.defaultLow, for: .horizontal)
-
-    let startButtonHStack = UIStackView(arrangedSubviews: [
-      startButtonHSpacer1,
-      startExperienceButton,
-      startButtonHSpacer2,
-    ])
-    startButtonHStack.axis = .horizontal
-    startButtonHStack.alignment = .fill
-    startButtonHStack.distribution = .fill
-    startButtonHStack.translatesAutoresizingMaskIntoConstraints = false
-
-    let showButtonHSpacer1 = UIView()
-    showButtonHSpacer1.translatesAutoresizingMaskIntoConstraints = false
-    showButtonHSpacer1.setContentHuggingPriority(.defaultLow, for: .horizontal)
-
-    let showButtonHSpacer2 = UIView()
-    showButtonHSpacer2.translatesAutoresizingMaskIntoConstraints = false
-    showButtonHSpacer2.setContentHuggingPriority(.defaultLow, for: .horizontal)
-
-    let showButtonHStack = UIStackView(arrangedSubviews: [
-      showButtonHSpacer1,
-      showExperienceButton,
-      showButtonHSpacer2,
-    ])
-    showButtonHStack.axis = .horizontal
-    showButtonHStack.alignment = .fill
-    showButtonHStack.distribution = .fill
-    showButtonHStack.translatesAutoresizingMaskIntoConstraints = false
-
-    let spaceView1 = UIView()
-    spaceView1.translatesAutoresizingMaskIntoConstraints = false
-    spaceView1.heightAnchor.constraint(equalToConstant: 0).isActive = true
-
-    stackView = UIStackView(arrangedSubviews: [
-      spaceView1, acsTokenTypeSegmentedControl,
-      acsTokenUrlTextField,
-      acsTokenTextField,
-      displayNameTextField,
-      meetingTypeSegmentedControl,
-      groupCallTextField,
-      teamsMeetingTextField,
-      settingsButtonHStack,
-      showHistoryButtonHStack,
-      startButtonHStack,
-      showButtonHStack,
-    ])
-    stackView.spacing = LayoutConstants.stackViewSpacingPortrait
-    stackView.axis = .vertical
-    stackView.alignment = .fill
-    stackView.distribution = .fill
-    stackView.translatesAutoresizingMaskIntoConstraints = false
-    stackView.setCustomSpacing(0, after: stackView.arrangedSubviews.first!)
-
-    view.addSubview(scrollView)
-    scrollView.addSubview(contentView)
-    scrollView.topAnchor.constraint(
-      equalTo: titleLabel.bottomAnchor,
-      constant: LayoutConstants.verticalSpacing
-    ).isActive = true
-    scrollView.bottomAnchor.constraint(equalTo: safeArea.bottomAnchor).isActive = true
-    scrollView.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor).isActive = true
-    scrollView.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor).isActive = true
-
-    contentView.addSubview(stackView)
-    contentView.topAnchor.constraint(equalTo: scrollView.topAnchor).isActive = true
-    contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor).isActive = true
-    contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor).isActive = true
-    contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor).isActive = true
-    contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor).isActive = true
-
-    stackView.topAnchor.constraint(equalTo: contentView.topAnchor).isActive = true
-    stackView.leadingAnchor.constraint(
-      equalTo: contentView.leadingAnchor,
-      constant: LayoutConstants.stackViewSpacingPortrait
-    ).isActive = true
-    stackView.trailingAnchor.constraint(
-      equalTo: contentView.trailingAnchor,
-      constant: -LayoutConstants.stackViewSpacingPortrait
-    ).isActive = true
-    stackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor).isActive = true
-
-    settingButtonHSpacer2.widthAnchor.constraint(equalTo: settingButtonHSpacer1.widthAnchor)
-      .isActive = true
-    showHistoryButtonHSpacer2.widthAnchor.constraint(equalTo: showHistoryButtonHSpacer1.widthAnchor)
-      .isActive = true
-    startButtonHSpacer2.widthAnchor.constraint(equalTo: startButtonHSpacer1.widthAnchor).isActive =
-      true
-    showButtonHSpacer2.widthAnchor.constraint(equalTo: showButtonHSpacer1.widthAnchor).isActive =
-      true
-
-    updateAcsTokenTypeFields()
-    updateMeetingTypeFields()
-    startExperienceButton.isEnabled = !isStartExperienceDisabled
-    updateStartExperieceButton()
-  }
-
-  private func adjustScrollView() {
-    if UIDevice.current.userInterfaceIdiom == .phone || UIDevice.current.orientation.isLandscape {
-      if self.isKeyboardShowing {
-        let offset: CGFloat =
-          (UIDevice.current.orientation.isPortrait
-            || UIDevice.current.orientation == .unknown) ? 200 : 250
-        let contentInsets = UIEdgeInsets(top: 0, left: 0, bottom: offset, right: 0)
-        scrollView.contentInset = contentInsets
-        scrollView.scrollIndicatorInsets = contentInsets
-        scrollView.setContentOffset(CGPoint(x: 0, y: offset), animated: true)
-      } else {
-        scrollView.contentInset = .zero
-        scrollView.scrollIndicatorInsets = .zero
-      }
-    
-  }
-
-  @objc func toggleAudioOnly() {
-    envConfigSubject.audioOnly = !envConfigSubject.audioOnly
-  }
-
-  @objc func toggleMockSdk() {
-    envConfigSubject.useMockCallingSDKHandler = !envConfigSubject.useMockCallingSDKHandler
-  }
+    @objc func toggleMockSdk() {
+        envConfigSubject.useMockCallingSDKHandler = !envConfigSubject.useMockCallingSDKHandler
+    }
 }
 
 extension CallingDemoViewController: UITextFieldDelegate {
-  func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-    textField.resignFirstResponder()
-    return false
-  }
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        return false
+    }
 }

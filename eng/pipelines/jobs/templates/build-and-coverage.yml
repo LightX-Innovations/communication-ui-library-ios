@@ -3,13 +3,13 @@
 parameters:
   - name: buildScheme
     type: string
-    default: "AzureCommunicationUICalling"
+    default: 'AzureCommunicationUICalling'
     values:
       - AzureCommunicationUICalling
       - AzureCommunicationUIChat
   - name: workingDirectory
     type: string
-    default: "AzureCommunicationUI"
+    default: 'AzureCommunicationUI'
 
 steps:
   - task: CocoaPods@0
@@ -20,14 +20,15 @@ steps:
       projectDirectory: ${{ parameters.workingDirectory }}
 
   - script: |
-      Pods/SwiftLint/swiftlint version
+      Pods/SwiftLint/swiftlint version 
     workingDirectory: AzureCommunicationUI
     displayName: "SwiftLint Version Check"
 
   - script: |
-      Pods/SwiftLint/swiftlint
+      Pods/SwiftLint/swiftlint 
     workingDirectory: AzureCommunicationUI
     displayName: "SwiftLint Manual Pre-Check"
+
 
   - script: |
       swift build -v \
@@ -48,7 +49,7 @@ steps:
           SLATHER_SOURCE_FILE=ui-chat-slather.yml
           ;;
       esac
-
+     
       SLATHER_FILE=$(system.defaultWorkingDirectory)/${{ parameters.workingDirectory }}/.slather.yml
       cat ../eng/slather/$SLATHER_SOURCE_FILE > $SLATHER_FILE
 
@@ -90,6 +91,6 @@ steps:
 
       slather
       mv slather-report/cobertura.xml $(System.ArtifactsDirectory)/$COBERTURA_TARGET_FILENAME
-
+    
     displayName: "Run slather for ${{ parameters.buildScheme }}"
     workingDirectory: ${{ parameters.workingDirectory }}

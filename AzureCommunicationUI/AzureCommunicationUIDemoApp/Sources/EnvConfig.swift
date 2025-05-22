@@ -3,8 +3,8 @@
 //  Licensed under the MIT License.
 //
 
-import AzureCommunicationUICalling
 import Foundation
+import AzureCommunicationUICalling
 import SwiftUI
 
 enum EnvConfig: String {
@@ -25,14 +25,13 @@ enum EnvConfig: String {
     case skipTo
     case roomId
 
-  func value() -> String {
-    guard let infoDict = Bundle.main.infoDictionary,
-      let value = infoDict[rawValue] as? String
-    else {
-      return ""
+    func value() -> String {
+        guard let infoDict = Bundle.main.infoDictionary,
+              let value = infoDict[rawValue] as? String else {
+            return ""
+        }
+        return value
     }
-    return value
-  }
 }
 
 class EnvConfigSubject: ObservableObject {
@@ -203,45 +202,4 @@ class EnvConfigSubject: ObservableObject {
             endpointUrl = acsEndpointUrl
         }
     }
-
-    if let name = dic["name"],
-      !name.isEmpty
-    {
-      displayName = name
-    }
-
-    if let groupId = dic["groupid"],
-      !groupId.isEmpty
-    {
-      groupCallId = groupId
-      selectedMeetingType = .groupCall
-    }
-
-    if let teamsLink = dic["teamsurl"],
-      !teamsLink.isEmpty
-    {
-      teamsMeetingLink = teamsLink
-      selectedMeetingType = .teamsMeeting
-      selectedChatType = .teamsChat
-    }
-
-    if let communicationUserId = dic["userid"],
-      !communicationUserId.isEmpty
-    {
-      userId = communicationUserId
-    }
-
-    if let chatThreadId = dic["threadid"],
-      !chatThreadId.isEmpty
-    {
-      threadId = chatThreadId
-      selectedChatType = .groupChat
-    }
-
-    if let acsEndpointUrl = dic["endpointurl"],
-      !acsEndpointUrl.isEmpty
-    {
-      endpointUrl = acsEndpointUrl
-    }
-  }
 }

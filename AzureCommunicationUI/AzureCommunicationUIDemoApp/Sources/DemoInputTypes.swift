@@ -3,8 +3,8 @@
 //  Licensed under the MIT License.
 //
 
-import AzureCommunicationUICalling
 import Foundation
+import AzureCommunicationUICalling
 
 enum MeetingType: Int {
     case groupCall
@@ -14,13 +14,13 @@ enum MeetingType: Int {
 }
 
 enum ChatType: Int {
-  case groupChat
-  case teamsChat
+    case groupChat
+    case teamsChat
 }
 
 enum ACSTokenType: Int {
-  case tokenUrl
-  case token
+    case tokenUrl
+    case token
 }
 
 enum DemoError: Error {
@@ -35,5 +35,4 @@ enum DemoError: Error {
             return CallCompositeErrorCode.callJoin
         }
     }
-  }
 }

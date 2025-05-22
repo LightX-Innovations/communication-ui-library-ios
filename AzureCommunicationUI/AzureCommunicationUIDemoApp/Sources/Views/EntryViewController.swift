@@ -4,14 +4,14 @@
 //
 
 import Combine
-import CoreGraphics
 import Foundation
-import SwiftUI
 import UIKit
+import SwiftUI
+import CoreGraphics
 
 class EntryViewController: UIViewController {
-  private var envConfigSubject: EnvConfigSubject
-  #if DEBUG
+    private var envConfigSubject: EnvConfigSubject
+#if DEBUG
     private var window: FloatingUITestWindow?
     private var callingSDKWrapperMock: UITestCallingSDKWrapper?
 #endif
@@ -223,6 +223,4 @@ class EntryViewController: UIViewController {
         }
         return "Version: \(version) (\(build))"
     }
-    return "Version: \(version) (\(build))"
-  }
 }

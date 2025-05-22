@@ -4,20 +4,17 @@
 //
 
 import XCTest
-
 @testable import AzureCommunicationUICalling
 
 class AzureCommunicationUIDemoAppAudioOnlyTests: XCUITestBase {
-  func testCallCompositeAudioOnlyEnabled() {
-    enterMenu()
-    tapButton(accessibilityIdentifier: AccessibilityId.toggleAudioOnlyModeAccessibilityID.rawValue)
-    startExperience()
-    verifyButtonDoesNotExist(
-      accessibilityIdentifier: AccessibilityIdentifier.toggleVideoAccessibilityID.rawValue)
-    joinCall()
-    verifyButtonDoesNotExist(
-      accessibilityIdentifier: AccessibilityIdentifier.videoAccessibilityID.rawValue)
-  }
+    func testCallCompositeAudioOnlyEnabled() {
+        enterMenu()
+        tapButton(accessibilityIdentifier: AccessibilityId.toggleAudioOnlyModeAccessibilityID.rawValue)
+        startExperience()
+        verifyButtonDoesNotExist(accessibilityIdentifier: AccessibilityIdentifier.toggleVideoAccessibilityID.rawValue)
+        joinCall()
+        verifyButtonDoesNotExist(accessibilityIdentifier: AccessibilityIdentifier.videoAccessibilityID.rawValue)
+    }
 
     func testCallCompositeNormalAudioVideoMode() {
         enterMenu()
@@ -31,8 +28,8 @@ class AzureCommunicationUIDemoAppAudioOnlyTests: XCUITestBase {
 }
 
 extension AzureCommunicationUIDemoAppAudioOnlyTests {
-  func enterMenu() {
-    tapInterfaceFor(.callSwiftUI)
-    tapMeetingType(.groupCall)
-  }
+    func enterMenu() {
+        tapInterfaceFor(.callSwiftUI)
+        tapMeetingType(.groupCall)
+    }
 }

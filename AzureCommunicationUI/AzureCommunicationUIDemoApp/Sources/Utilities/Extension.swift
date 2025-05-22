@@ -4,21 +4,20 @@
 //
 
 import Foundation
-
 extension URL {
-  func toQueryDictionary() -> [String: String] {
+    func toQueryDictionary() -> [String: String] {
 
-    // Group call = acsui://calling?acstoken={}&name={}&groupid={}
-    // Teams call = acsui://calling?acstoken={}&name={}&teamsurl={}
-    guard let query = self.query else {
-      return [:]
+        // Group call = acsui://calling?acstoken={}&name={}&groupid={}
+        // Teams call = acsui://calling?acstoken={}&name={}&teamsurl={}
+        guard let query = self.query else {
+            return [:]
+        }
+        var queryStrings = [String: String]()
+        for pair in query.components(separatedBy: "&") {
+            let key = pair.components(separatedBy: "=")[0]
+            let value = String(pair.dropFirst(key.count + 1)).removingPercentEncoding ?? ""
+            queryStrings[key.lowercased()] = value
+        }
+        return queryStrings
     }
-    var queryStrings = [String: String]()
-    for pair in query.components(separatedBy: "&") {
-      let key = pair.components(separatedBy: "=")[0]
-      let value = String(pair.dropFirst(key.count + 1)).removingPercentEncoding ?? ""
-      queryStrings[key.lowercased()] = value
-    }
-    return queryStrings
-  }
 }

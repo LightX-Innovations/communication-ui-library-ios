@@ -3,13 +3,15 @@
 //  Licensed under the MIT License.
 //
 
+import SwiftUI
+import AzureCommunicationCommon
 import AVFoundation
 import CallKit
 import OSLog
 #if DEBUG
-  @testable import AzureCommunicationUICalling
+@testable import AzureCommunicationUICalling
 #else
-  import AzureCommunicationUICalling
+import AzureCommunicationUICalling
 #endif
 struct CallingDemoView: View {
     @State var isAlertDisplayed = false
@@ -97,108 +99,8 @@ struct CallingDemoView: View {
                             isAlertDisplayed = false
                 }))
         }
-      }
-      Spacer()
-    }
-    .padding()
-    .alert(isPresented: $isAlertDisplayed) {
-      Alert(
-        title: Text(alertTitle),
-        message: Text(alertMessage),
-        dismissButton:
-          .default(
-            Text("Dismiss"),
-            action: {
-              isAlertDisplayed = false
-            }))
-    }
-    .sheet(isPresented: $isSettingsDisplayed) {
-      SettingsView(envConfigSubject: envConfigSubject)
-    }
-  }
-
-  var acsTokenSelector: some View {
-    Group {
-      Picker("Token Type", selection: $envConfigSubject.selectedAcsTokenType) {
-        Text("Token URL").tag(ACSTokenType.tokenUrl)
-        Text("Token").tag(ACSTokenType.token)
-      }.pickerStyle(.segmented)
-      switch envConfigSubject.selectedAcsTokenType {
-      case .tokenUrl:
-        TextField("ACS Token URL", text: $envConfigSubject.acsTokenUrl)
-          .disableAutocorrection(true)
-          .autocapitalization(.none)
-          .textFieldStyle(.roundedBorder)
-      case .token:
-        TextField(
-          "ACS Token",
-          text:
-            !envConfigSubject.useExpiredToken
-            ? $envConfigSubject.acsToken : $envConfigSubject.expiredAcsToken
-        )
-        .modifier(TextFieldClearButton(text: $envConfigSubject.acsToken))
-        .disableAutocorrection(true)
-        .autocapitalization(.none)
-        .textFieldStyle(.roundedBorder)
-      }
-    }
-    .padding(.vertical, verticalPadding)
-    .padding(.horizontal, horizontalPadding)
-  }
-
-  var displayNameTextField: some View {
-    TextField("Display Name", text: $envConfigSubject.displayName)
-      .disableAutocorrection(true)
-      .padding(.vertical, verticalPadding)
-      .padding(.horizontal, horizontalPadding)
-      .textFieldStyle(.roundedBorder)
-  }
-
-  var meetingSelector: some View {
-    Group {
-      Picker("Call Type", selection: $envConfigSubject.selectedMeetingType) {
-        Text("Group Call").tag(MeetingType.groupCall)
-        Text("Teams Meeting").tag(MeetingType.teamsMeeting)
-      }.pickerStyle(.segmented)
-      switch envConfigSubject.selectedMeetingType {
-      case .groupCall:
-        TextField(
-          "Group Call Id",
-          text: $envConfigSubject.groupCallId
-        )
-        .autocapitalization(.none)
-        .disableAutocorrection(true)
-        .textFieldStyle(.roundedBorder)
-      case .teamsMeeting:
-        TextField(
-          "Team Meeting",
-          text: $envConfigSubject.teamsMeetingLink
-        )
-        .autocapitalization(.none)
-        .disableAutocorrection(true)
-        .textFieldStyle(.roundedBorder)
-      }
-    }
-    .padding(.vertical, verticalPadding)
-    .padding(.horizontal, horizontalPadding)
-  }
-
-  var settingButton: some View {
-    Button("Settings") {
-      isSettingsDisplayed = true
-    }
-    .buttonStyle(DemoButtonStyle())
-    .accessibility(identifier: AccessibilityId.settingsButtonAccessibilityID.rawValue)
-  }
-
-  var startExperienceButton: some View {
-    Button("Start Experience") {
-      isStartExperienceLoading = true
-      Task { @MainActor in
-        if getAudioPermissionStatus() == .denied && envConfigSubject.skipSetupScreen {
-          showError(for: CallCompositeErrorCode.microphonePermissionNotGranted)
-          isStartExperienceLoading = false
-          return
+        .sheet(isPresented: $isSettingsDisplayed) {
+            SettingsView(envConfigSubject: envConfigSubject)
         }
         .fullScreenCover(isPresented: $isNewViewPresented) {
             CustomDemoView()
@@ -241,11 +143,30 @@ struct CallingDemoView: View {
         #endif
     }
 
-    if (envConfigSubject.selectedMeetingType == .groupCall && envConfigSubject.groupCallId.isEmpty)
-      || envConfigSubject.selectedMeetingType == .teamsMeeting
-        && envConfigSubject.teamsMeetingLink.isEmpty
-    {
-      return true
+    var acsTokenSelector: some View {
+        Group {
+            Picker("Token Type", selection: $envConfigSubject.selectedAcsTokenType) {
+                Text("Token URL").tag(ACSTokenType.tokenUrl)
+                Text("Token").tag(ACSTokenType.token)
+            }.pickerStyle(.segmented)
+            switch envConfigSubject.selectedAcsTokenType {
+            case .tokenUrl:
+                TextField("ACS Token URL", text: $envConfigSubject.acsTokenUrl)
+                    .disableAutocorrection(true)
+                    .autocapitalization(.none)
+                    .textFieldStyle(.roundedBorder)
+            case .token:
+                TextField("ACS Token", text:
+                            !envConfigSubject.useExpiredToken ?
+                          $envConfigSubject.acsToken : $envConfigSubject.expiredAcsToken)
+                    .modifier(TextFieldClearButton(text: $envConfigSubject.acsToken))
+                    .disableAutocorrection(true)
+                    .autocapitalization(.none)
+                    .textFieldStyle(.roundedBorder)
+            }
+        }
+        .padding(.vertical, verticalPadding)
+        .padding(.horizontal, horizontalPadding)
     }
 
     var displayNameTextField: some View {
@@ -413,39 +334,8 @@ struct CallingDemoView: View {
 }
 
 extension CallingDemoView {
-  func showCallComposite() {
-    callingViewModel.callComposite?.isHidden = false
-  }
-
-  fileprivate func relaunchComposite() {
-    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-      Task { @MainActor in
-        if getAudioPermissionStatus() == .denied && envConfigSubject.skipSetupScreen {
-          showError(for: CallCompositeErrorCode.microphonePermissionNotGranted)
-          isStartExperienceLoading = false
-          return
-        }
-        await startCallComposite()
-        isStartExperienceLoading = false
-      }
-    }
-  }
-
-  func startCallComposite() async {
-    let link = getMeetingLink()
-
-    var localizationConfig: LocalizationOptions?
-    let layoutDirection: LayoutDirection =
-      envConfigSubject.isRightToLeft ? .rightToLeft : .leftToRight
-    if !envConfigSubject.localeIdentifier.isEmpty {
-      let locale = Locale(identifier: envConfigSubject.localeIdentifier)
-      localizationConfig = LocalizationOptions(
-        locale: locale,
-        layoutDirection: layoutDirection)
-    } else if !envConfigSubject.locale.identifier.isEmpty {
-      localizationConfig = LocalizationOptions(
-        locale: envConfigSubject.locale,
-        layoutDirection: layoutDirection)
+    func showCallComposite() {
+        callingViewModel.callComposite?.isHidden = false
     }
 
     func registerPushNotification() {
@@ -1059,7 +949,8 @@ extension CallingDemoView {
             }
             callingViewModel.callComposite = callComposite
         } else {
-          self.issueUrl = ""
+            showError(for: DemoError.invalidToken.getErrorCode())
+            return
         }
     }
 
@@ -1126,69 +1017,29 @@ extension CallingDemoView {
         }
     }
 
-    let onCallStateChangedHandler: (CallState) -> Void = { [weak callComposite] callStateEvent in
-      guard let composite = callComposite else {
-        return
-      }
-      onCallStateChanged(
-        callStateEvent,
-        callComposite: composite)
-    }
-    let onDismissedHandler: (CallCompositeDismissed) -> Void = { [] _ in
-      if envConfigSubject.useRelaunchOnDismissedToggle && exitCompositeExecuted {
-        relaunchComposite()
-      }
-    }
-
-    exitCompositeExecuted = false
-    if !envConfigSubject.exitCompositeAfterDuration.isEmpty {
-      DispatchQueue.main.asyncAfter(
-        deadline: .now() + Float64(envConfigSubject.exitCompositeAfterDuration)!
-      ) { [weak callComposite] in
-        exitCompositeExecuted = true
-        callComposite?.dismiss()
-      }
-    }
-    callComposite.events.onRemoteParticipantJoined = onRemoteParticipantJoinedHandler
-    callComposite.events.onError = onErrorHandler
-    callComposite.events.onCallStateChanged = onCallStateChangedHandler
-    callComposite.events.onDismissed = onDismissedHandler
-    callComposite.events.onPictureInPictureChanged = onPipChangedHandler
-    callComposite.events.onUserReportedIssue = onUserReportedIssueHandler
-
-    let renderDisplayName =
-      envConfigSubject.renderedDisplayName.isEmpty ? nil : envConfigSubject.renderedDisplayName
-    let participantViewData = ParticipantViewData(
-      avatar: UIImage(named: envConfigSubject.avatarImageName),
-      displayName: renderDisplayName)
-    let setupScreenViewData = SetupScreenViewData(
-      title: envConfigSubject.navigationTitle,
-      subtitle: envConfigSubject.navigationSubtitle)
-    let localOptions = LocalOptions(
-      participantViewData: participantViewData,
-      setupScreenViewData: setupScreenViewData,
-      cameraOn: envConfigSubject.cameraOn,
-      microphoneOn: envConfigSubject.microphoneOn,
-      skipSetupScreen: envConfigSubject.skipSetupScreen,
-      audioVideoMode: envConfigSubject.audioOnly ? .audioOnly : .audioAndVideo
-    )
-    if let credential = try? await getTokenCredential() {
-      switch envConfigSubject.selectedMeetingType {
-      case .groupCall:
-        let uuid = UUID(uuidString: link) ?? UUID()
-        if envConfigSubject.displayName.isEmpty {
-          callComposite.launch(
-            remoteOptions: RemoteOptions(
-              for: .groupCall(groupId: uuid),
-              credential: credential),
-            localOptions: localOptions)
-        } else {
-          callComposite.launch(
-            remoteOptions: RemoteOptions(
-              for: .groupCall(groupId: uuid),
-              credential: credential,
-              displayName: envConfigSubject.displayName),
-            localOptions: localOptions)
+    private func getTokenCredential() async throws -> CommunicationTokenCredential {
+        switch envConfigSubject.selectedAcsTokenType {
+        case .token:
+            let acsToken = envConfigSubject.useExpiredToken ?
+                           envConfigSubject.expiredAcsToken : envConfigSubject.acsToken
+            if let communicationTokenCredential = try? CommunicationTokenCredential(token: acsToken) {
+                return communicationTokenCredential
+            } else {
+                throw DemoError.invalidToken
+            }
+        case .tokenUrl:
+            if let url = URL(string: envConfigSubject.acsTokenUrl) {
+                let tokenRefresher = AuthenticationHelper.getCommunicationToken(tokenUrl: url,
+                                                                                aadToken: envConfigSubject.aadToken)
+                let initialToken = await AuthenticationHelper.fetchInitialToken(with: tokenRefresher)
+                let communicationTokenRefreshOptions = CommunicationTokenRefreshOptions(initialToken: initialToken,
+                                                                                        refreshProactively: true,
+                                                                                        tokenRefresher: tokenRefresher)
+                if let credential = try? CommunicationTokenCredential(withOptions: communicationTokenRefreshOptions) {
+                    return credential
+                }
+            }
+            throw DemoError.invalidToken
         }
     }
 
@@ -1210,93 +1061,21 @@ extension CallingDemoView {
         case .roomCall:
             return envConfigSubject.roomId
         }
-      }
-    } else {
-      showError(for: DemoError.invalidToken.getErrorCode())
-      return
     }
-    callingViewModel.callComposite = callComposite
-  }
 
-  private func getTokenCredential() async throws -> CommunicationTokenCredential {
-    switch envConfigSubject.selectedAcsTokenType {
-    case .token:
-      let acsToken =
-        envConfigSubject.useExpiredToken
-        ? envConfigSubject.expiredAcsToken : envConfigSubject.acsToken
-      if let communicationTokenCredential = try? CommunicationTokenCredential(token: acsToken) {
-        return communicationTokenCredential
-      } else {
-        throw DemoError.invalidToken
-      }
-    case .tokenUrl:
-      if let url = URL(string: envConfigSubject.acsTokenUrl) {
-        let tokenRefresher = AuthenticationHelper.getCommunicationToken(
-          tokenUrl: url,
-          aadToken: envConfigSubject.aadToken)
-        let initialToken = await AuthenticationHelper.fetchInitialToken(with: tokenRefresher)
-        let communicationTokenRefreshOptions = CommunicationTokenRefreshOptions(
-          initialToken: initialToken,
-          refreshProactively: true,
-          tokenRefresher: tokenRefresher)
-        if let credential = try? CommunicationTokenCredential(
-          withOptions: communicationTokenRefreshOptions)
-        {
-          return credential
+    private func showError(for errorCode: String) {
+        switch errorCode {
+        case CallCompositeErrorCode.tokenExpired:
+            alertMessage = "Token is invalid"
+        case CallCompositeErrorCode.microphonePermissionNotGranted:
+            alertMessage = "Microphone Permission is denied"
+        case CallCompositeErrorCode.networkConnectionNotAvailable:
+            alertMessage = "Internet error"
+        default:
+            alertMessage = "Unknown error"
         }
-      }
-      throw DemoError.invalidToken
-    }
-  }
-
-  private func getMeetingLink() -> String {
-    switch envConfigSubject.selectedMeetingType {
-    case .groupCall:
-      return envConfigSubject.groupCallId
-    case .teamsMeeting:
-      return envConfigSubject.teamsMeetingLink
-    }
-  }
-
-  private func showError(for errorCode: String) {
-    switch errorCode {
-    case CallCompositeErrorCode.tokenExpired:
-      alertMessage = "Token is invalid"
-    case CallCompositeErrorCode.microphonePermissionNotGranted:
-      alertMessage = "Microphone Permission is denied"
-    case CallCompositeErrorCode.networkConnectionNotAvailable:
-      alertMessage = "Internet error"
-    default:
-      alertMessage = "Unknown error"
-    }
-    alertTitle = "Error"
-    isAlertDisplayed = true
-  }
-
-  private func getAudioPermissionStatus() -> AVAudioSession.RecordPermission {
-    return AVAudioSession.sharedInstance().recordPermission
-  }
-
-  private func onError(_ error: CallCompositeError, callComposite: CallComposite) {
-    print("::::CallingDemoView::getEventsHandler::onError \(error)")
-    print("::::CallingDemoView error.code \(error.code)")
-    callingViewModel.callHistory.last?.callIds.forEach {
-      print("::::CallingDemoView call id \($0)")
-    }
-    showError(for: error.code)
-  }
-
-  private func onCallStateChanged(_ callState: CallState, callComposite: CallComposite) {
-    print("::::CallingDemoView::getEventsHandler::onCallStateChanged \(callState.requestString)")
-    self.callState = callState.requestString
-  }
-
-  private func onRemoteParticipantJoined(
-    to callComposite: CallComposite, identifiers: [CommunicationIdentifier]
-  ) {
-    print("::::CallingDemoView::getEventsHandler::onRemoteParticipantJoined \(identifiers)")
-    guard envConfigSubject.useCustomRemoteParticipantViewData else {
-      return
+        alertTitle = "Error"
+        isAlertDisplayed = true
     }
 
     private func showAlert(for message: String) {

@@ -6,100 +6,99 @@
 import XCTest
 
 class AzureCommunicationUIDemoAppUITests: XCUITestBase {
-  private var app: XCUIApplication?
+    private var app: XCUIApplication?
 
-  override func setUp() {
-    super.setUp()
-    app = XCUIApplication()
-    app?.launch()
-  }
-
-  func testCallCompositeLaunch() {
-    guard let app = app else {
-      XCTFail("No App launch")
-      return
+    override func setUp() {
+        super.setUp()
+        app = XCUIApplication()
+        app?.launch()
     }
 
-    app.buttons["UI Kit"].tap()
+    func testCallCompositeLaunch() {
+        guard let app = app else {
+            XCTFail("No App launch")
+            return
+        }
 
-    let startButton = app.buttons["Start Experience"]
-    waitEnabled(for: startButton)
+        app.buttons["UI Kit"].tap()
 
-    startButton.tap()
+        let startButton = app.buttons["Start Experience"]
+        waitEnabled(for: startButton)
 
-    let joinButton = app.buttons["Join call"]
-    wait(for: joinButton)
-    joinButton.tap()
-  }
+        startButton.tap()
 
-  func testCallCompositeExit() {
-    guard let app = app else {
-      XCTFail("No App launch")
-      return
+        let joinButton = app.buttons["Join call"]
+        wait(for: joinButton)
+        joinButton.tap()
     }
 
-    app.buttons["UI Kit"].tap()
+    func testCallCompositeExit() {
+        guard let app = app else {
+            XCTFail("No App launch")
+            return
+        }
 
-    let startButton = app.buttons["Start Experience"]
-    waitEnabled(for: startButton)
+        app.buttons["UI Kit"].tap()
 
-    startButton.tap()
+        let startButton = app.buttons["Start Experience"]
+        waitEnabled(for: startButton)
 
-    let joinButton = app.buttons["Join call"]
-    wait(for: joinButton)
-    joinButton.tap()
+        startButton.tap()
 
-    let hangUpButton = app.buttons["AzureCommunicationUI.CallingView.ControlButton.HangUp"]
-    wait(for: hangUpButton)
-    hangUpButton.tap()
+        let joinButton = app.buttons["Join call"]
+        wait(for: joinButton)
+        joinButton.tap()
 
-    let leaveCallButton = app.buttons["Leave"]
-    wait(for: leaveCallButton)
-    leaveCallButton.tap()
+        let hangUpButton = app.buttons["AzureCommunicationUI.CallingView.ControlButton.HangUp"]
+        wait(for: hangUpButton)
+        hangUpButton.tap()
 
-  }
+        let leaveCallButton = app.buttons["Leave"]
+        wait(for: leaveCallButton)
+        leaveCallButton.tap()
 
-  func testCallCompositeWithExpiredToken() {
-    // UI tests must launch the application that they test.
-    guard let app = app else {
-      XCTFail("No App launch")
-      return
     }
 
-    app.buttons["Swift UI"].tap()
+    func testCallCompositeWithExpiredToken() {
+        // UI tests must launch the application that they test.
+        guard let app = app else {
+            XCTFail("No App launch")
+            return
+        }
 
-    let deleteTokenButton = app.buttons["textFieldClearButton"]
-    deleteTokenButton.tap()
+        app.buttons["Swift UI"].tap()
 
-    let acsTokenTextField = app.textFields["ACS Token"]
-    acsTokenTextField.setText(text: getExpiredToken(), application: app)
+        let deleteTokenButton = app.buttons["textFieldClearButton"]
+        deleteTokenButton.tap()
 
-    let startButton = app.buttons["Start Experience"]
-    waitEnabled(for: startButton)
+        let acsTokenTextField = app.textFields["ACS Token"]
+        acsTokenTextField.setText(text: getExpiredToken(), application: app)
 
-    startButton.tap()
+        let startButton = app.buttons["Start Experience"]
+        waitEnabled(for: startButton)
 
-    let joinButton = app.buttons["Join call"]
-    wait(for: joinButton)
-    joinButton.tap()
-  }
+        startButton.tap()
 
-  func testLaunchPerformance() throws {
-    // This measures how long it takes to launch your application.
-    measure(metrics: [XCTApplicationLaunchMetric()]) {
-      XCUIApplication().launch()
+        let joinButton = app.buttons["Join call"]
+        wait(for: joinButton)
+        joinButton.tap()
     }
-  }
+
+    func testLaunchPerformance() throws {
+        // This measures how long it takes to launch your application.
+        measure(metrics: [XCTApplicationLaunchMetric()]) {
+            XCUIApplication().launch()
+        }
+    }
 
 }
 
 extension AzureCommunicationUIDemoAppUITests {
-  private func getExpiredToken() -> String {
-    guard let infoDict = Bundle(for: AzureCommunicationUIDemoAppUITests.self).infoDictionary,
-      let value = infoDict["expiredAcsToken"] as? String
-    else {
-      return ""
+    private func getExpiredToken() -> String {
+        guard let infoDict = Bundle(for: AzureCommunicationUIDemoAppUITests.self).infoDictionary,
+              let value = infoDict["expiredAcsToken"] as? String else {
+            return ""
+        }
+        return value
     }
-    return value
-  }
 }
