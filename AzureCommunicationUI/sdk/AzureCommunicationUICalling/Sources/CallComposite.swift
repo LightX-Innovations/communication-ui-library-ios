@@ -331,7 +331,7 @@ public class CallComposite {
     }
 
     private func launch(_ callConfiguration: CallConfiguration,
-                        localOptions: LocalOptions?) {
+                        localOptions: LocalOptions?) -> UIViewController {
         logger.debug("CallComposite launch composite experience")
         setupScreenOptions = localOptions?.setupScreenOptions ?? setupScreenOptions
         callScreenOptions = localOptions?.callScreenOptions ?? callScreenOptions
@@ -368,6 +368,7 @@ public class CallComposite {
             store.dispatch(action: .callingAction(.setupCall))
         }
         compositeUILaunched = true
+        return viewController
     }
 
     /// Start Call Composite experience with joining a Teams meeting.
@@ -379,14 +380,14 @@ Use CallComposite init with CommunicationTokenCredential
 and launch(locator: JoinLocator, localOptions: LocalOptions? = nil) instead.
 """)
     public func launch(remoteOptions: RemoteOptions,
-                       localOptions: LocalOptions? = nil) {
+                       localOptions: LocalOptions? = nil) -> UIViewController{
         let configuration = CallConfiguration(locator: remoteOptions.locator,
                                                   participants: nil,
                                                   callId: nil)
         self.credential = remoteOptions.credential
         self.displayName = remoteOptions.displayName
         self.callConfiguration = configuration
-        launch(configuration, localOptions: localOptions)
+        return launch(configuration, localOptions: localOptions)
     }
 
     /// Start Call Composite experience with joining an existing call.
@@ -397,13 +398,13 @@ and launch(locator: JoinLocator, localOptions: LocalOptions? = nil) instead.
     ///                            This is data is not sent up to ACS.
     public func launch(locator: JoinLocator,
                        callKitRemoteInfo: CallKitRemoteInfo? = nil,
-                       localOptions: LocalOptions? = nil) {
+                       localOptions: LocalOptions? = nil) -> UIViewController{
         self.callKitRemoteInfo = callKitRemoteInfo
         let configuration = CallConfiguration(locator: locator,
                                               participants: nil,
                                               callId: nil)
         self.callConfiguration = configuration
-        launch(configuration, localOptions: localOptions)
+        return launch(configuration, localOptions: localOptions)
     }
 
     /// Start Call Composite experience with dialing participants.
@@ -414,13 +415,13 @@ and launch(locator: JoinLocator, localOptions: LocalOptions? = nil) instead.
     ///                            This data is not sent up to ACS.
     public func launch(participants: [CommunicationIdentifier],
                        callKitRemoteInfo: CallKitRemoteInfo? = nil,
-                       localOptions: LocalOptions? = nil) {
+                       localOptions: LocalOptions? = nil)-> UIViewController {
         self.callKitRemoteInfo = callKitRemoteInfo
         let configuration = CallConfiguration(locator: nil,
                                               participants: participants,
                                               callId: nil)
         self.callConfiguration = configuration
-        launch(configuration, localOptions: localOptions)
+        return launch(configuration, localOptions: localOptions)
     }
 
     /// Start Call Composite experience with call accepted from CallKit.
@@ -433,7 +434,7 @@ and launch(locator: JoinLocator, localOptions: LocalOptions? = nil) instead.
     ///                           cameraOn will be false, default CallKit option
     ///                           microphoneOn will be true, default CallKit option
     public func launch(callIdAcceptedFromCallKit: String,
-                       localOptions: LocalOptions? = nil) {
+                       localOptions: LocalOptions? = nil)-> UIViewController {
         logger.debug( "launch \(callIdAcceptedFromCallKit)")
         let configuration = CallConfiguration(locator: nil,
                                               participants: nil,
@@ -445,7 +446,7 @@ and launch(locator: JoinLocator, localOptions: LocalOptions? = nil) instead.
                                                    microphoneOn: false,
                                                    skipSetupScreen: true,
                                                    audioVideoMode: localOptions?.audioVideoMode ?? .audioAndVideo)
-        launch(configuration, localOptions: acceptedCallLocalOptions)
+        return launch(configuration, localOptions: acceptedCallLocalOptions)
     }
 
     /// Set ParticipantViewData to be displayed for the remote participant. This is data is not sent up to ACS.
