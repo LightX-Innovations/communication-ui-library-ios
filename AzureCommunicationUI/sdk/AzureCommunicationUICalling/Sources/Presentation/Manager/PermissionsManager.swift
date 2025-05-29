@@ -116,7 +116,7 @@ extension AVAuthorizationStatus {
     }
 }
 
-private extension PermissionsManager {
+extension PermissionsManager {
 
     func getAudioPermissionStatus() -> AppPermission.Status {
         let audioSession = AVAudioSession.sharedInstance().recordPermission

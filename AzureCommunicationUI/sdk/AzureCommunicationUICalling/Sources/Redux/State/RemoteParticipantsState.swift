@@ -28,21 +28,64 @@ struct RemoteParticipantsState {
         self.lobbyError = lobbyError
         self.totalParticipantCount = totalParticipantCount
     }
+
+    public func toJson() -> [String: Any] {
+      var dominantSpeakersJson: [String] = []
+      for dominantSpeaker in self.dominantSpeakers {
+        dominantSpeakersJson.append(dominantSpeaker)
+      }
+      var participantInfoListJson: [[String: Any]] = []
+      for participantInfo in self.participantInfoList {
+          participantInfoListJson.append(participantInfo.toJson())
+      }
+      return [
+        "participantInfoList": participantInfoListJson,
+        "lastUpdateTimeStamp": self.lastUpdateTimeStamp.formatted(
+          Date.ISO8601FormatStyle().dateSeparator(.dash)),
+        "dominantSpeakers": dominantSpeakersJson,
+        "dominantSpeakersModifiedTimestamp": self.dominantSpeakersModifiedTimestamp.formatted(
+          Date.ISO8601FormatStyle().dateSeparator(.dash)),
+        "lobbyError": self.lobbyError?.toJson() ?? [:],
+      ]
+    }
 }
 
-struct LobbyError {
+public struct LobbyError {
     let lobbyErrorCode: LobbyErrorCode
     let errorTimeStamp: Date
+
+    public func toJson() -> [String: Any] {
+        return [
+          "lobbyErrorCode": self.lobbyErrorCode.description,
+          "errorTimeStamp": self.errorTimeStamp.formatted(
+            Date.ISO8601FormatStyle().dateSeparator(.dash)),
+        ]
+    }
 }
 
-enum LobbyErrorCode {
+public enum LobbyErrorCode {
     case lobbyDisabledByConfigurations
     case lobbyConversationTypeNotSupported
     case lobbyMeetingRoleNotAllowed
     case removeParticipantOperationFailure
     case unknownError
 
-    static func convertToLobbyErrorCode(_ error: NSError) -> LobbyErrorCode {
+    public var description: String {
+        switch self {
+        case .lobbyDisabledByConfigurations:
+          return "lobbyDisabledByConfigurations"
+        case .lobbyConversationTypeNotSupported:
+          return "lobbyConversationTypeNotSupported"
+        case .lobbyMeetingRoleNotAllowed:
+          return "lobbyMeetingRoleNotAllowed"
+        case .removeParticipantOperationFailure:
+          return "removeParticipantOperationFailure"
+        case .unknownError:
+          return "unknownError"
+        }
+    }
+
+    public static func convertToLobbyErrorCode(_ error: NSError) -> LobbyErrorCode {
         switch CallingCommunicationErrors(rawValue: error.code) {
         case .lobbyDisabledByConfigurations:
             return .lobbyDisabledByConfigurations

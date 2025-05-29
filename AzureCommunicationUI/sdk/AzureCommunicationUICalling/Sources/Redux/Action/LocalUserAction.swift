@@ -6,7 +6,7 @@
 import Foundation
 import Combine
 
-enum LocalUserAction: Equatable {
+public enum LocalUserAction: Equatable {
 
     case cameraPreviewOnTriggered
     case cameraOnTriggered
@@ -43,7 +43,9 @@ enum LocalUserAction: Equatable {
     case setCapabilities(capabilities: Set<ParticipantCapabilityType>)
     case onCapabilitiesChanged(event: CapabilitiesChangedEvent)
 
-    static func == (lhs: LocalUserAction, rhs: LocalUserAction) -> Bool {
+    case updateCameraTransforms(transforms: [CameraTransforms<Any>])
+
+    public static func == (lhs: LocalUserAction, rhs: LocalUserAction) -> Bool {
 
         switch (lhs, rhs) {
         case let (.cameraOnFailed(lErr), .cameraOnFailed(rErr)),

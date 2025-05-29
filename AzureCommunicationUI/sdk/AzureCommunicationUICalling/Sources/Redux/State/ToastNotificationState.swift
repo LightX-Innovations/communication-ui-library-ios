@@ -5,7 +5,7 @@
 
 import Foundation
 
-enum ToastNotificationKind {
+public enum ToastNotificationKind {
     case networkReceiveQuality
     case networkSendQuality
     case networkReconnectionQuality
@@ -18,7 +18,7 @@ enum ToastNotificationKind {
     case someFeaturesGained
 }
 
-struct ToastNotificationState: Equatable {
+public struct ToastNotificationState: Equatable {
     let status: ToastNotificationKind?
 
     init(status: ToastNotificationKind? = nil) {

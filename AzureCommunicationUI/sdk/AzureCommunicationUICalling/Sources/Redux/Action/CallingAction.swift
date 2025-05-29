@@ -5,7 +5,7 @@
 
 import Foundation
 
-enum CallingAction: Equatable {
+public enum CallingAction: Equatable {
     case callStartRequested
     case callEndRequested
     case callEnded
@@ -32,8 +32,8 @@ enum CallingAction: Equatable {
     </CALL_START_TIME> */
 }
 
-enum ErrorAction: Equatable {
-    static func == (lhs: ErrorAction, rhs: ErrorAction) -> Bool {
+public enum ErrorAction: Equatable {
+    public static func == (lhs: ErrorAction, rhs: ErrorAction) -> Bool {
         switch (lhs, rhs) {
         case let (.fatalErrorUpdated(internalError: lErr, error: _),
                   .fatalErrorUpdated(internalError: rErr, error: _)):

@@ -6,12 +6,12 @@
 import Foundation
 import UIKit
 
-struct DefaultButtonState: Equatable {
+public struct DefaultButtonState: Equatable {
     let enabled: Bool
     let visible: Bool
 }
 
-struct CustomButtonState: Equatable {
+public struct CustomButtonState: Equatable {
     let id: String
     let enabled: Bool
     let visible: Bool
@@ -19,7 +19,7 @@ struct CustomButtonState: Equatable {
     let title: String
 }
 
-struct ButtonViewDataState: Equatable {
+public struct ButtonViewDataState: Equatable {
     let setupScreenCameraButtonState: DefaultButtonState?
     let setupScreenMicButtonState: DefaultButtonState?
     let setupScreenAudioDeviceButtonState: DefaultButtonState?
@@ -71,7 +71,7 @@ struct ButtonViewDataState: Equatable {
         self.callScreenHeaderCustomButtonsState = callScreenHeaderCustomButtonsState
     }
 
-    static func constructInitial(setupScreenOptions: SetupScreenOptions?,
+    public static func constructInitial(setupScreenOptions: SetupScreenOptions?,
                                  callScreenOptions: CallScreenOptions?) -> ButtonViewDataState {
         return ButtonViewDataState(
             setupScreenCameraButtonState: DefaultButtonState(

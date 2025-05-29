@@ -7,11 +7,11 @@ import Combine
 import Foundation
 import UIKit
 
-protocol LifeCycleManagerProtocol {
+public protocol LifeCycleManagerProtocol {
 
 }
 
-class UIKitAppLifeCycleManager: LifeCycleManagerProtocol {
+public class UIKitAppLifeCycleManager: LifeCycleManagerProtocol {
 
     private let logger: Logger
     private let store: Store<AppState, Action>

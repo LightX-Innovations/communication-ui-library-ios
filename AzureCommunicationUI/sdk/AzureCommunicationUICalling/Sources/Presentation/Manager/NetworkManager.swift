@@ -8,7 +8,7 @@ import Combine
 
 protocol NetworkManagerProtocol {}
 
-class NetworkManager: NetworkManagerProtocol, ObservableObject {
+public class NetworkManager: NetworkManagerProtocol, ObservableObject {
     @Published var isConnected = true
     private enum Constant {
         static let networkQueue: String = "NetworkMonitorQueue"

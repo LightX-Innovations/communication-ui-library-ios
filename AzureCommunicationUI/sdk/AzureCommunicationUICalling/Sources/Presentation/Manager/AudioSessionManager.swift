@@ -7,11 +7,11 @@ import AVFoundation
 
 import Combine
 
-protocol AudioSessionManagerProtocol {
+public protocol AudioSessionManagerProtocol {
     func isAudioUsedByOther() -> Bool
 }
 
-class AudioSessionManager: AudioSessionManagerProtocol {
+public class AudioSessionManager: AudioSessionManagerProtocol {
     private let logger: Logger
     private let store: Store<AppState, Action>
     private var localUserAudioDeviceState: LocalUserState.AudioDeviceSelectionStatus?
@@ -121,7 +121,7 @@ class AudioSessionManager: AudioSessionManagerProtocol {
         }
     }
 
-    func isAudioUsedByOther() -> Bool {
+   public func isAudioUsedByOther() -> Bool {
         if isCallKitEnabled {
             return true // Microphone is not in use, callkit will manage
         }

@@ -5,13 +5,24 @@
 
 import Foundation
 
-enum NavigationStatus {
+public enum NavigationStatus {
     case setup
     case inCall
     case exit
+
+    public var description: String {
+        switch self {
+        case .setup:
+          return "setup"
+        case .inCall:
+          return "inCall"
+        case .exit:
+          return "exit"
+        }
+    }
 }
 
-struct NavigationState: Equatable {
+public struct NavigationState: Equatable {
 
     let status: NavigationStatus
     let supportFormVisible: Bool
@@ -55,7 +66,7 @@ struct NavigationState: Equatable {
         self.selectedParticipant = selectedParticipant
     }
 
-    static func == (lhs: NavigationState, rhs: NavigationState) -> Bool {
+    public static func == (lhs: NavigationState, rhs: NavigationState) -> Bool {
         return lhs.status == rhs.status
             && lhs.supportFormVisible == rhs.supportFormVisible
             && lhs.captionsLanguageViewVisible == rhs.captionsLanguageViewVisible
@@ -68,5 +79,12 @@ struct NavigationState: Equatable {
             && lhs.participantsVisible == rhs.participantsVisible
             && lhs.participantActionsVisible == rhs.participantActionsVisible
             && lhs.selectedParticipant == rhs.selectedParticipant
+    }
+
+    public func toJson() -> [String: Any] {
+      return [
+        "status": self.status.description,
+        "supportFormVisible": self.supportFormVisible,
+      ]
     }
 }

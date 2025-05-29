@@ -4,7 +4,7 @@
 //
 import Foundation
 
-struct RttState: Equatable {
+public struct RttState: Equatable {
     var isRttOn: Bool
     var isMaximized: Bool
 

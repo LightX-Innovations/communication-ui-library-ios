@@ -6,8 +6,8 @@
 import Foundation
 import AzureCommunicationCalling
 
-struct CapabilitiesChangedEvent: Equatable {
-    static func == (lhs: CapabilitiesChangedEvent, rhs: CapabilitiesChangedEvent) -> Bool {
+public struct CapabilitiesChangedEvent: Equatable {
+    public static func == (lhs: CapabilitiesChangedEvent, rhs: CapabilitiesChangedEvent) -> Bool {
         if lhs.capabilitiesChangedReason == rhs.capabilitiesChangedReason
             && lhs.changedCapabilities == rhs.changedCapabilities {
             return true

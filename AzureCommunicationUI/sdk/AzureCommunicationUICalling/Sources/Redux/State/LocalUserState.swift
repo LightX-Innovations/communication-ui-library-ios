@@ -5,15 +5,28 @@
 
 import Foundation
 
-struct LocalUserState {
-    enum CameraOperationalStatus: Equatable {
+public struct LocalUserState {
+    public enum CameraOperationalStatus: Equatable {
         case on
         case off
         case paused
         case pending
 
-        static func == (lhs: LocalUserState.CameraOperationalStatus,
-                        rhs: LocalUserState.CameraOperationalStatus) -> Bool {
+        public var description: String {
+            switch self {
+            case .on:
+              return "on"
+            case .off:
+              return "off"
+            case .paused:
+              return "paused"
+            case .pending:
+              return "pending"
+            }
+        }
+
+      public static func == (lhs: LocalUserState.CameraOperationalStatus,
+                             rhs: LocalUserState.CameraOperationalStatus) -> Bool {
             switch (lhs, rhs) {
             case (.on, .on),
                  (.off, .off),
@@ -26,13 +39,24 @@ struct LocalUserState {
         }
     }
 
-    enum CameraDeviceSelectionStatus: Equatable {
+public enum CameraDeviceSelectionStatus: Equatable {
         case front
         case back
         case switching
 
-        static func == (lhs: LocalUserState.CameraDeviceSelectionStatus,
-                        rhs: LocalUserState.CameraDeviceSelectionStatus) -> Bool {
+        public var description: String {
+            switch self {
+            case .front:
+              return "front"
+            case .back:
+              return "back"
+            case .switching:
+              return "switching"
+            }
+        }
+
+      public static func == (lhs: LocalUserState.CameraDeviceSelectionStatus,
+                             rhs: LocalUserState.CameraDeviceSelectionStatus) -> Bool {
             switch (lhs, rhs) {
             case (.front, .front),
                  (.back, .back),
@@ -44,12 +68,21 @@ struct LocalUserState {
         }
     }
 
-    enum CameraTransmissionStatus: Equatable {
+public enum CameraTransmissionStatus: Equatable {
         case local
         case remote
 
-        static func == (lhs: LocalUserState.CameraTransmissionStatus,
-                        rhs: LocalUserState.CameraTransmissionStatus) -> Bool {
+        public var description: String {
+            switch self {
+            case .local:
+              return "local"
+            case .remote:
+              return "remote"
+            }
+        }
+
+      public static func == (lhs: LocalUserState.CameraTransmissionStatus,
+                             rhs: LocalUserState.CameraTransmissionStatus) -> Bool {
             switch (lhs, rhs) {
             case (.local, .local),
                  (.remote, .remote):
@@ -60,13 +93,24 @@ struct LocalUserState {
         }
     }
 
-    enum AudioOperationalStatus: Equatable {
+    public enum AudioOperationalStatus: Equatable {
         case on
         case off
         case pending
 
-        static func == (lhs: LocalUserState.AudioOperationalStatus,
-                        rhs: LocalUserState.AudioOperationalStatus) -> Bool {
+        public var description: String {
+            switch self {
+            case .on:
+              return "on"
+            case .off:
+              return "off"
+            case .pending:
+              return "pending"
+            }
+        }
+
+      public static func == (lhs: LocalUserState.AudioOperationalStatus,
+                             rhs: LocalUserState.AudioOperationalStatus) -> Bool {
             switch (lhs, rhs) {
             case (.on, .on),
                  (.off, .off),
@@ -78,7 +122,7 @@ struct LocalUserState {
         }
     }
 
-    enum AudioDeviceSelectionStatus: Equatable {
+  public enum AudioDeviceSelectionStatus: Equatable {
         case speakerSelected
         case speakerRequested
         case receiverSelected
@@ -88,8 +132,29 @@ struct LocalUserState {
         case headphonesSelected
         case headphonesRequested
 
-        static func == (lhs: LocalUserState.AudioDeviceSelectionStatus,
-                        rhs: LocalUserState.AudioDeviceSelectionStatus) -> Bool {
+        public var description: String {
+            switch self {
+            case .speakerSelected:
+              return "speakerSelected"
+            case .speakerRequested:
+              return "speakerRequested"
+            case .receiverSelected:
+              return "receiverSelected"
+            case .receiverRequested:
+              return "receiverRequested"
+            case .bluetoothSelected:
+              return "bluetoothSelected"
+            case .bluetoothRequested:
+              return "bluetoothRequested"
+            case .headphonesSelected:
+              return "headphonesSelected"
+            case .headphonesRequested:
+              return "headphonesRequested"
+            }
+        }
+
+        public static func == (lhs: LocalUserState.AudioDeviceSelectionStatus,
+                               rhs: LocalUserState.AudioDeviceSelectionStatus) -> Bool {
             switch (lhs, rhs) {
             case (.speakerSelected, .speakerSelected),
                  (.speakerRequested, .speakerRequested),
@@ -115,17 +180,34 @@ struct LocalUserState {
         }
     }
 
-    struct CameraState {
+  public struct CameraState {
         let operation: CameraOperationalStatus
         let device: CameraDeviceSelectionStatus
         let transmission: CameraTransmissionStatus
         var error: Error?
-    }
 
-    struct AudioState {
+        public func toJson() -> [String: Any] {
+            return [
+              "operation": self.operation.description,
+              "device": self.device.description,
+              "transmission": self.transmission.description,
+              "error": self.error?.localizedDescription ?? "",
+            ]
+        }
+  }
+
+    public struct AudioState {
         let operation: AudioOperationalStatus
         let device: AudioDeviceSelectionStatus
         var error: Error?
+
+        public func toJson() -> [String: Any] {
+            return [
+              "operation": self.operation.description,
+              "device": self.device.description,
+              "error": self.error?.localizedDescription ?? "",
+            ]
+        }
     }
 
     let cameraState: CameraState
@@ -136,6 +218,7 @@ struct LocalUserState {
     let participantRole: ParticipantRoleEnum?
     let capabilities: Set<ParticipantCapabilityType>
     let currentCapabilitiesAreDefault: Bool
+    let transforms: [CameraTransforms<Any>]?
 
     init(cameraState: CameraState = CameraState(operation: .off,
                                                 device: .front,
@@ -147,6 +230,7 @@ struct LocalUserState {
          localVideoStreamIdentifier: String? = nil,
          participantRole: ParticipantRoleEnum? = nil,
          capabilities: Set<ParticipantCapabilityType> = [.unmuteMicrophone, .turnVideoOn],
+         transforms: [CameraTransforms<Any>]? = nil,
          currentCapabilitiesAreDefault: Bool = true) {
         self.cameraState = cameraState
         self.audioState = audioState
@@ -156,5 +240,16 @@ struct LocalUserState {
         self.participantRole = participantRole
         self.capabilities = capabilities
         self.currentCapabilitiesAreDefault = currentCapabilitiesAreDefault
+        self.transforms = transforms
+    }
+
+    public func toJson() -> [String: Any] {
+        return [
+          "cameraState": self.cameraState.toJson(),
+          "audioState": self.audioState.toJson(),
+          "displayName": self.displayName ?? "",
+          "localVideoStreamIdentifier": self.localVideoStreamIdentifier ?? "",
+          "participantRole": self.participantRole?.description ?? "",
+        ]
     }
 }

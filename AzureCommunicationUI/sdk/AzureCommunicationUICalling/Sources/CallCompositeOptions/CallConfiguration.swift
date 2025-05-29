@@ -6,7 +6,7 @@
 import Foundation
 import AzureCommunicationCommon
 
-struct CallConfiguration {
+public struct CallConfiguration {
     let groupId: UUID?
     let meetingLink: String?
     let meetingId: String?
@@ -78,7 +78,7 @@ struct CallConfiguration {
     }
 }
 
-enum CompositeCallType {
+public enum CompositeCallType {
     case groupCall
     case teamsMeeting
     case oneToNOutgoing

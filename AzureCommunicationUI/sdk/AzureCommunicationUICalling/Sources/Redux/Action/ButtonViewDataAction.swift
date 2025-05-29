@@ -6,7 +6,7 @@
 import Foundation
 import SwiftUI
 
-enum ButtonViewDataAction: Equatable {
+public enum ButtonViewDataAction: Equatable {
 
     case callScreenCameraButtonIsEnabledUpdated(enabled: Bool)
     case callScreenCameraButtonIsVisibleUpdated(visible: Bool)

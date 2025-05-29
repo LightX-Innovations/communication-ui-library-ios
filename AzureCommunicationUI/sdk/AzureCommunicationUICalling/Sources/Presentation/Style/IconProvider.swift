@@ -6,7 +6,7 @@
 import UIKit
 import SwiftUI
 
-enum CompositeIcon: String {
+public enum CompositeIcon: String {
     case none = ""
     case cameraSwitch = "ic_fluent_camera_switch_24_regular"
     case meetNow = "ic_fluent_meet_now_20_regular"

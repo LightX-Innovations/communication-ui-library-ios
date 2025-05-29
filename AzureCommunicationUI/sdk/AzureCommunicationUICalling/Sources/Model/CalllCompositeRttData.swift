@@ -6,11 +6,11 @@
 import Foundation
 import AzureCommunicationCalling
 
-enum RttResultType {
+public enum RttResultType {
     case final
     case partial
 
-    func toRttResultType() -> AzureCommunicationCalling.RealTimeTextResultType {
+    public func toRttResultType() -> AzureCommunicationCalling.RealTimeTextResultType {
         switch self {
         case .final:
             return .final
@@ -20,15 +20,15 @@ enum RttResultType {
     }
 }
 
-enum CaptionsRttType {
+public enum CaptionsRttType {
     case captions
     case rtt
     case rttInfo
 }
 
-struct CallCompositeRttData: Identifiable, Equatable {
+public struct CallCompositeRttData: Identifiable, Equatable {
     /// to make CallCompositeRttData to be identifiable
-    var id: Date { localCreatedTime }
+    public var id: Date { localCreatedTime }
 
     var resultType: RttResultType
     let senderRawId: String
@@ -39,7 +39,7 @@ struct CallCompositeRttData: Identifiable, Equatable {
     let localUpdatedTime: Date
     let isLocal: Bool
 
-    static func == (lhs: CallCompositeRttData, rhs: CallCompositeRttData) -> Bool {
+    public static func == (lhs: CallCompositeRttData, rhs: CallCompositeRttData) -> Bool {
         // Define what makes two instances of CallCompositeRttData equal
         return lhs.isLocal == rhs.isLocal &&
         lhs.localCreatedTime == rhs.localCreatedTime &&
@@ -51,7 +51,7 @@ struct CallCompositeRttData: Identifiable, Equatable {
         lhs.text == rhs.text
     }
 
-    func toDisplayData() -> CaptionsRttRecord {
+    public func toDisplayData() -> CaptionsRttRecord {
         CaptionsRttRecord(
             displayRawId: senderRawId,
             displayName: senderName,
@@ -69,8 +69,8 @@ struct CallCompositeRttData: Identifiable, Equatable {
     }
 }
 
-struct CaptionsRttRecord: Identifiable, Equatable {
-    var id: Date {
+public struct CaptionsRttRecord: Identifiable, Equatable {
+    public var id: Date {
         return createdTimestamp
     }
 
@@ -87,7 +87,7 @@ struct CaptionsRttRecord: Identifiable, Equatable {
     var isFinal: Bool
     let isLocal: Bool
 
-    static func == (lhs: CaptionsRttRecord, rhs: CaptionsRttRecord) -> Bool {
+    public static func == (lhs: CaptionsRttRecord, rhs: CaptionsRttRecord) -> Bool {
         return lhs.displayName == rhs.displayName &&
         lhs.displayRawId == rhs.displayRawId &&
         lhs.text == rhs.text &&
@@ -116,11 +116,11 @@ extension AzureCommunicationCalling.RealTimeTextResultType {
     }
 }
 
-struct CallerInfo: Equatable {
+public struct CallerInfo: Equatable {
     let rawId: String
     let displayName: String
 
-    static func == (lhs: CallerInfo, rhs: CallerInfo) -> Bool {
+    public static func == (lhs: CallerInfo, rhs: CallerInfo) -> Bool {
         return lhs.displayName == rhs.displayName &&
         lhs.rawId == rhs.rawId
     }

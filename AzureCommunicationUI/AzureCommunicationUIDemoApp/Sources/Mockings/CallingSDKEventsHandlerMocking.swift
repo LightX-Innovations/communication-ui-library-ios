@@ -120,7 +120,7 @@ class CallingSDKEventsHandlerMocking: CallingSDKEventsHandler {
         }
     }
 
-    func removeParticipant() {
+     func removeParticipant() {
         Task { @MainActor [weak self] in
             guard let self,
                   !self.remoteParticipantsMocking.isEmpty else {

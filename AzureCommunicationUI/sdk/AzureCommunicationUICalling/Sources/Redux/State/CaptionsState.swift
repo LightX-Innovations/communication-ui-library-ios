@@ -4,7 +4,7 @@
 //
 import Foundation
 
-struct CaptionsState: Equatable {
+public struct CaptionsState: Equatable {
     var isCaptionsOn: Bool
     var isStarted: Bool
     var supportedSpokenLanguages: [String]?

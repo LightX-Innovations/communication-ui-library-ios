@@ -7,12 +7,12 @@ import Combine
 import Foundation
 import AzureCommunicationCalling
 
-enum CameraDevice {
+public enum CameraDevice {
     case front
     case back
 }
 
-class CompositeRemoteParticipant<WrappedType, VideoStreamType> {
+public class CompositeRemoteParticipant<WrappedType, VideoStreamType> {
     var identifier: CommunicationIdentifier
     var videoStreams: [CompositeRemoteVideoStream<VideoStreamType>]
     var wrappedObject: WrappedType
@@ -27,7 +27,7 @@ class CompositeRemoteParticipant<WrappedType, VideoStreamType> {
 }
 
 enum CompositeMediaStreamType {
-    case cameraVideo
+  case cameraVideo
     case screenSharing
 }
 
@@ -43,7 +43,7 @@ class CompositeRemoteVideoStream<WrappedType> {
     }
 }
 
-class CompositeLocalVideoStream<WrappedType> {
+public class CompositeLocalVideoStream<WrappedType> {
     var mediaStreamType: CompositeMediaStreamType = .cameraVideo
     var wrappedObject: WrappedType
 
@@ -53,7 +53,7 @@ class CompositeLocalVideoStream<WrappedType> {
     }
 }
 
-protocol CallingSDKWrapperProtocol {
+public protocol CallingSDKWrapperProtocol {
     func getRemoteParticipant<ParticipantType, StreamType>(_ identifier: String)
     -> CompositeRemoteParticipant<ParticipantType, StreamType>?
     func getLocalVideoStream<LocalVideoStreamType>(_ identifier: String)
@@ -89,7 +89,7 @@ protocol CallingSDKWrapperProtocol {
     func dispose()
 }
 
-protocol CallingSDKEventsHandling {
+public protocol CallingSDKEventsHandling {
     var participantsInfoListSubject: CurrentValueSubject<[ParticipantInfoModel], Never> { get }
 
     var callInfoSubject: PassthroughSubject<CallInfoModel, Never> { get }

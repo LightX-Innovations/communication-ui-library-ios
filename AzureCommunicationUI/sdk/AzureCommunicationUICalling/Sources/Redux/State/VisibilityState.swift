@@ -5,7 +5,7 @@
 
 import Foundation
 
-enum VisibilityStatus {
+public enum VisibilityStatus {
     case visible
     case hideRequested
     case hidden
@@ -28,11 +28,17 @@ enum VisibilityStatus {
     }
 }
 
-struct VisibilityState {
+public struct VisibilityState {
 
     let currentStatus: VisibilityStatus
 
     init(currentStatus: VisibilityStatus = .visible) {
         self.currentStatus = currentStatus
+    }
+
+    public func toJson() -> [String: Any] {
+        return [
+            "currentStatus": self.currentStatus.description
+        ]
     }
 }

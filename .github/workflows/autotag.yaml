@@ -1,4 +1,7 @@
-name: Create Release and Tag
+name: Create Release and Tag on Push
+
+permissions:
+  contents: write
 
 on:
   push:
@@ -12,6 +15,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Ensure the full history is fetched
 
       - name: Set up Git
         run: |
@@ -21,22 +26,21 @@ jobs:
       - name: Get the latest tag
         id: get_latest_tag
         run: |
-          latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
+          latest_tag=$(git tag --sort=-v:refname --merged lightx | head -n 1)
+          if [ -z "$latest_tag" ]; then
+            latest_tag="0.0.0"
+          fi
           echo "latest_tag=$latest_tag" >> $GITHUB_ENV
 
       - name: Increment the tag version
         id: increment_tag
         run: |
-          if [ -z "${{ env.latest_tag }}" ]; then
-            new_tag="1.0.0"
-          else
-            IFS='.' read -r -a tag_parts <<< "${{ env.latest_tag }}"
-            major=${tag_parts[0]}
-            minor=${tag_parts[1]}
-            patch=${tag_parts[2]}
-            patch=$((patch + 1))
-            new_tag="$major.$minor.$patch"
-          fi
+          IFS='.' read -r -a tag_parts <<< "${{ env.latest_tag }}"
+          major=${tag_parts[0]}
+          minor=${tag_parts[1]}
+          patch=${tag_parts[2]}
+          patch=$((patch + 1))
+          new_tag="$major.$minor.$patch"
           echo "new_tag=$new_tag" >> $GITHUB_ENV
 
       - name: Create new tag and push
