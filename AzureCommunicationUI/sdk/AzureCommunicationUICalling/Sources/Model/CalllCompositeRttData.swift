@@ -28,7 +28,7 @@ public enum CaptionsRttType {
 
 public struct CallCompositeRttData: Identifiable, Equatable {
     /// to make CallCompositeRttData to be identifiable
-    var id: Date { localCreatedTime }
+    public var id: Date { localCreatedTime }
 
     var resultType: RttResultType
     let senderRawId: String
@@ -70,7 +70,7 @@ public struct CallCompositeRttData: Identifiable, Equatable {
 }
 
 public struct CaptionsRttRecord: Identifiable, Equatable {
-    var id: Date {
+    public var id: Date {
         return createdTimestamp
     }
 

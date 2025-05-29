@@ -34,7 +34,7 @@ public enum CallCompositeCaptionsErrorsDescription: String {
 
 public struct CallCompositeCaptionsData: Identifiable, Equatable {
     /// to make CallCompositeCaptionsData to be identifiable
-    var id: Date { timestamp }
+    public var id: Date { timestamp }
 
     var resultType: CaptionsResultType
     let speakerRawId: String
