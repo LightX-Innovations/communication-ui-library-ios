@@ -5,7 +5,7 @@
 
 import Foundation
 
-enum ToastNotificationAction: Equatable {
+public enum ToastNotificationAction: Equatable {
     case showNotification(kind: ToastNotificationKind)
     case dismissNotification
 }

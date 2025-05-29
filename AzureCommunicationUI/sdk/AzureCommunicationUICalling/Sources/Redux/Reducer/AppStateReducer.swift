@@ -5,7 +5,7 @@
 
 import Combine
 
-public extension Reducer {
+extension Reducer {
     static func appStateReducer(
         permissionsReducer: Reducer<PermissionState, PermissionAction> = .livePermissionsReducer,
         localUserReducer: Reducer<LocalUserState, LocalUserAction> = .liveLocalUserReducer,

@@ -5,7 +5,7 @@
 
 import Foundation
 
-enum CaptionsAction: Equatable {
+public enum CaptionsAction: Equatable {
     case turnOnCaptions(language: String)
     case started
     case turnOffCaptions

@@ -54,7 +54,6 @@ internal class SupportFormViewModel: ObservableObject {
             blockSubmission = _messageText.isEmpty
         }
     }
-  }
 
     // Public facing property to get and set the message text
     var messageText: String {

@@ -5,7 +5,7 @@
 
 import Foundation
 
-enum RttAction: Equatable {
+public enum RttAction: Equatable {
     case turnOnRtt
     case sendRtt(message: String, isFinal: Bool)
     case updateMaximized(isMaximized: Bool)

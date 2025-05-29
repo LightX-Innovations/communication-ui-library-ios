@@ -101,7 +101,7 @@ extension Reducer where State == LocalUserState,
                               localVideoStreamIdentifier: localVideoStreamIdentifier,
                               participantRole: participantRole,
                               capabilities: capabilities,
-                              currentCapabilitiesAreDefault: currentCapabilitiesAreDefault
+                              currentCapabilitiesAreDefault: currentCapabilitiesAreDefault,
                               transforms: transforms
                               )
     }
