@@ -34,6 +34,10 @@ struct RemoteParticipantsState {
       for dominantSpeaker in self.dominantSpeakers {
         dominantSpeakersJson.append(dominantSpeaker)
       }
+      var participantInfoListJson: [[String: Any]] = []
+      for participantInfo in self.participantInfoList {
+          participantInfoListJson.append(participantInfo.toJson())
+      }
       return [
         "participantInfoList": participantInfoListJson,
         "lastUpdateTimeStamp": self.lastUpdateTimeStamp.formatted(

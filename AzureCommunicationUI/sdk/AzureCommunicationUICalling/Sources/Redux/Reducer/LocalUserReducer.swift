@@ -24,6 +24,7 @@ extension Reducer where State == LocalUserState,
         var participantRole = localUserState.participantRole
         var capabilities = localUserState.capabilities
         var currentCapabilitiesAreDefault = localUserState.currentCapabilitiesAreDefault
+        var transforms = localUserState.transforms
 
         switch action {
         case .cameraPreviewOnTriggered:

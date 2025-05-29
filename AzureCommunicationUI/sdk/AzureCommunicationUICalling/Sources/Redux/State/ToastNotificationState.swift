@@ -5,7 +5,7 @@
 
 import Foundation
 
-enum ToastNotificationKind {
+public enum ToastNotificationKind {
     case networkReceiveQuality
     case networkSendQuality
     case networkReconnectionQuality

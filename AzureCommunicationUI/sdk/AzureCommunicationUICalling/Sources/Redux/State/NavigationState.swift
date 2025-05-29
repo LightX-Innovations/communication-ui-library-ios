@@ -66,7 +66,7 @@ public struct NavigationState: Equatable {
         self.selectedParticipant = selectedParticipant
     }
 
-    static func == (lhs: NavigationState, rhs: NavigationState) -> Bool {
+    public static func == (lhs: NavigationState, rhs: NavigationState) -> Bool {
         return lhs.status == rhs.status
             && lhs.supportFormVisible == rhs.supportFormVisible
             && lhs.captionsLanguageViewVisible == rhs.captionsLanguageViewVisible

@@ -24,6 +24,45 @@ public enum CallCompositeInternalError: Error, Equatable {
     case captionsStartFailedSpokenLanguageNotSupported
     case captionsStartFailedCallNotConnected
 
+    public var description: String {
+        switch self {
+        case .deviceManagerFailed(let error):
+            return "Device manager failed with error: \(error?.localizedDescription ?? "Unknown error")"
+        case .callJoinConnectionFailed:
+            return "Call join connection failed"
+        case .callTokenFailed:
+            return "Call token failed"
+        case .callJoinFailed:
+            return "Call join failed"
+        case .callEndFailed:
+            return "Call end failed"
+        case .callHoldFailed:
+            return "Call hold failed"
+        case .callResumeFailed:
+            return "Call resume failed"
+        case .callEvicted:
+            return "Call evicted"
+        case .callDenied:
+            return "Call denied"
+        case .callJoinFailedByMicPermission:
+            return "Call join failed due to microphone permission not granted"
+        case .cameraSwitchFailed:
+            return "Camera switch failed"
+        case .cameraOnFailed:
+            return "Camera on failed"
+        case .networkConnectionNotAvailable:
+            return "Network connection not available"
+        case .micNotAvailable:
+            return "Microphone not available"
+        case .captionsNotActive:
+            return "Captions not active"
+        case .captionsStartFailedSpokenLanguageNotSupported:
+            return "Captions start failed due to spoken language not supported"
+        case .captionsStartFailedCallNotConnected:
+            return "Captions start failed because call is not connected"
+        }
+    }
+
     public func toCallCompositeErrorCode() -> String? {
         switch self {
         case .deviceManagerFailed:
