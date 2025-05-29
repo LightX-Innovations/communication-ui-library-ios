@@ -7,7 +7,7 @@ import Foundation
 
 public class Store<State, Action>: ObservableObject {
 
-    @Published var state: State
+    public @Published var state: State
 
     private var dispatchFunction: CommonActionDispatch<Action>!
     private let reducer: Reducer<State, Action>
