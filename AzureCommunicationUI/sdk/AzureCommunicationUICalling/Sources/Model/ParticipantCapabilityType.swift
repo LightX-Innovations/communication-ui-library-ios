@@ -6,7 +6,7 @@
 import Foundation
 import AzureCommunicationCalling
 
-enum ParticipantCapabilityType: String, CaseIterable, Equatable {
+public enum ParticipantCapabilityType: String, CaseIterable, Equatable {
     case turnVideoOn
     case unmuteMicrophone
     case shareScreen

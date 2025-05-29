@@ -5,7 +5,7 @@
 
 import Foundation
 
-enum CallCompositeInternalError: Error, Equatable {
+public enum CallCompositeInternalError: Error, Equatable {
     case deviceManagerFailed(Error?)
     case callJoinConnectionFailed
     case callTokenFailed
@@ -24,7 +24,7 @@ enum CallCompositeInternalError: Error, Equatable {
     case captionsStartFailedSpokenLanguageNotSupported
     case captionsStartFailedCallNotConnected
 
-    func toCallCompositeErrorCode() -> String? {
+    public func toCallCompositeErrorCode() -> String? {
         switch self {
         case .deviceManagerFailed:
             return CallCompositeErrorCode.cameraFailure
@@ -56,7 +56,7 @@ enum CallCompositeInternalError: Error, Equatable {
         }
     }
 
-    func isFatalError() -> Bool {
+    public func isFatalError() -> Bool {
         switch self {
         case .deviceManagerFailed,
                 .callTokenFailed,

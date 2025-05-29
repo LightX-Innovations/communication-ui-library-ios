@@ -121,7 +121,7 @@ public class AudioSessionManager: AudioSessionManagerProtocol {
         }
     }
 
-    func isAudioUsedByOther() -> Bool {
+   public func isAudioUsedByOther() -> Bool {
         if isCallKitEnabled {
             return true // Microphone is not in use, callkit will manage
         }

@@ -6,17 +6,18 @@
 import Foundation
 import AzureCommunicationCalling
 
-enum CallCompositeCaptionsType: Int {
+public enum CallCompositeCaptionsType: Int {
     case none
     case communication
     case teams
 }
-enum CaptionsResultType {
+
+public enum CaptionsResultType {
     case final
     case partial
 }
 
-enum CallCompositeCaptionsErrors: Int {
+public enum CallCompositeCaptionsErrors: Int {
     case none
     case captionsFailedToStart
     case captionsFailedToStop
@@ -25,7 +26,7 @@ enum CallCompositeCaptionsErrors: Int {
 }
 
 /// Todo need to remove when Native SDK has the new error feature
-enum CallCompositeCaptionsErrorsDescription: String {
+public enum CallCompositeCaptionsErrorsDescription: String {
     case captionsStartFailedCallNotConnected = "Get captions failed, call should be connected"
     case captionsStartFailedSpokenLanguageNotSupported = "The requested language is not supported"
     case captionsNotActive = " Captions are not active"
