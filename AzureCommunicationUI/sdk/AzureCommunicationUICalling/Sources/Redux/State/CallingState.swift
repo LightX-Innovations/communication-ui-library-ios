@@ -80,7 +80,7 @@ public enum RecordingStatus: Equatable {
     }
 }
 
-struct CallingState: Equatable {
+public struct CallingState: Equatable {
     let status: CallingStatus
     let operationStatus: OperationStatus
     let callId: String?
@@ -126,7 +126,7 @@ struct CallingState: Equatable {
         </CALL_START_TIME> */
     }
 
-    static func == (lhs: CallingState, rhs: CallingState) -> Bool {
+    public static func == (lhs: CallingState, rhs: CallingState) -> Bool {
         return (lhs.status == rhs.status
             && lhs.isRecordingActive == rhs.isRecordingActive
             && lhs.isTranscriptionActive == rhs.isTranscriptionActive)

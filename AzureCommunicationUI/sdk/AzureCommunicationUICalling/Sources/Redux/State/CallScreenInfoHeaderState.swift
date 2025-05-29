@@ -5,7 +5,7 @@
 
 import Foundation
 
-struct CallScreenInfoHeaderState {
+public struct CallScreenInfoHeaderState {
     let title: String?
     let subtitle: String?
     init(title: String? = nil, subtitle: String? = nil) {
