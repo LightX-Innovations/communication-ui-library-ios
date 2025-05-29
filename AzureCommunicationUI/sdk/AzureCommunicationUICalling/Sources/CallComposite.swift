@@ -117,6 +117,10 @@ public class CallComposite {
         return store?.state.callingState.status.toCallCompositeCallState() ?? CallState.none
     }
 
+    public func getStore() -> Store<AppState, Action>? {
+        return store
+    }
+
     /// Create an instance of CallComposite with options.
     /// - Parameter options: The CallCompositeOptions used to configure the experience.
     @available(*, deprecated, message: "Use init with CommunicationTokenCredential instead.")
