@@ -7,90 +7,81 @@ import Combine
 import Foundation
 
 class LocalVideoViewModel: ObservableObject {
-  private let logger: Logger
-  private let localizationProvider: LocalizationProviderProtocol
-  private let dispatch: ActionDispatch
+    private let logger: Logger
+    private let localizationProvider: LocalizationProviderProtocol
+    private let dispatch: ActionDispatch
 
-  @Published var localVideoStreamId: String?
-  @Published var displayName: String?
-  @Published var isMuted: Bool = false
-  @Published var cameraOperationalStatus: LocalUserState.CameraOperationalStatus = .off
-  @Published var isInPip: Bool = false
-  @Published var transforms: [CameraTransforms<Any>]?
+    @Published var localVideoStreamId: String?
+    @Published var displayName: String?
+    @Published var isMuted = false
+    @Published var cameraOperationalStatus: LocalUserState.CameraOperationalStatus = .off
+    @Published var isInPip = false
+    @Published var transforms: [CameraTransforms<Any>]?
 
-  var cameraSwitchButtonPipViewModel: IconButtonViewModel!
-  var cameraSwitchButtonFullViewModel: IconButtonViewModel!
+    var cameraSwitchButtonPipViewModel: IconButtonViewModel!
+    var cameraSwitchButtonFullViewModel: IconButtonViewModel!
 
-  init(
-    compositeViewModelFactory: CompositeViewModelFactoryProtocol,
-    logger: Logger,
-    localizationProvider: LocalizationProviderProtocol,
-    dispatchAction: @escaping ActionDispatch
-  ) {
-    self.logger = logger
-    self.localizationProvider = localizationProvider
-    self.dispatch = dispatchAction
+    init(compositeViewModelFactory: CompositeViewModelFactoryProtocol,
+         logger: Logger,
+         localizationProvider: LocalizationProviderProtocol,
+         dispatchAction: @escaping ActionDispatch) {
+        self.logger = logger
+        self.localizationProvider = localizationProvider
+        self.dispatch = dispatchAction
 
-    cameraSwitchButtonPipViewModel = compositeViewModelFactory.makeIconButtonViewModel(
-      iconName: .cameraSwitch,
-      buttonType: .cameraSwitchButtonPip,
-      isDisabled: false
-    ) { [weak self] in
-      guard let self = self else {
-        return
-      }
-      self.toggleCameraSwitchTapped()
-    }
-    cameraSwitchButtonFullViewModel = compositeViewModelFactory.makeIconButtonViewModel(
-      iconName: .cameraSwitch,
-      buttonType: .cameraSwitchButtonFull,
-      isDisabled: false
-    ) { [weak self] in
-      guard let self = self else {
-        return
-      }
-      self.toggleCameraSwitchTapped()
-    }
-  }
-
-  func toggleCameraSwitchTapped() {
-    dispatch(.localUserAction(.cameraSwitchTriggered))
-  }
-
-  func update(localUserState: LocalUserState, visibilityState: VisibilityState) {
-    if localVideoStreamId != localUserState.localVideoStreamIdentifier {
-      localVideoStreamId = localUserState.localVideoStreamIdentifier
+        cameraSwitchButtonPipViewModel = compositeViewModelFactory.makeIconButtonViewModel(
+            iconName: .cameraSwitch,
+            buttonType: .cameraSwitchButtonPip,
+            isDisabled: false) { [weak self] in
+                guard let self = self else {
+                    return
+                }
+                self.toggleCameraSwitchTapped()
+        }
+        cameraSwitchButtonFullViewModel = compositeViewModelFactory.makeIconButtonViewModel(
+            iconName: .cameraSwitch,
+            buttonType: .cameraSwitchButtonFull,
+            isDisabled: false) { [weak self] in
+                guard let self = self else {
+                    return
+                }
+                self.toggleCameraSwitchTapped()
+        }
     }
 
-    if displayName != localUserState.displayName {
-      displayName = localUserState.displayName
+    func toggleCameraSwitchTapped() {
+        dispatch(.localUserAction(.cameraSwitchTriggered))
     }
 
-    transforms = localUserState.transforms
+    func update(localUserState: LocalUserState, visibilityState: VisibilityState) {
+        if localVideoStreamId != localUserState.localVideoStreamIdentifier {
+            localVideoStreamId = localUserState.localVideoStreamIdentifier
+        }
 
-    if cameraOperationalStatus != localUserState.cameraState.operation {
-      cameraOperationalStatus = localUserState.cameraState.operation
+        if displayName != localUserState.displayName {
+            displayName = localUserState.displayName
+        }
+      transforms = localUserState.transforms
+
+        if cameraOperationalStatus != localUserState.cameraState.operation {
+            cameraOperationalStatus = localUserState.cameraState.operation
+        }
+
+        cameraSwitchButtonPipViewModel.update(isDisabled: localUserState.cameraState.device == .switching)
+        cameraSwitchButtonPipViewModel.update(accessibilityLabel: localUserState.cameraState.device == .front
+                                              ? localizationProvider.getLocalizedString(.frontCamera)
+                                              : localizationProvider.getLocalizedString(.backCamera))
+
+        cameraSwitchButtonFullViewModel.update(isDisabled: localUserState.cameraState.device == .switching)
+        cameraSwitchButtonFullViewModel.update(accessibilityLabel: localUserState.cameraState.device == .front
+                                               ? localizationProvider.getLocalizedString(.frontCamera)
+                                               : localizationProvider.getLocalizedString(.backCamera))
+
+        let showMuted = localUserState.audioState.operation != .on
+        if isMuted != showMuted {
+            isMuted = showMuted
+        }
+
+        isInPip = visibilityState.currentStatus == .pipModeEntered
     }
-
-    cameraSwitchButtonPipViewModel.update(
-      isDisabled: localUserState.cameraState.device == .switching)
-    cameraSwitchButtonPipViewModel.update(
-      accessibilityLabel: localUserState.cameraState.device == .front
-        ? localizationProvider.getLocalizedString(.frontCamera)
-        : localizationProvider.getLocalizedString(.backCamera))
-
-    cameraSwitchButtonFullViewModel.update(
-      isDisabled: localUserState.cameraState.device == .switching)
-    cameraSwitchButtonFullViewModel.update(
-      accessibilityLabel: localUserState.cameraState.device == .front
-        ? localizationProvider.getLocalizedString(.frontCamera)
-        : localizationProvider.getLocalizedString(.backCamera))
-
-    let showMuted = localUserState.audioState.operation != .on
-    if isMuted != showMuted {
-      isMuted = showMuted
-    }
-
-    isInPip = visibilityState.currentStatus == .pipModeEntered
-  }
 }

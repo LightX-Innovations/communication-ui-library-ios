@@ -55,7 +55,6 @@ enum CallCompositeInternalError: Error, Equatable {
             return nil
         }
     }
-  }
 
     func isFatalError() -> Bool {
         switch self {
@@ -80,31 +79,8 @@ enum CallCompositeInternalError: Error, Equatable {
             return false
         }
     }
-  }
-
-  public func isFatalError() -> Bool {
-    switch self {
-    case .deviceManagerFailed,
-      .callTokenFailed,
-      .callJoinFailed,
-      .callJoinFailedByMicPermission,
-      .networkConnectionNotAvailable,
-      .callEndFailed:
-      return true
-    case .callHoldFailed,
-      .callResumeFailed,
-      .callEvicted,
-      .callDenied,
-      .cameraSwitchFailed,
-      .cameraOnFailed,
-      .micNotAvailable,
-      .callJoinConnectionFailed:
-      return false
-    }
-  }
 }
 
-// swiftlint:disable:next extension_access_modifier
 extension CallCompositeInternalError {
     static func == (lhs: CallCompositeInternalError, rhs: CallCompositeInternalError) -> Bool {
         switch(lhs, rhs) {
@@ -129,5 +105,4 @@ extension CallCompositeInternalError {
             return false
         }
     }
-  }
 }

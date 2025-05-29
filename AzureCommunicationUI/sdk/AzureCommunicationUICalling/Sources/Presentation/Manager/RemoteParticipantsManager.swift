@@ -11,82 +11,75 @@ protocol RemoteParticipantsManagerProtocol {
 }
 
 class RemoteParticipantsManager: RemoteParticipantsManagerProtocol {
-  private let store: Store<AppState, Action>
-  private let eventsHandler: CallComposite.Events
-  private let avatarViewManager: AvatarViewManagerProtocol
-  private var participantsLastUpdateTimeStamp = Date()
-  private var participantsIds: Set<String> = []
+    private let store: Store<AppState, Action>
+    private let eventsHandler: CallComposite.Events
+    private let avatarViewManager: AvatarViewManagerProtocol
+    private var participantsLastUpdateTimeStamp = Date()
+    private var participantsIds: Set<String> = []
 
-  var cancellables = Set<AnyCancellable>()
+    var cancellables = Set<AnyCancellable>()
 
-  init(
-    store: Store<AppState, Action>,
-    callCompositeEventsHandler: CallComposite.Events,
-    avatarViewManager: AvatarViewManagerProtocol
-  ) {
-    self.store = store
-    self.eventsHandler = callCompositeEventsHandler
-    self.avatarViewManager = avatarViewManager
-    store.$state
-      .receive(on: DispatchQueue.main)
-      .sink { [weak self] state in
-        self?.receive(state)
-      }.store(in: &cancellables)
-  }
-
-  private func receive(_ state: AppState) {
-    guard participantsLastUpdateTimeStamp != state.remoteParticipantsState.lastUpdateTimeStamp
-    else {
-      return
+    init(store: Store<AppState, Action>,
+         callCompositeEventsHandler: CallComposite.Events,
+         avatarViewManager: AvatarViewManagerProtocol) {
+        self.store = store
+        self.eventsHandler = callCompositeEventsHandler
+        self.avatarViewManager = avatarViewManager
+        store.$state
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] state in
+                self?.receive(state)
+            }.store(in: &cancellables)
     }
 
-    participantsLastUpdateTimeStamp = state.remoteParticipantsState.lastUpdateTimeStamp
-    let updatedParticipantsIds = Set(
-      state.remoteParticipantsState.participantInfoList.map { $0.userIdentifier })
+    private func receive(_ state: AppState) {
+        guard participantsLastUpdateTimeStamp != state.remoteParticipantsState.lastUpdateTimeStamp else {
+            return
+        }
 
-    let joinedParticipantsIds = updatedParticipantsIds.subtracting(participantsIds)
-    let removedParticipantsIds = participantsIds.subtracting(updatedParticipantsIds)
-    participantsIds = updatedParticipantsIds
+        participantsLastUpdateTimeStamp = state.remoteParticipantsState.lastUpdateTimeStamp
+        let updatedParticipantsIds = Set(state.remoteParticipantsState.participantInfoList.map { $0.userIdentifier })
 
-    postRemoteParticipantsJoinedEvent(joinedParticipantsIds)
-    postRemoteParticipantsRemovedEvent(removedParticipantsIds)
-  }
+        let joinedParticipantsIds = updatedParticipantsIds.subtracting(participantsIds)
+        let removedParticipantsIds = participantsIds.subtracting(updatedParticipantsIds)
+        participantsIds = updatedParticipantsIds
 
-  private func postRemoteParticipantsRemovedEvent(_ removedParticipantsIds: Set<String>) {
-    // check if participants were removed from a call
-    guard !removedParticipantsIds.isEmpty else {
-      return
         postRemoteParticipantsJoinedEvent(joinedParticipantsIds)
-      postRemoteParticipantsRemovedEvent(removedParticipantsIds)
-      postRemoteParticipantsLeftEvent(removedParticipantsIds)
-    }
-  }
-
-  private func postRemoteParticipantsJoinedEvent(_ joinedParticipantsIds: Set<String>) {
-    guard let didRemoteParticipantsJoin = eventsHandler.onRemoteParticipantJoined else {
-      return
+        postRemoteParticipantsRemovedEvent(removedParticipantsIds)
+        postRemoteParticipantsLeftEvent(removedParticipantsIds)
     }
 
-    // check if new participants joined a call
-    guard !joinedParticipantsIds.isEmpty else {
-      return
-    }
-    let joinedParticipantsCommunicationIds: [CommunicationIdentifier] =
-      joinedParticipantsIds
-      .compactMap { createCommunicationIdentifier(fromRawId: $0) }
-    didRemoteParticipantsJoin(joinedParticipantsCommunicationIds)
-  }
+    private func postRemoteParticipantsRemovedEvent(_ removedParticipantsIds: Set<String>) {
+        // check if participants were removed from a call
+        guard !removedParticipantsIds.isEmpty else {
+            return
+        }
 
-  private func postRemoteParticipantsLeftEvent(_ leftOrRemovedParticipantIds: Set<String>) {
-    guard !leftOrRemovedParticipantIds.isEmpty else {
-      return
+        avatarViewManager.updateStorage(with: Array(removedParticipantsIds))
     }
-    guard let didRemoteParticipantsLeft = eventsHandler.onRemoteParticipantLeft else {
-      return
+
+    private func postRemoteParticipantsJoinedEvent(_ joinedParticipantsIds: Set<String>) {
+        guard let didRemoteParticipantsJoin = eventsHandler.onRemoteParticipantJoined else {
+            return
+        }
+
+        // check if new participants joined a call
+        guard !joinedParticipantsIds.isEmpty else {
+            return
+        }
+        let joinedParticipantsCommunicationIds: [CommunicationIdentifier] = joinedParticipantsIds
+            .compactMap { createCommunicationIdentifier(fromRawId: $0) }
+        didRemoteParticipantsJoin(joinedParticipantsCommunicationIds)
     }
-    let leftParticipantsCommunicationIds: [CommunicationIdentifier] =
-      leftOrRemovedParticipantIds
-      .compactMap { createCommunicationIdentifier(fromRawId: $0) }
-    didRemoteParticipantsLeft(leftParticipantsCommunicationIds)
-  }
+    private func postRemoteParticipantsLeftEvent(_ leftOrRemovedParticipantIds: Set<String>) {
+        guard !leftOrRemovedParticipantIds.isEmpty else {
+            return
+        }
+        guard let didRemoteParticipantsLeft = eventsHandler.onRemoteParticipantLeft else {
+            return
+        }
+        let leftParticipantsCommunicationIds: [CommunicationIdentifier] = leftOrRemovedParticipantIds
+            .compactMap { createCommunicationIdentifier(fromRawId: $0) }
+        didRemoteParticipantsLeft(leftParticipantsCommunicationIds)
+    }
 }

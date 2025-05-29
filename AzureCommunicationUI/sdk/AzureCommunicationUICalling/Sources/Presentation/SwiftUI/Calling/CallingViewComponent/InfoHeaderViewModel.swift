@@ -70,18 +70,17 @@ class InfoHeaderViewModel: ObservableObject {
         self.participantListButtonViewModel.accessibilityLabel = self.localizationProvider.getLocalizedString(
             .participantListAccessibilityLabel)
 
-    dismissButtonViewModel = compositeViewModelFactory.makeIconButtonViewModel(
-      iconName: .leftArrow,
-      buttonType: .infoButton,
-      isDisabled: false
-    ) { [weak self] in
-      guard let self = self else {
-        return
-      }
-      self.dismissButtonTapped()
-    }
-    dismissButtonViewModel.update(
-      accessibilityLabel: self.localizationProvider.getLocalizedString(.dismissAccessibilityLabel))
+        dismissButtonViewModel = compositeViewModelFactory.makeIconButtonViewModel(
+            iconName: .leftArrow,
+            buttonType: .infoButton,
+            isDisabled: false) { [weak self] in
+                guard let self = self else {
+                    return
+                }
+                self.dismissButtonTapped()
+        }
+        dismissButtonViewModel.update(
+            accessibilityLabel: self.localizationProvider.getLocalizedString(.dismissAccessibilityLabel))
 
         self.accessibilityProvider.subscribeToVoiceOverStatusDidChangeNotification(self)
         self.accessibilityProvider.subscribeToUIFocusDidUpdateNotification(self)
@@ -113,7 +112,6 @@ class InfoHeaderViewModel: ObservableObject {
     func displayParticipantsList() {
         dispatch(.showParticipants)
     }
-  }
 
     func toggleDisplayInfoHeaderIfNeeded() {
         guard !isVoiceOverEnabled else {
@@ -187,7 +185,6 @@ class InfoHeaderViewModel: ObservableObject {
             isInfoHeaderDisplayed = false
         }
     }
-  }
 
     private func updateInfoLabel() {
         let content: String
@@ -202,9 +199,6 @@ class InfoHeaderViewModel: ObservableObject {
         title = content
         accessibilityLabelTitle = content
     }
-    infoLabel = content
-    accessibilityLabel = content
-  }
 
     private func displayWithTimer() {
         self.isInfoHeaderDisplayed = true
@@ -213,7 +207,6 @@ class InfoHeaderViewModel: ObservableObject {
     @objc private func hideInfoHeader() {
         self.isInfoHeaderDisplayed = false
     }
-  }
 
     private func updateInfoHeaderAvailability() {
         let shouldDisplayInfoHeader = shouldDisplayInfoHeader(for: callingStatus)
@@ -224,17 +217,17 @@ class InfoHeaderViewModel: ObservableObject {
             displayWithTimer()
         }
     }
-  }
 
-  private func shouldDisplayInfoHeader(for callingStatus: CallingStatus) -> Bool {
-    return callingStatus != .inLobby && callingStatus != .localHold
-  }
+    private func shouldDisplayInfoHeader(for callingStatus: CallingStatus) -> Bool {
+        return callingStatus != .inLobby && callingStatus != .localHold
+    }
 
-  private func dismissButtonTapped() {
-    if self.enableSystemPipWhenMultitasking {
-      dispatch(.visibilityAction(.pipModeRequested))
-    } else if self.enableMultitasking {
-      dispatch(.visibilityAction(.hideRequested))
+    private func dismissButtonTapped() {
+        if self.enableSystemPipWhenMultitasking {
+            dispatch(.visibilityAction(.pipModeRequested))
+        } else if self.enableMultitasking {
+            dispatch(.visibilityAction(.hideRequested))
+        }
     }
     private func updateCustomButtons(_ buttonViewDataState: ButtonViewDataState) {
         self.customButton1ViewModel = createCustomButtonViewModel(
@@ -267,15 +260,15 @@ class InfoHeaderViewModel: ObservableObject {
 }
 
 extension InfoHeaderViewModel: AccessibilityProviderNotificationsObserver {
-  func didUIFocusUpdateNotification(_ notification: NSNotification) {
-    updateInfoHeaderAvailability()
-  }
-
-  func didChangeVoiceOverStatus(_ notification: NSNotification) {
-    guard isVoiceOverEnabled != accessibilityProvider.isVoiceOverEnabled else {
-      return
+    func didUIFocusUpdateNotification(_ notification: NSNotification) {
+        updateInfoHeaderAvailability()
     }
 
-    updateInfoHeaderAvailability()
-  }
+    func didChangeVoiceOverStatus(_ notification: NSNotification) {
+        guard isVoiceOverEnabled != accessibilityProvider.isVoiceOverEnabled else {
+            return
+        }
+
+        updateInfoHeaderAvailability()
+    }
 }

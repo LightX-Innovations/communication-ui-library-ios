@@ -16,27 +16,29 @@ internal class LandscapeAwareKeyboardWatcher: ObservableObject {
         }
     }
 
-    if let keyboardHideObserver = keyboardHideObserver {
-      NotificationCenter.default.removeObserver(keyboardHideObserver)
+    private var keyboardShowObserver: NSObjectProtocol?
+    private var keyboardHideObserver: NSObjectProtocol?
+    private var orientationChangeObserver: NSObjectProtocol?
+
+    init() {
+        listenForKeyboardNotifications()
+        listenForOrientationChanges()
+        updateOrientationStatus()
     }
 
-    if let orientationChangeObserver = orientationChangeObserver {
-      NotificationCenter.default.removeObserver(orientationChangeObserver)
-    }
-  }
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+        if let keyboardShowObserver = keyboardShowObserver {
+            NotificationCenter.default.removeObserver(keyboardShowObserver)
+        }
 
-  private func listenForKeyboardNotifications() {
-    keyboardShowObserver = NotificationCenter.default.addObserver(
-      forName: UIResponder.keyboardDidShowNotification,
-      object: nil,
-      queue: .main
-    ) { [weak self] (notification) in
-      guard let self = self, let userInfo = notification.userInfo,
-        let keyboardRect = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect
-      else { return }
+        if let keyboardHideObserver = keyboardHideObserver {
+            NotificationCenter.default.removeObserver(keyboardHideObserver)
+        }
 
-      self.keyboardHeight = keyboardRect.height
-      self.updateActiveHeight()
+        if let orientationChangeObserver = orientationChangeObserver {
+            NotificationCenter.default.removeObserver(orientationChangeObserver)
+        }
     }
 
     private func listenForKeyboardNotifications() {
@@ -61,19 +63,16 @@ internal class LandscapeAwareKeyboardWatcher: ObservableObject {
             self?.updateActiveHeight()
         }
     }
-  }
 
-  private func listenForOrientationChanges() {
-    orientationChangeObserver = NotificationCenter
-      .default
-      .addObserver(
-        forName: UIDevice.orientationDidChangeNotification,
-        object: nil,
-        queue: .main
-      ) { [weak self] _ in
-        self?.updateOrientationStatus()
-      }
-  }
+    private func listenForOrientationChanges() {
+        orientationChangeObserver = NotificationCenter
+            .default
+            .addObserver(forName: UIDevice.orientationDidChangeNotification,
+                         object: nil,
+                         queue: .main) { [weak self] _ in
+                self?.updateOrientationStatus()
+            }
+    }
 
     private func updateOrientationStatus() {
         let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene

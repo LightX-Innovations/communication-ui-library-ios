@@ -6,12 +6,9 @@
 import Combine
 import Foundation
 
-extension Reducer
-where
-  State == CallingState,
-  Actions == Action
-{
-  static var liveCallingReducer: Self = Reducer { callingState, action in
+extension Reducer where State == CallingState,
+                        Actions == Action {
+    static var liveCallingReducer: Self = Reducer { callingState, action in
 
         var callingStatus = callingState.status
         var operationStatus = callingState.operationStatus
@@ -114,12 +111,4 @@ where
                             </CALL_START_TIME> */
         )
     }
-    return CallingState(
-      status: callingStatus,
-      operationStatus: operationStatus,
-      callId: callIdValue,
-      isRecordingActive: isRecordingActive,
-      isTranscriptionActive: isTranscriptionActive,
-      callStartDate: callStartDate)
-  }
 }

@@ -3,15 +3,12 @@
 //  Licensed under the MIT License.
 //
 
-extension Reducer
-where
-  State == CallDiagnosticsState,
-  Actions == Action
-{
-  static var liveDiagnosticsReducer: Self = Reducer { state, action in
-    var networkDiagnostic: NetworkDiagnosticModel?
-    var networkQualityDiagnostic: NetworkQualityDiagnosticModel?
-    var mediaDiagnostic: MediaDiagnosticModel?
+extension Reducer where State == CallDiagnosticsState,
+                        Actions == Action {
+    static var liveDiagnosticsReducer: Self = Reducer { state, action in
+        var networkDiagnostic: NetworkDiagnosticModel?
+        var networkQualityDiagnostic: NetworkQualityDiagnosticModel?
+        var mediaDiagnostic: MediaDiagnosticModel?
 
         switch action {
         case .callDiagnosticAction(.media(let diagnosticModel)):
@@ -66,10 +63,4 @@ where
                                     networkQualityDiagnostic: networkQualityDiagnostic,
                                     mediaDiagnostic: mediaDiagnostic)
     }
-
-    return CallDiagnosticsState(
-      networkDiagnostic: networkDiagnostic,
-      networkQualityDiagnostic: networkQualityDiagnostic,
-      mediaDiagnostic: mediaDiagnostic)
-  }
 }

@@ -3,8 +3,8 @@
 //  Licensed under the MIT License.
 //
 
-import AzureCommunicationCommon
 import Foundation
+import AzureCommunicationCommon
 
 public struct CallConfiguration {
     let groupId: UUID?
@@ -74,8 +74,8 @@ public struct CallConfiguration {
             self.compositeCallType = .oneToOneIncoming
             self.callId = callId
         }
-    self.diagnosticConfig = DiagnosticConfig()
-  }
+        self.diagnosticConfig = DiagnosticConfig()
+    }
 }
 
 public enum CompositeCallType {

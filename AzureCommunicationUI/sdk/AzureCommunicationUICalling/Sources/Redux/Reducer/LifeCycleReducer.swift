@@ -5,22 +5,19 @@
 
 import Foundation
 
-extension Reducer
-where
-  State == LifeCycleState,
-  Actions == LifecycleAction
-{
-  static var liveLifecycleReducer: Self = Reducer { appLifeCycleCurrentState, action in
+extension Reducer where State == LifeCycleState,
+                        Actions == LifecycleAction {
+    static var liveLifecycleReducer: Self = Reducer { appLifeCycleCurrentState, action in
 
-    var currentStatus = appLifeCycleCurrentState.currentStatus
-    switch action {
-    case .foregroundEntered:
-      currentStatus = .foreground
-    case .backgroundEntered:
-      currentStatus = .background
-    case .willTerminate:
-      currentStatus = .willTerminate
+        var currentStatus = appLifeCycleCurrentState.currentStatus
+        switch action {
+        case .foregroundEntered:
+            currentStatus = .foreground
+        case .backgroundEntered:
+            currentStatus = .background
+        case .willTerminate:
+            currentStatus = .willTerminate
+        }
+        return LifeCycleState(currentStatus: currentStatus)
     }
-    return LifeCycleState(currentStatus: currentStatus)
-  }
 }
