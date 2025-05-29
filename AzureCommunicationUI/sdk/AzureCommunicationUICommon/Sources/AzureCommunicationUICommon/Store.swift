@@ -5,7 +5,7 @@
 
 import Foundation
 
-class Store<State, Action>: ObservableObject {
+public class Store<State, Action>: ObservableObject {
 
     @Published var state: State
 
@@ -29,7 +29,7 @@ class Store<State, Action>: ObservableObject {
             })
     }
 
-    func dispatch(action: Action) {
+    public func dispatch(action: Action) {
         actionDispatchQueue.async {
             self.dispatchFunction(action)
         }
